@@ -4,6 +4,10 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.2.1 — "Fresh coat" (Oct 21)
+- **Really fixed the Home Screen icon this time.** Your phone had saved a copy of the old broken icon and kept showing it. The icon now has a new file name, so your phone has to download the fixed one.
+- Updates now always download fresh files instead of reusing old saved copies.
+
 ## 1.2 — "Spring cleaning" (Oct 21)
 - **Archive instead of delete.** Hide things you're done with without losing them:
   - **Gym:** workout categories, exercises and templates. Archived templates drop out of the rotation.

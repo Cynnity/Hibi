@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="Hibi">
 <meta name="theme-color" content="#F0467F">
 <title>Hibi</title>
-<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="icon" type="image/png" href="hibi-icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="hibi-icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
@@ -1264,7 +1264,7 @@ function airText(m) {
 }
 
 /* ----- App version and update banner ----- */
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.2.1';
 const HIBI_LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64" style="border-radius:15px;flex:none" aria-hidden="true"> <defs> <linearGradient id="hb-bg" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#FF7AAA"/> <stop offset="0.55" stop-color="#F0467F"/> <stop offset="1" stop-color="#C92E6B"/> </linearGradient> <pattern id="hb-tone" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"> <circle cx="11" cy="11" r="3.2" fill="#FFFFFF"/> </pattern> <radialGradient id="hb-fade" cx="0.88" cy="0.9" r="0.55"> <stop offset="0" stop-color="#fff" stop-opacity="1"/> <stop offset="1" stop-color="#fff" stop-opacity="0"/> </radialGradient> <mask id="hb-toneMask"><rect width="512" height="512" fill="url(#hb-fade)"/></mask> <path id="hb-petal" d="M256 262 C 200 212 182 136 222 92 L 256 120 L 290 92 C 330 136 312 212 256 262 Z"/> </defs> <rect width="512" height="512" fill="url(#hb-bg)"/> <rect width="512" height="512" fill="url(#hb-tone)" opacity="0.22" mask="url(#hb-toneMask)"/> <g transform="translate(0 14)"> <g fill="#2B1B52" transform="translate(9 9)"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g fill="#FFFFFF" stroke="#2B1B52" stroke-width="12" stroke-linejoin="round"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g stroke="#FFC2D7" stroke-width="7" stroke-linecap="round"> <path d="M256 238 V 168"/><path d="M256 238 V 168" transform="rotate(72 256 256)"/><path d="M256 238 V 168" transform="rotate(144 256 256)"/> <path d="M256 238 V 168" transform="rotate(216 256 256)"/><path d="M256 238 V 168" transform="rotate(288 256 256)"/> </g> <circle cx="256" cy="256" r="30" fill="#F0467F" stroke="#2B1B52" stroke-width="10"/> <circle cx="246" cy="246" r="8" fill="#FFFFFF"/> </g> <g transform="translate(404 104)"> <path d="M0 -46 C 6 -14 14 -6 46 0 C 14 6 6 14 0 46 C -6 14 -14 6 -46 0 C -14 -6 -6 -14 0 -46 Z" fill="#5CE1F5" stroke="#2B1B52" stroke-width="8" stroke-linejoin="round"/> </g> <g transform="translate(112 410)"> <path d="M0 -22 C 3 -7 7 -3 22 0 C 7 3 3 7 0 22 C -3 7 -7 3 -22 0 C -7 -3 -3 -7 0 -22 Z" fill="#FFFFFF" stroke="#2B1B52" stroke-width="6" stroke-linejoin="round"/> </g> </svg>`;
 let updateReady = false, hadController = false;
 try {
