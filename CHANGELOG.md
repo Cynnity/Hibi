@@ -4,6 +4,17 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.3 — "Cardio arc" (Oct 21)
+- **Treadmill tracking:** log minutes, speed, incline and distance. Leave distance blank and Hibi works it out from your speed and time.
+- **StairMaster tracking:** log minutes, level and floors.
+- New **Cardio** category in the Gym with Treadmill and StairMaster already in your library. If you had a treadmill exercise from your Hevy import, it switched over to cardio on its own.
+- **Any exercise can be cardio:** in the Library, open it and pick a Type (Weights, Treadmill, Stairs or Other cardio). New exercises let you pick a type too.
+- **Cardio progress:** a Cardio card on the Progress tab with this week's minutes, distance and floors, and charts for incline, minutes, distance, speed, level or floors, plus your bests.
+- The Workout tab's This week card shows your cardio totals too.
+- Cardio skips the rest timer and doesn't count toward lifting PRs.
+- Hevy imports now bring in cardio time and distance.
+- **3 new badges:** Cardio Era (10 hours of cardio), Stairway to Heaven (500 floors) and **12-3-30** (30+ minutes at 12% incline).
+
 ## 1.2.2 — "Organized arc" (Oct 21)
 - **Templates are now a tidy list** on the Workout tab. Each one shows its name and how many exercises it has. Tap it to see the exercises, then tap Start.
 - The template that's next in your rotation has a **Next** tag.

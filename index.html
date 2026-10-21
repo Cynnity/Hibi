@@ -152,8 +152,12 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:38px;
 .howto>summary{color:var(--accent);font-weight:700;font-size:14px;padding:4px 0}
 .howto p{color:var(--mute);font-size:15px;margin-top:6px}
 .set-row{display:grid;grid-template-columns:30px minmax(0,1fr) 74px 60px 46px;gap:8px;align-items:center;margin-top:8px}
+.set-row.cardio{grid-template-columns:30px repeat(var(--n),minmax(0,1fr)) 46px;gap:6px}
+.set-row.cardio .num-in{font-size:16px}
 .set-row.h{margin-top:14px;font-size:12px;font-weight:700;color:var(--mute)}
 .set-row.h span:nth-child(n+3){text-align:center}
+.set-row.h.cardio span:nth-child(n+2){text-align:center;white-space:nowrap;font-size:11px}
+.cstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .sn{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-size:13px;font-weight:900;color:var(--mute)}
 .prev{font-size:14px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .num-in{width:100%;height:46px;border-radius:10px;border:2px solid transparent;background:var(--surface-2);text-align:center;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
@@ -502,6 +506,8 @@ function normalize(s) {
   if (typeof s.bar !== 'number') s.bar = null; if (typeof s.inc !== 'number') s.inc = null;
   for (const k of ['sl', 'wt', 'st', 'sp', 'bd', 'last']) if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = {};
   if (s.active && !Array.isArray(s.active.muscles)) s.active.muscles = [];
+  s.ex.forEach(e => { if (e.kind && !CARDIO[e.kind]) delete e.kind; });
+  if (!s.cardioV) seedCardio(s);
   if (s.tab === 'nutrition') s.tab = 'today';
   if (!TAB_INFO[s.tab]) s.tab = 'workout';
   if (!THEMES.some(t => t[0] === s.theme)) s.theme = 'sakura';
@@ -1277,7 +1283,7 @@ function airText(m) {
 }
 
 /* ----- App version and update banner ----- */
-const APP_VERSION = '1.2.2';
+const APP_VERSION = '1.3';
 const HIBI_LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64" style="border-radius:15px;flex:none" aria-hidden="true"> <defs> <linearGradient id="hb-bg" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#FF7AAA"/> <stop offset="0.55" stop-color="#F0467F"/> <stop offset="1" stop-color="#C92E6B"/> </linearGradient> <pattern id="hb-tone" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"> <circle cx="11" cy="11" r="3.2" fill="#FFFFFF"/> </pattern> <radialGradient id="hb-fade" cx="0.88" cy="0.9" r="0.55"> <stop offset="0" stop-color="#fff" stop-opacity="1"/> <stop offset="1" stop-color="#fff" stop-opacity="0"/> </radialGradient> <mask id="hb-toneMask"><rect width="512" height="512" fill="url(#hb-fade)"/></mask> <path id="hb-petal" d="M256 262 C 200 212 182 136 222 92 L 256 120 L 290 92 C 330 136 312 212 256 262 Z"/> </defs> <rect width="512" height="512" fill="url(#hb-bg)"/> <rect width="512" height="512" fill="url(#hb-tone)" opacity="0.22" mask="url(#hb-toneMask)"/> <g transform="translate(0 14)"> <g fill="#2B1B52" transform="translate(9 9)"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g fill="#FFFFFF" stroke="#2B1B52" stroke-width="12" stroke-linejoin="round"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g stroke="#FFC2D7" stroke-width="7" stroke-linecap="round"> <path d="M256 238 V 168"/><path d="M256 238 V 168" transform="rotate(72 256 256)"/><path d="M256 238 V 168" transform="rotate(144 256 256)"/> <path d="M256 238 V 168" transform="rotate(216 256 256)"/><path d="M256 238 V 168" transform="rotate(288 256 256)"/> </g> <circle cx="256" cy="256" r="30" fill="#F0467F" stroke="#2B1B52" stroke-width="10"/> <circle cx="246" cy="246" r="8" fill="#FFFFFF"/> </g> <g transform="translate(404 104)"> <path d="M0 -46 C 6 -14 14 -6 46 0 C 14 6 6 14 0 46 C -6 14 -14 6 -46 0 C -14 -6 -6 -14 0 -46 Z" fill="#5CE1F5" stroke="#2B1B52" stroke-width="8" stroke-linejoin="round"/> </g> <g transform="translate(112 410)"> <path d="M0 -22 C 3 -7 7 -3 22 0 C 7 3 3 7 0 22 C -3 7 -7 3 -22 0 C -7 -3 -3 -7 0 -22 Z" fill="#FFFFFF" stroke="#2B1B52" stroke-width="6" stroke-linejoin="round"/> </g> </svg>`;
 let updateReady = false, hadController = false;
 try {
@@ -1773,10 +1779,57 @@ Object.assign(XACT, {arch: d => {
   toast(x.archived ? 'Archived. It\'s hidden, not deleted.' : 'Restored.');
 }});
 
+/* ----- Cardio (treadmill, stairs and other machines) ----- */
+const CARDIO = {
+  tread:{label:'Treadmill', f:['min', 'spd', 'inc', 'dist']},
+  stairs:{label:'Stairs', f:['min', 'lvl', 'fl']},
+  cardio:{label:'Other cardio', f:['min', 'dist']}};
+const distU = () => S.unit === 'kg' ? 'km' : 'mi', spdU = () => S.unit === 'kg' ? 'km/h' : 'mph';
+const CF = {min:() => 'Min', spd:() => spdU(), inc:() => 'Incline', dist:() => distU(), lvl:() => 'Level', fl:() => 'Floors'};
+const CF_IN = {min:'decimal', spd:'decimal', inc:'decimal', dist:'decimal', lvl:'numeric', fl:'numeric'};
+const CF_ALL = ['min', 'spd', 'inc', 'dist', 'lvl', 'fl'];
+const kindOf = e => e && CARDIO[e.k] ? e.k : (x => x && CARDIO[x.kind] ? x.kind : null)(exInfo(e ? e.name : ''));
+const kindByName = name => /treadmill|incline walk/i.test(name) ? 'tread' : /stair|step ?mill|stepper/i.test(name) ? 'stairs' : null;
+const distOf = s => num(s.dist) || (num(s.spd) && num(s.min) ? Math.round(num(s.spd) * num(s.min) / 60 * 100) / 100 : 0);
+function cardioText(s, k) {
+  const out = [];
+  if (num(s.min)) out.push(fmtN(num(s.min)) + ' min');
+  if (num(s.spd)) out.push(fmtN(num(s.spd)) + ' ' + spdU());
+  if (s.inc !== undefined && s.inc !== '' && k === 'tread') out.push(fmtN(num(s.inc)) + '% incline');
+  if (num(s.lvl)) out.push('level ' + fmtN(num(s.lvl)));
+  if (num(s.fl)) out.push(fmtN(num(s.fl)) + ' floors');
+  const d = distOf(s); if (d && k !== 'stairs') out.push(fmtN(d) + ' ' + distU());
+  return out.join(' · ') || 'No details';
+}
+const cardioSet = (k, p) => { const o = {done:false}; CARDIO[k].f.forEach(f => o[f] = p && p[f] !== undefined ? p[f] : ''); return o; };
+function seedCardio(s) {
+  let cat = s.cats.find(c => norm(c.name) === 'cardio');
+  if (!cat) { cat = {id:'cardio', name:'Cardio'}; s.cats.push(cat); }
+  s.ex.forEach(e => { if (!e.kind) { const k = kindByName(e.name); if (k) { e.kind = k; if (!e.cats.includes(cat.id)) e.cats.push(cat.id); } } });
+  const add = (name, kind, muscles, how) => { if (!s.ex.some(e => norm(e.name) === norm(name))) s.ex.push({id:'cx-' + kind, name, kind, cats:[cat.id], muscles, how}); };
+  add('Treadmill', 'tread', ['Quads', 'Hamstrings', 'Glutes', 'Calves'], 'Start with a few minutes of easy walking. Stand tall, let your arms swing and try not to hold the rails, especially on an incline. Raise the incline for a tougher walk without running.');
+  add('StairMaster', 'stairs', ['Glutes', 'Quads', 'Hamstrings', 'Calves'], 'Step with your whole foot and push through your heel. Stand upright and rest your hands lightly on the rails instead of leaning on them. Pick a level you can keep steady.');
+  s.cardioV = 1;
+}
+function cardioWeek() {
+  const ws = weekStart(Date.now()), o = {min:0, dist:0, fl:0, n:0};
+  S.history.filter(w => w.end >= ws).forEach(w => w.exercises.forEach(e => { const k = kindOf(e); if (!k) return; o.n++;
+    e.sets.forEach(x => { o.min += num(x.min); if (k !== 'stairs') o.dist += distOf(x); o.fl += num(x.fl); }); }));
+  return o;
+}
+const CMET = {min:['Minutes', 'min', x => num(x.min)], dist:['Distance', '', x => distOf(x)], inc:['Incline', '%', x => num(x.inc)], spd:['Speed', '', x => num(x.spd)], fl:['Floors', 'floors', x => num(x.fl)], lvl:['Level', '', x => num(x.lvl)]};
+function cardioSeries(name, m) {
+  const n = norm(name), [, , get] = CMET[m], out = [];
+  for (const w of S.history) { const e = w.exercises.find(x => norm(x.name) === n); if (!e) continue;
+    const vals = e.sets.map(get).filter(v => v > 0); if (!vals.length) continue;
+    out.push({l:fmtMD(new Date(w.end)), v:m === 'inc' || m === 'spd' || m === 'lvl' ? Math.max(...vals) : Math.round(vals.reduce((a, b) => a + b, 0) * 100) / 100}); }
+  return out;
+}
+const cmetUnit = m => m === 'dist' ? distU() : m === 'spd' ? spdU() : CMET[m][1];
 let S = load();
 const UI = {open:{}};           // which <details> are open, survives re-renders
 let Q = '';                      // exercise search
-let NF = {name:'', how:'', muscles:[], cats:[]};   // new exercise form
+let NF = {name:'', how:'', muscles:[], cats:[], kind:''};   // new exercise form
 let NS = {name:'', dose:''};     // new supplement form
 let JD = null;                   // journal draft
 let PH = [];                     // progress photos (IndexedDB)
@@ -1785,12 +1838,14 @@ let PH = [];                     // progress photos (IndexedDB)
    Lifting helpers
    ========================================================= */
 const exInfo = name => S.ex.find(e => norm(e.name) === norm(name));
+
 const catName = id => (S.cats.find(c => c.id === id) || {}).name || 'Workout';
 const tplAfter = id => { const L = S.tpl.filter(t => !t.archived); if (!L.length) return null; const i = L.findIndex(t => t.id === id); return L[(i + 1) % L.length].id; };
 const nextTpl = () => S.tpl.find(t => t.id === S.next && !t.archived) || S.tpl.find(t => !t.archived) || null;
 const topOf = e => Math.max(0, ...e.sets.map(s => num(s.w)));
 const volOf = w => w.exercises.reduce((t, e) => t + e.sets.reduce((u, s) => u + num(s.w) * num(s.r), 0), 0);
-const loggedNames = () => [...new Set(S.history.flatMap(w => w.exercises.map(e => e.name)))].sort((a, b) => a.localeCompare(b));
+const loggedNames = () => [...new Set(S.history.flatMap(w => w.exercises.filter(e => !kindOf(e)).map(e => e.name)))].sort((a, b) => a.localeCompare(b));
+const cardioNames = () => [...new Set(S.history.flatMap(w => w.exercises.filter(e => kindOf(e)).map(e => e.name)))].sort((a, b) => a.localeCompare(b));
 function series(name) {
   const n = norm(name), out = [];
   for (const w of S.history) { const e = w.exercises.find(x => norm(x.name) === n); if (e) out.push({l:fmtMD(new Date(w.end)), v:topOf(e)}); }
@@ -1806,7 +1861,7 @@ function prevFor(name, i) {
 }
 function bestSets() {
   const best = {};
-  for (const w of S.history) for (const e of w.exercises) for (const s of e.sets) {
+  for (const w of S.history) for (const e of w.exercises) if (!kindOf(e)) for (const s of e.sets) {
     const k = norm(e.name), v = num(s.w), r = num(s.r), b = best[k];
     if (!b || v > b.v || (v === b.v && r > b.r)) best[k] = {name:e.name, v, r, d:w.end};
   }
@@ -1827,7 +1882,7 @@ function lastSession(name) {
   return null;
 }
 function hintFor(name) {
-  const last = lastSession(name); if (!last) return null;
+  const last = lastSession(name); if (!last || kindOf(last)) return null;
   const [lo, hi] = repRange(), top = topOf(last); if (!(top > 0)) return null;
   const reps = last.sets.filter(s => num(s.w) === top).map(s => num(s.r)), minR = Math.min(...reps);
   if (minR >= hi) {
@@ -1968,19 +2023,22 @@ function barChart(name) {
    ========================================================= */
 function stats() {
   const o = {n:S.history.length, vol:0, sets:0, mins:0, maxMin:0, early:0, late:0, midn:0, lunch:0, wknd:0, leg:0, tagged:0, quads:false,
-    maxRep:0, maxVol:0, oneSet:0, pr:0, plus:0, run:0};
+    maxRep:0, maxVol:0, oneSet:0, pr:0, plus:0, run:0, cmin:0, fl:0, t1230:0};
   const top = {}, days = new Set();
   [...S.history].sort((a, b) => a.end - b.end).forEach(w => {
     const st = w.start || w.end, d = new Date(st), hr = d.getHours(), dy = d.getDay(), mu = w.muscles || [];
-    let v = 0, c = 0, p = 0;
+    let v = 0, c = 0, p = 0, lift = 0;
     days.add(dk(d));
     w.exercises.forEach(e => {
+      const ck = kindOf(e);
+      if (ck) { e.sets.forEach(s => { o.cmin += num(s.min); o.fl += num(s.fl); if (ck === 'tread' && num(s.inc) >= 12 && num(s.min) >= 30) o.t1230++; }); return; }
+      lift++;
       const k = norm(e.name); let mx = 0;
       e.sets.forEach(s => { const wt = num(s.w), r = num(s.r); v += wt * r; c++; if (r > o.maxRep) o.maxRep = r; if (wt > mx) mx = wt; });
       if (k in top && mx > top[k]) p++;
       top[k] = Math.max(top[k] || 0, mx);
     });
-    o.vol += v; o.sets += c; o.maxVol = Math.max(o.maxVol, v); o.pr += p; if (p >= 3) o.plus++; if (c === 1) o.oneSet++;
+    o.vol += v; o.sets += c; o.maxVol = Math.max(o.maxVol, v); o.pr += p; if (p >= 3) o.plus++; if (c === 1 && lift) o.oneSet++;
     const m = (w.end - st) / 6e4; if (m > 0 && m < 600) { o.mins += m; o.maxMin = Math.max(o.maxMin, m); }
     if (hr >= 4 && hr < 7) o.early++; if (hr >= 22) o.late++; if (hr < 4) o.midn++; if (hr >= 11 && hr < 13) o.lunch++; if (dy === 0 || dy === 6) o.wknd++;
     if (mu.length) { o.tagged++; if (mu.includes('Quads')) o.quads = true; if (['Quads','Hamstrings','Glutes','Calves'].some(x => mu.includes(x))) o.leg++; }
@@ -1998,6 +2056,9 @@ function stats() {
 const byUnit = (lb, kg) => S.unit === 'kg' ? kg : lb;
 const BADGES = [
   ['first','🏁','First Rep','Log your first workout','real',s => [s.n, 1]],
+  ['cardio10','🏃','Cardio Era','Log 10 hours of cardio','real',s => [Math.floor(s.cmin), 600]],
+  ['stairs','🪜','Stairway to Heaven','Climb 500 floors on the stairs','real',s => [s.fl, 500]],
+  ['t1230','⛰️','12-3-30','Walk 30+ minutes at a 12% incline or higher','fun',s => [s.t1230, 1]],
   ['w10','💪','Regular','Log 10 workouts','real',s => [s.n, 10]],
   ['w25','🔥','Locked In','Log 25 workouts','real',s => [s.n, 25]],
   ['w50','🦍','Gym Rat','Log 50 workouts','real',s => [s.n, 50]],
@@ -2092,6 +2153,7 @@ function viewWorkout() {
   return `${upNext()}<section class="card"><h2>This week</h2>
       <div class="stats"><div class="stat"><b>${wk.length}</b><span>${wk.length === 1 ? 'workout' : 'workouts'}</span></div>
       <div class="stat"><b>${short(vol)}</b><span>${S.unit} lifted</span></div><div class="stat"><b>${Math.round(mins)}</b><span>minutes</span></div></div>
+      ${(cw => cw.n ? `<p class="note">Cardio: ${fmtN(Math.round(cw.min))} min${cw.dist ? `, ${fmtN(Math.round(cw.dist * 10) / 10)} ${distU()}` : ''}${cw.fl ? `, ${fmtN(cw.fl)} floors` : ''}.</p>` : '')(cardioWeek())}
       <p class="note">${last ? `Last workout ${fmtLong(last.end)}${last.cat ? ', ' + esc(catName(last.cat)) : ''}.` : 'Finish your first workout and it shows up here.'}</p></section>
     ${tplList()}
     <h2 class="sec">${S.tpl.some(live) ? 'Or start by category' : 'Start a workout'}</h2>
@@ -2125,7 +2187,23 @@ function viewSession(a) {
       <p class="note">Saving with an existing name updates that template.</p></details>
     <button class="link danger" data-act="discard" data-confirm>Discard workout</button>`;
 }
+function cardioCard(ex, xi, k) {
+  const info = exInfo(ex.name), F = CARDIO[k].f, last = lastSession(ex.name);
+  const rows = ex.sets.map((s, si) => { const p = prevFor(ex.name, si);
+    return `<div class="set-row cardio${s.done ? ' done' : ''}" style="--n:${F.length}"><span class="sn">${si + 1}</span>
+      ${F.map(f => `<input class="num-in" inputmode="${CF_IN[f]}" aria-label="${esc(CF[f]())} for round ${si + 1}" data-bind="set" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(s[f] === undefined ? '' : s[f])}" placeholder="${p && p[f] !== undefined && p[f] !== '' ? esc(p[f]) : f === 'dist' ? 'auto' : '0'}">`).join('')}
+      <button class="check" aria-label="Round ${si + 1} done" aria-pressed="${!!s.done}" data-act="toggleSet" data-x="${xi}" data-s="${si}">${ICON_CHECK}</button></div>`; }).join('');
+  return `<section class="card">
+    <div class="row"><h3>${esc(ex.name)}</h3><span class="ex-actions"><button class="link quiet" data-act="removeEx" data-x="${xi}" data-confirm>Remove</button></span></div>
+    ${(t => t.length ? `<p class="tags">${esc(t.join(', '))}</p>` : '')([...(norm(CARDIO[k].label) === norm(ex.name) ? [] : [CARDIO[k].label]), ...(info ? info.muscles : [])])}
+    ${(lt => lt ? `<p class="note">Last time: ${esc(lt)}</p>` : '')(last && last.sets.map(x => cardioText(x, k)).filter(x => x !== 'No details').join('; '))}
+    <div class="set-row h cardio" style="--n:${F.length}" aria-hidden="true"><span>#</span>${F.map(f => `<span>${esc(f === 'inc' ? 'Incline %' : CF[f]())}</span>`).join('')}<span></span></div>
+    ${rows}
+    ${k === 'tread' ? `<p class="note">Leave ${distU()} blank and it's worked out from speed and time.</p>` : ''}
+    <div class="row"><button class="link" data-act="addSet" data-x="${xi}">+ Add round</button>${ex.sets.length > 1 ? `<button class="link quiet" data-act="removeSet" data-x="${xi}">Remove last round</button>` : ''}</div></section>`;
+}
 function exCard(ex, xi) {
+  const k = kindOf(ex); if (k) return cardioCard(ex, xi, k);
   const info = exInfo(ex.name);
   const rows = ex.sets.map((s, si) => {
     const p = prevFor(ex.name, si);
@@ -2146,6 +2224,7 @@ function exCard(ex, xi) {
 }
 
 /* ----- Library ----- */
+const EX_TYPES = [['', 'Weights'], ['tread', 'Treadmill'], ['stairs', 'Stairs'], ['cardio', 'Other cardio']];
 function viewCatalog() {
   const f = S.cf;
   return `<input class="input" id="exSearch" type="search" placeholder="Search by name or muscle" value="${esc(Q)}" autocomplete="off" aria-label="Search exercises">
@@ -2154,6 +2233,7 @@ function viewCatalog() {
     <details class="card" ${det('newEx')}><summary class="sum"><h2>Create an exercise</h2><span class="small muted">Add your own with muscles and notes</span></summary>
       <input class="input" placeholder="Name" data-bind="nf" data-f="name" value="${esc(NF.name)}" aria-label="Exercise name">
       <textarea class="input mt" style="min-height:80px" placeholder="How to do it, in a sentence or two" data-bind="nf" data-f="how" aria-label="How to do it">${esc(NF.how)}</textarea>
+      <span class="label">Type</span><div class="chips">${EX_TYPES.map(([k, l]) => chip(l, (NF.kind || '') === k, `data-act="nfKind" data-k="${k}"`)).join('')}</div>
       <span class="label">Muscles</span><div class="chips">${MUSCLES.map(m => chip(m, NF.muscles.includes(m), `data-act="nfMuscle" data-m="${esc(m)}"`)).join('')}</div>
       <span class="label">Categories</span><div class="chips">${S.cats.filter(live).map(c => chip(c.name, NF.cats.includes(c.id), `data-act="nfCat" data-c="${esc(c.id)}"`)).join('')}</div>
       <button class="btn block mt" data-act="createEx">Add to library</button></details>
@@ -2166,7 +2246,8 @@ function exList() {
   const list = S.ex.filter(e => live(e) && (f === 'all' || e.cats.includes(f)) && (!q || norm(e.name).includes(q) || e.muscles.some(m => norm(m).includes(q))));
   if (!list.length) return emptyCard(q ? 'No matches' : 'Nothing here yet', q ? 'Try a different name or muscle.' : 'Open any exercise and tap this category to add it.');
   return list.map(e => `<details class="card" ${det('ex-' + e.id)}><summary class="sum"><h3>${esc(e.name)}</h3><span class="small muted">${e.muscles.length ? esc(e.muscles.join(', ')) : 'No muscles set'}</span></summary>
-      <p class="muted">${esc(e.how)}</p>${figure(e.muscles)}${barChart(e.name)}
+      <p class="muted">${esc(e.how)}</p>${figure(e.muscles)}${CARDIO[e.kind] ? (l => `<p class="note">${l ? 'Last time: ' + esc(l.sets.map(x => cardioText(x, e.kind)).join('; ')) : 'Not logged yet. Progress shows up under Progress, then Cardio.'}</p>`)(lastSession(e.name)) : barChart(e.name)}
+      <span class="label">Type</span><div class="chips">${EX_TYPES.map(([k, l]) => chip(l, (e.kind || '') === k, `data-act="exKind" data-id="${esc(e.id)}" data-k="${k}"`)).join('')}</div>
       <span class="label">Muscles</span><div class="chips">${MUSCLES.map(m => chip(m, e.muscles.includes(m), `data-act="exMuscle" data-id="${esc(e.id)}" data-m="${esc(m)}"`)).join('')}</div>
       <span class="label">Categories</span><div class="chips">${S.cats.filter(c => live(c) || e.cats.includes(c.id)).map(c => chip(c.name, e.cats.includes(c.id), `data-act="exCat" data-id="${esc(e.id)}" data-c="${esc(c.id)}"`)).join('') || '<span class="small muted">Create a category first.</span>'}</div>
       ${archBtn('ex', e)} <button class="link danger mt" data-act="deleteEx" data-id="${esc(e.id)}" data-confirm>Delete exercise</button></details>`).join('');
@@ -2184,20 +2265,34 @@ function viewCare() {
 }
 
 /* ----- Progress ----- */
+function cardioProgress() {
+  const names = cardioNames(); if (!names.length) return '';
+  const c = S.cpick || {}, name = names.includes(c.n) ? c.n : names[0], k = kindOf({name, k:(S.history.flatMap(w => w.exercises).find(e => e.name === name) || {}).k}) || 'cardio';
+  const mets = CARDIO[k].f.filter(f => CMET[f]), m = mets.includes(c.m) ? c.m : mets.includes('inc') ? 'inc' : 'min';
+  const pts = cardioSeries(name, m), wk = cardioWeek(), u = cmetUnit(m);
+  const all = S.history.flatMap(w => w.exercises.filter(e => e.name === name).flatMap(e => e.sets));
+  const best = f => Math.max(0, ...all.map(CMET[f][2]));
+  return `<section class="card"><h2>Cardio</h2>
+    <div class="cstats"><div class="stat"><b>${fmtN(Math.round(wk.min))}</b><span>min this week</span></div><div class="stat"><b>${fmtN(Math.round(wk.dist * 10) / 10)}</b><span>${distU()} this week</span></div><div class="stat"><b>${fmtN(wk.fl)}</b><span>floors this week</span></div></div>
+    <select class="input mt" data-bind="cpick" data-f="n" aria-label="Cardio machine">${names.map(n => `<option${n === name ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
+    <div class="chips mt">${mets.map(f => chip(CMET[f][0], f === m, `data-act="cardioMet" data-m="${f}"`)).join('')}</div>
+    ${trend(pts, u)}${lineChart(pts, u)}
+    <p class="note">Bests on ${esc(name)}: ${mets.map(f => { const b = best(f); return b ? `${CMET[f][0].toLowerCase()} ${fmtN(b)}${f === 'inc' ? '%' : cmetUnit(f) ? ' ' + cmetUnit(f) : ''}` : ''; }).filter(Boolean).join(', ') || 'none yet'}.</p></section>`;
+}
 function viewHistory() {
   if (!S.history.length) return emptyCard('No workouts yet', 'Finish a workout and your lifts, PRs and charts show up here.', 'Start a workout', 'data-act="go" data-to="workout"');
-  const names = loggedNames(), pick = names.includes(S.pick) ? S.pick : names[0], pts = series(pick);
-  return `<section class="card"><h2>Lift progress</h2>
+  const names = loggedNames(), pick = names.includes(S.pick) ? S.pick : names[0], pts = pick ? series(pick) : [];
+  return `${cardioProgress()}${names.length ? `<section class="card"><h2>Lift progress</h2>
       <select class="input mt" data-bind="pick" aria-label="Exercise">${names.map(n => `<option${n === pick ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
-      ${trend(pts, S.unit)}${lineChart(pts, S.unit)}</section>
-    <details class="card" ${det('prs', true)}><summary class="sum"><h2>Personal records</h2><span class="small muted">Heaviest set for each lift</span></summary>
-      ${bestSets().map(b => `<div class="lrow"><b>${esc(b.name)}</b><span>${fmtN(b.v)} ${S.unit} × ${fmtN(b.r)}<small>${fmtMD(new Date(b.d))}</small></span></div>`).join('')}</details>
+      ${trend(pts, S.unit)}${lineChart(pts, S.unit)}</section>` : ''}
+    ${names.length ? `<details class="card" ${det('prs', true)}><summary class="sum"><h2>Personal records</h2><span class="small muted">Heaviest set for each lift</span></summary>
+      ${bestSets().map(b => `<div class="lrow"><b>${esc(b.name)}</b><span>${fmtN(b.v)} ${S.unit} × ${fmtN(b.r)}<small>${fmtMD(new Date(b.d))}</small></span></div>`).join('')}</details>` : ''}
     <h2 class="sec">Workouts</h2>
     ${[...S.history].reverse().map(w => {
       const mins = Math.max(1, Math.round((w.end - (w.start || w.end)) / 6e4));
       return `<details class="card" ${det('w-' + w.id)}><summary class="sum"><h3>${fmtLong(w.end)}</h3>
-        <span class="small muted">${esc(w.cat ? catName(w.cat) : (w.muscles && w.muscles.length ? w.muscles.join(', ') : 'Workout'))}, ${mins} min, ${short(volOf(w))} ${S.unit}</span></summary>
-        ${w.exercises.map(e => `<div class="lrow"><b>${esc(e.name)}</b><span>${e.sets.map(s => `${fmtN(num(s.w))}×${fmtN(num(s.r))}`).join(', ')}</span></div>`).join('')}
+        <span class="small muted">${esc(w.cat ? catName(w.cat) : (w.muscles && w.muscles.length ? w.muscles.join(', ') : 'Workout'))}, ${mins} min${volOf(w) || !w.exercises.some(e => kindOf(e)) ? `, ${short(volOf(w))} ${S.unit}` : ''}${(c => c ? `, ${fmtN(c)} min cardio` : '')(Math.round(w.exercises.filter(e => kindOf(e)).reduce((t, e) => t + e.sets.reduce((u, x) => u + num(x.min), 0), 0)))}</span></summary>
+        ${w.exercises.map(e => { const k = kindOf(e); return `<div class="lrow"><b>${esc(e.name)}</b><span>${k ? esc(e.sets.map(s => cardioText(s, k)).join('; ')) : e.sets.map(s => `${fmtN(num(s.w))}×${fmtN(num(s.r))}`).join(', ')}</span></div>`; }).join('')}
         <div class="row mt"><button class="link" data-act="tplFromWorkout" data-id="${esc(w.id)}">Save as template</button><button class="link danger" data-act="deleteWorkout" data-id="${esc(w.id)}" data-confirm>Delete workout</button></div></details>`;
     }).join('')}`;
 }
@@ -2356,12 +2451,13 @@ function tick() {
    Actions (each mutates state; returning false skips save/render)
    ========================================================= */
 function addSetTo(ex) {
-  const last = ex.sets[ex.sets.length - 1], p = prevFor(ex.name, ex.sets.length);
+  const last = ex.sets[ex.sets.length - 1], p = prevFor(ex.name, ex.sets.length), k = kindOf(ex);
+  if (k) { ex.sets.push(cardioSet(k, p || last)); return; }
   ex.sets.push({w:p ? p.w : last ? last.w : '', r:p ? p.r : last ? last.r : '', done:false});
 }
 function addExercise(name) {
-  const a = S.active, p = prevFor(name, 0), info = exInfo(name);
-  a.exercises.push({name:info ? info.name : name, sets:[{w:p ? p.w : '', r:p ? p.r : '', done:false}]});
+  const a = S.active, p = prevFor(name, 0), info = exInfo(name), k = info && CARDIO[info.kind] ? info.kind : null;
+  a.exercises.push(k ? {name:info.name, k, sets:[cardioSet(k, p)]} : {name:info ? info.name : name, sets:[{w:p ? p.w : '', r:p ? p.r : '', done:false}]});
   if (info) info.muscles.forEach(m => { if (!a.muscles.includes(m)) a.muscles.push(m); });
 }
 const ACT = {
@@ -2375,18 +2471,23 @@ const ACT = {
   toggleSet: d => {
     const ex = S.active.exercises[+d.x], s = ex.sets[+d.s];
     s.done = !s.done;
-    if (s.done) { const p = prevFor(ex.name, +d.s); if (s.w === '' && p) s.w = p.w; if (s.r === '' && p) s.r = p.r; startRest(); }
+    if (s.done) { const p = prevFor(ex.name, +d.s), k = kindOf(ex);
+      if (k) { if (p) CARDIO[k].f.forEach(f => { if (s[f] === '' && p[f] !== undefined) s[f] = p[f]; }); return; }
+      if (s.w === '' && p) s.w = p.w; if (s.r === '' && p) s.r = p.r; startRest(); }
   },
   sessionMuscle: d => toggleIn(S.active.muscles, d.m),
   finish: () => {
     const a = S.active;
-    const ex = a.exercises.map(e => ({name:e.name, sets:e.sets.filter(s => s.done).map(s => ({w:s.w, r:s.r}))})).filter(e => e.sets.length);
+    const ex = a.exercises.map(e => { const k = kindOf(e);
+      if (!k) return {name:e.name, sets:e.sets.filter(s => s.done).map(s => ({w:s.w, r:s.r}))};
+      return {name:e.name, k, sets:e.sets.filter(s => s.done).map(s => { const o = {}; CARDIO[k].f.forEach(f => { if (s[f] !== '' && s[f] !== undefined) o[f] = s[f]; });
+        if (k === 'tread' && !num(o.dist) && distOf(o)) o.dist = String(distOf(o)); return o; })}; }).filter(e => e.sets.length);
     if (!ex.length) { toast('Check off at least one set to save this workout.'); return false; }
-    const prs = ex.filter(e => { const old = series(e.name); return old.length && topOf(e) > Math.max(...old.map(p => p.v)); }).map(e => e.name);
+    const prs = ex.filter(e => { if (e.k) return false; const old = series(e.name); return old.length && topOf(e) > Math.max(...old.map(p => p.v)); }).map(e => e.name);
     S.history.push({id:a.id, start:a.start, end:Date.now(), cat:a.cat, tpl:a.tpl || null, muscles:a.muscles, exercises:ex});
     if (a.tpl && S.tpl.some(t => t.id === a.tpl)) S.next = tplAfter(a.tpl);
     S.active = null; S.timer = null;
-    toast(prs.length ? `🏆 New PR: ${prs.join(', ')}!` : `Workout saved. ${plural(ex.reduce((t, e) => t + e.sets.length, 0), 'set')} logged.`);
+    toast(prs.length ? `🏆 New PR: ${prs.join(', ')}!` : `Workout saved. ${ex.every(e => e.k) ? 'Cardio logged.' : plural(ex.reduce((t, e) => t + e.sets.length, 0), 'set') + ' logged.'}`);
   },
   discard: () => { S.active = null; S.timer = null; },
   restMinus: () => { if (!S.timer) return false; S.timer.end -= 15000; S.timer.total = Math.max(15, S.timer.total - 15); },
@@ -2434,13 +2535,17 @@ const ACT = {
   exCat: d => { const e = S.ex.find(x => x.id === d.id); if (e) toggleIn(e.cats, d.c); },
   deleteEx: d => { S.ex = S.ex.filter(e => e.id !== d.id); },
   nfMuscle: d => toggleIn(NF.muscles, d.m),
+  nfKind: d => { NF.kind = d.k; },
+  exKind: d => { const e = S.ex.find(x => x.id === d.id); if (!e) return false; if (d.k) e.kind = d.k; else delete e.kind;
+    if (S.active) S.active.exercises.forEach(x => { if (norm(x.name) === norm(e.name) && !x.sets.some(q => q.done)) { x.k = d.k || undefined; if (!x.k) delete x.k; x.sets = x.sets.map(() => d.k ? cardioSet(d.k) : {w:'', r:'', done:false}); } }); },
+  cardioMet: d => { S.cpick = Object.assign({}, S.cpick, {m:d.m}); },
   nfCat: d => toggleIn(NF.cats, d.c),
   createEx: () => {
     const name = NF.name.trim();
     if (!name) { toast('Give the exercise a name.'); return false; }
     if (exInfo(name)) { toast('That exercise is already in your library.'); return false; }
-    S.ex.push({id:'u' + Date.now(), name, cats:NF.cats, muscles:NF.muscles, how:NF.how.trim() || 'No notes yet.'});
-    NF = {name:'', how:'', muscles:[], cats:[]}; UI.open.newEx = false; toast(`Added ${name} to your library.`);
+    S.ex.push(Object.assign({id:'u' + Date.now(), name, cats:NF.cats, muscles:NF.muscles, how:NF.how.trim() || 'No notes yet.'}, NF.kind ? {kind:NF.kind} : {}));
+    NF = {name:'', how:'', muscles:[], cats:[], kind:''}; UI.open.newEx = false; toast(`Added ${name} to your library.`);
   },
   addCat: () => { const v = $('#newCat').value.trim(); if (!v) return false; S.cats.push({id:'c' + Date.now(), name:v}); },
   deleteCat: d => { S.cats = S.cats.filter(c => c.id !== d.c); S.ex.forEach(e => { e.cats = e.cats.filter(c => c !== d.c); }); if (S.cf === d.c) S.cf = 'all'; },
@@ -2501,7 +2606,7 @@ function downloadBackup(file) {
 /* =========================================================
    Backup, restore and Hevy import
    ========================================================= */
-const BACKUP_KEYS = ['unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','hidden','order'];
+const BACKUP_KEYS = ['cardioV','cpick','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','hidden','order'];
 function backup() { const o = {app:'hibi', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
 function restoreFrom(text) {
   let d;
@@ -2540,6 +2645,8 @@ function importHevy(text) {
   const h = rows[0].map(x => norm(x)), ix = n => h.indexOf(n);
   const iT = ix('start_time'), iE = ix('end_time'), iN = ix('exercise_title'), iS = ix('set_type'), iR = ix('reps');
   let iW = ix('weight_lbs'), kg = false; if (iW < 0) { iW = ix('weight_kg'); kg = iW >= 0; }
+  let iD = ix('distance_miles'), dKm = false; if (iD < 0) { iD = ix('distance_km'); dKm = iD >= 0; }
+  const iDur = ix('duration_seconds');
   if (iT < 0 || iN < 0 || iR < 0 || iW < 0) { toast("This doesn't look like a Hevy export."); return; }
   const groups = {};
   rows.slice(1).forEach(r => {
@@ -2548,6 +2655,12 @@ function importHevy(text) {
     const name = (r[iN] || '').trim(); if (!name) return;
     const w = groups[st] = groups[st] || {id:st, start:st, end:(iE >= 0 && hevyDate(r[iE])) || st + 36e5, cat:null, muscles:[], exercises:[], idx:{}};
     let e = w.idx[name]; if (!e) { e = w.idx[name] = {name, sets:[]}; w.exercises.push(e); }
+    const dur = iDur >= 0 ? num(r[iDur]) : 0; let dist = iD >= 0 ? num(r[iD]) : 0;
+    if ((dur || dist) && !num(r[iW]) && !num(r[iR])) {
+      if (dKm && S.unit === 'lb') dist *= .621371; if (!dKm && iD >= 0 && S.unit === 'kg') dist *= 1.60934;
+      const info = exInfo(name); e.k = info && CARDIO[info.kind] ? info.kind : kindByName(name) || 'cardio';
+      const o = {}; if (dur) o.min = String(Math.round(dur / 6) / 10); if (dist) o.dist = String(Math.round(dist * 100) / 100); e.sets.push(o); return;
+    }
     let wt = num(r[iW]); if (kg && S.unit === 'lb') wt *= 2.20462; if (!kg && S.unit === 'kg') wt *= .453592;
     e.sets.push({w:String(Math.round(wt * 10) / 10), r:String(num(r[iR]))});
   });
@@ -2558,7 +2671,7 @@ function importHevy(text) {
     w.exercises.forEach(e => {
       const info = exInfo(e.name);
       if (info) info.muscles.forEach(m => { if (!w.muscles.includes(m)) w.muscles.push(m); });
-      else S.ex.push({id:'h' + w.id + '-' + S.ex.length, name:e.name, cats:[], muscles:[], how:'Imported from Hevy. Add muscles and notes here.'});
+      else S.ex.push(Object.assign({id:'h' + w.id + '-' + S.ex.length, name:e.name, cats:[], muscles:[], how:'Imported from Hevy. Add muscles and notes here.'}, e.k ? {kind:e.k} : {}));
     });
     S.history.push(w); n++;
   });
@@ -2665,6 +2778,7 @@ document.addEventListener('change', e => {
     return;
   }
   if (t.dataset.bind === 'pick') { S.pick = t.value; save(); render(); }
+  if (t.dataset.bind === 'cpick') { S.cpick = Object.assign({}, S.cpick, {n:t.value}); save(); render(); }
   else if (t.dataset.bind === 'setting') {
     const k = t.dataset.k; S[k] = (k === 'unit' || k === 'rr') ? t.value : +t.value;
     if (k === 'unit') { S.inc = null; S.bar = null; }
