@@ -4,6 +4,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.6 — "Behind the scenes" (Oct 21)
+- **Crash reports.** If something breaks, Hibi saves a report of what went wrong. It doesn't include any of your personal data.
+- **Reports go to Dropbox** when it's connected, in a crash-reports folder next to your backups.
+- **No more blank screens.** If a screen can't load, you get a "Something went wrong" card with Reload and Copy report buttons. Your data stays safe.
+- **Crash reports card** in Settings shows up only when there's a report. Copy them and send them to Claude to get them fixed.
+- **Cleaned up the code.** The app used to be one 3,000-line file. It's now split into tidy files for each part (gym, Japan, shows, savings, school, Dropbox and so on), so fixes and new features are easier and safer.
+- Updates now always download every file together, so you never end up with half an update.
+
 ## 1.5 — "Cloud save" (Oct 21)
 - **Dropbox auto backup.** Connect once in Settings and Hibi backs up on its own a few seconds after every change and when you open the app.
 - **Progress photos back up too.** Before this they only lived on your phone.
