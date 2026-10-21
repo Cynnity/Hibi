@@ -112,7 +112,8 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:38px;
 .chip{appearance:none;min-height:36px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:700;font-size:14px}
 .chip.on{background:var(--accent);border-color:var(--ink);color:var(--on-accent)}
 .seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surface);border:2px solid var(--ink);margin:0 0 16px}
-.seg button{flex:1;min-height:40px;border:0;border-radius:10px;background:none;color:var(--mute);font-weight:700;font-size:15px}
+.seg{overflow-x:auto}
+.seg button{flex:1 0 auto;padding:0 10px;min-height:40px;border:0;border-radius:10px;background:none;color:var(--mute);font-weight:700;font-size:15px}
 .seg button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
 .check{appearance:none;width:46px;height:46px;flex:none;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--on-accent);transition:background .15s,border-color .15s}
 .check svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
@@ -243,6 +244,87 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 #sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,6,25,.5)}
 #sheet .panel{width:100%;max-width:600px;background:var(--surface);border-top:2px solid var(--ink);border-radius:20px 20px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 22px);max-height:88vh;overflow:auto;cursor:default}
 .plates-svg{display:block;width:100%;height:auto;margin:16px 0 8px}
+/* ---------- Modes & Japan ---------- */
+.modes{display:flex;gap:8px;margin:0 0 14px;overflow-x:auto}
+.modes button{font-size:14px}
+.modes button:not([aria-selected="true"]){padding:0 10px;font-size:18px}
+.modes{gap:6px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.modes button{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--mute);font-weight:700;font-size:14px}
+.modes button[aria-selected="true"]{border-color:var(--ink);background:var(--accent);color:var(--on-accent)}
+.stack>*+*{margin-top:10px}
+.big{display:block;font:400 46px/1 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums;margin:6px 0 2px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+.cal>b{text-align:center;font-size:12px;color:var(--mute);padding:4px 0}
+.cd{position:relative;aspect-ratio:1;border:2px solid transparent;border-radius:10px;background:none;font-weight:700;font-size:15px;color:var(--mute);padding:0}
+.cd.trip{background:var(--surface-2);color:var(--ink)}
+.cd.now{border-color:var(--accent-2)}
+.cd.sel{background:var(--accent);color:var(--on-accent);border-color:var(--ink)}
+.cd i{position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
+.cd.sel i{background:var(--on-accent)}
+.ev{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.ev-t{flex:none;width:70px;font-size:13px;font-weight:700;color:var(--mute);padding-top:2px}
+.ev-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ev-b a,.card a.maplink{color:var(--accent);text-decoration:none;font-weight:700;font-size:14px}
+.ev-a{display:flex;flex-direction:column;align-items:flex-end}
+.ev-a .link{padding:2px 0;font-size:14px}
+.ev.auto .ev-b>b{color:var(--mute)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pair>div{background:var(--surface-2);border-radius:12px;padding:10px 12px;min-width:0}
+.pair span{display:block;font-size:12px;color:var(--mute);font-weight:700}
+.pair b{font-size:15px}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--good);color:#fff;font-size:12px;font-weight:700;vertical-align:middle}
+.cbar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:6px}
+.cbar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.crow{padding:10px 0;border-top:1px solid var(--line)}
+.crow .row span{color:var(--mute);font-size:14px;font-variant-numeric:tabular-nums}
+.big-in{min-height:56px;font-size:22px}
+.pk{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.pk>span{flex:1;min-width:0}
+.pk.done>span{text-decoration:line-through;color:var(--mute)}
+.check.sm{width:36px;height:36px;border-radius:10px}
+.check.sm svg{width:18px;height:18px}
+.phr{padding:12px 0;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center}
+.phr>div{flex:1;min-width:0}
+.phr .jp{display:block;font-size:21px;font-weight:700;margin:2px 0}
+.ff{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ff.one{grid-template-columns:1fr}
+.ff label{display:block;font-size:13px;font-weight:700;color:var(--mute)}
+.ff .input{margin-top:4px}
+input.input[type="date"],input.input[type="time"],input.input[type="datetime-local"]{display:block;-webkit-appearance:none;appearance:none;padding-top:10px;padding-bottom:10px;min-width:0}
+.mrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.mrow>div{flex:1;min-width:0}
+.mrow b{display:block}
+.stars{display:inline-flex;gap:2px;align-items:center}
+.star{background:none;border:0;padding:2px 3px;font-size:26px;line-height:1;color:var(--line)}
+span.star{font-size:14px;padding:0}
+.star.on{color:#F5B301}
+.cover{flex:none;width:46px;height:66px;border-radius:8px;object-fit:cover;border:2px solid var(--ink);background:var(--surface-2)}
+.cover.ctile{display:grid;place-items:center;color:#fff;font:400 20px "Dela Gothic One",sans-serif}
+.cover.lg{width:96px;height:136px;border-radius:10px;font-size:36px}
+.mhead{display:flex;gap:12px;align-items:center}
+.mhead>div{min-width:0;display:flex;flex-direction:column;gap:2px}
+.res{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 0;border:0;border-top:1px solid var(--line);background:none;color:inherit}
+.res>span{min-width:0}
+.gem{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:12px;background:var(--surface-2);font-size:24px}
+.gem.sm{width:36px;height:36px;font-size:18px;border-radius:10px}
+.emo{position:relative}
+.emo input{position:absolute;opacity:0;width:1px;height:1px}
+.emo span{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-size:22px;cursor:pointer}
+.emo input:checked+span{border-color:var(--ink);background:var(--accent)}
+.emo input:focus-visible+span{outline:3px solid var(--accent-2);outline-offset:2px}
+#lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.lk{width:100%;max-width:320px;text-align:center}
+.lk-em{font-size:40px}
+.dots4{display:flex;justify-content:center;gap:16px;margin:20px 0 8px}
+.dots4 i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink)}
+.dots4 i.on{background:var(--accent);border-color:var(--accent)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:10px 0 14px}
+.pad button{aspect-ratio:1;max-width:84px;width:100%;justify-self:center;border-radius:50%;border:2px solid var(--ink);background:var(--surface);color:var(--ink);font:400 26px "Dela Gothic One",sans-serif;box-shadow:3px 3px 0 var(--panel)}
+.pad button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--panel)}
+.cdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.lead{color:var(--mute);margin:0 0 16px}
 @media (min-width:700px){main{max-width:720px}.figure{max-width:340px}.badges{grid-template-columns:repeat(3,1fr)}.tiles{grid-template-columns:repeat(3,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -257,14 +339,9 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="sheetRoot"></div>
+<div id="lockRoot"></div>
 
-<nav class="tabs" aria-label="Sections">
-  <button data-nav="workout"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span>Workout</button>
-  <button data-nav="library"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19"/></svg></span>Library</button>
-  <button data-nav="progress"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M6 16l4-5 3 3 5-7"/></svg></span>Progress</button>
-  <button data-nav="daily"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/></svg></span>Daily</button>
-  <button data-nav="settings"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span>Settings</button>
-</nav>
+<nav class="tabs" aria-label="Sections" id="nav"></nav>
 
 <script>
 'use strict';
@@ -389,6 +466,10 @@ function normalize(s) {
   if (s.tab === 'nutrition') s.tab = 'today';
   if (!TAB_INFO[s.tab]) s.tab = 'workout';
   if (!THEMES.some(t => t[0] === s.theme)) s.theme = 'sakura';
+  normalizeJp(s);
+  normalizeMd(s);
+  normalizeSv(s);
+  normalizeExtra(s);
   return s;
 }
 function load() {
@@ -397,6 +478,1209 @@ function load() {
   return normalize(Object.assign(blank(), data));
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* =========================================================
+   Modes (Gym, Japan) and their bottom tabs
+   ========================================================= */
+const ICON = {
+  workout:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',
+  library:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19"/>',
+  progress:'<path d="M3 20h18M6 16l4-5 3 3 5-7"/>',
+  daily:'<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/>',
+  settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+  plan:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  money:'<path d="M7 4l5 7 5-7M12 11v9M8 13h8M8 16.5h8"/>',
+  book:'<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14 8v1.5M14 11.3v1.4M14 14.5V16"/>',
+  lists:'<path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11M4 18l1.2 1.2L7.5 17"/>'};
+const MODES = {
+  gym:{label:'Gym', em:'🏋️', nav:[['workout','Workout','workout'],['library','Library','library'],['progress','Progress','progress'],['daily','Daily','daily'],['settings','Settings','settings']]},
+  japan:{label:'Japan', em:'🗾', nav:[['jplan','Plan','plan'],['jmoney','Money','money'],['jbook','Bookings','book'],['jlists','Lists','lists'],['settings','Settings','settings']]}};
+Object.assign(TAB_INFO, {
+  jplan:{g:'jplan',t:'Itinerary'}, jprep:{g:'jplan',t:'To-do'}, jjournal:{g:'jplan',t:'Journal'}, jgifts:{g:'jlists',t:'Gifts'}, jmoney:{g:'jmoney',t:'Budget'}, jconv:{g:'jmoney',t:'Converter'},
+  jflights:{g:'jbook',t:'Flights'}, jstays:{g:'jbook',t:'Stays'},
+  jpack:{g:'jlists',t:'Packing'}, jplaces:{g:'jlists',t:'Places'}, jphrases:{g:'jlists',t:'Phrases'}, jinfo:{g:'jlists',t:'Info'}});
+Object.assign(GROUPS, {jplan:['jplan','jprep','jjournal'], jmoney:['jmoney','jconv'], jbook:['jflights','jstays'], jlists:['jpack','jplaces','jgifts','jphrases','jinfo']});
+const firstTab = mode => GROUPS[MODES[mode].nav[0][0]][0];
+const modeOfGroup = g => Object.keys(MODES).find(m => m !== 'gym' && MODES[m].nav.some(n => n[0] === g && g !== 'settings')) || 'gym';
+const modeBar = () => `<div class="modes" role="tablist" aria-label="Mode">${orderedModes().filter(k => modeVisible(k)).map(k => [k, MODES[k]]).map(([k, m]) =>
+  `<button role="tab" aria-selected="${S.mode === k}" data-act="mode" data-k="${k}" title="${m.label}"><span aria-hidden="true">${m.em}</span>${S.mode === k ? m.label : `<span class="vh">${m.label}</span>`}</button>`).join('')}</div>`;
+
+/* =========================================================
+   Japan: data
+   ========================================================= */
+const JP_PACK = `Documents|Passport
+Documents|Flight confirmations
+Documents|Stay confirmations and addresses
+Documents|Travel insurance info
+Money|Credit card with no foreign transaction fee
+Money|Debit card for ATM cash
+Money|Some yen cash for arrival
+Tech|Phone and charger
+Tech|Power bank
+Tech|eSIM or pocket Wi-Fi set up
+Tech|Headphones
+Clothes|Winter coat
+Clothes|Warm layers
+Clothes|Comfortable walking shoes
+Clothes|Good socks (you take your shoes off a lot)
+Toiletries|Toothbrush and toiletries
+Toiletries|Medications in original packaging
+Other|Small towel or handkerchief
+Other|Coin pouch
+Other|Reusable bag
+Other|Empty space for souvenirs`;
+function jpDefaults() {
+  return {start:'2027-01-12', end:'2027-02-02', budget:0, rate:{v:158.13, d:'2026-10-20', src:'ecb'},
+    items:[], exp:[], flights:[], stays:[], places:[], notes:'', sel:null, gifts:[], journal:{}, jsel:null, prep:prepSeed(),
+    pack:JP_PACK.split('\n').map((l, i) => { const [cat, t] = l.split('|'); return {id:'k' + i, cat, t, done:false}; })};
+}
+function normalizeJp(s) {
+  const d = jpDefaults();
+  if (!s.jp || typeof s.jp !== 'object') s.jp = d;
+  for (const k in d) if (s.jp[k] == null) s.jp[k] = d[k];
+  for (const k of ['items', 'exp', 'flights', 'stays', 'places', 'pack', 'prep', 'gifts']) if (!Array.isArray(s.jp[k])) s.jp[k] = d[k];
+  if (typeof s.jp.journal !== 'object' || Array.isArray(s.jp.journal)) s.jp.journal = {};
+  if (!s.jp.rate || !(s.jp.rate.v > 0)) s.jp.rate = d.rate;
+  if (!MODES[s.mode]) s.mode = 'gym';
+  if (!s.lastMode || typeof s.lastMode !== 'object') s.lastMode = {};
+  const g = TAB_INFO[s.tab].g;
+  if (g !== 'settings' && !MODES[s.mode].nav.some(n => n[0] === g)) s.tab = firstTab(s.mode);
+}
+const JP_CATS = [['activity','🎌','Activity'],['food','🍜','Food'],['transport','🚃','Transport'],['shopping','🛍️','Shopping'],['stay','🏠','Stay'],['flights','✈️','Flights'],['other','📌','Other']];
+const catEm = c => (JP_CATS.find(x => x[0] === c) || JP_CATS[6])[1];
+const catLabel = c => (JP_CATS.find(x => x[0] === c) || JP_CATS[6])[2];
+const R = () => (S.jp.rate && S.jp.rate.v) || 150;
+const toUSD = (a, cur) => cur === 'JPY' ? num(a) / R() : num(a);
+const money = (a, cur) => cur === 'JPY' ? '¥' + Math.round(a).toLocaleString() : '$' + (Math.round(a * 100) / 100).toLocaleString(undefined, {maximumFractionDigits:2});
+const both = (a, cur) => cur === 'JPY' ? `${money(a, 'JPY')} <span class="muted">(${money(a / R(), 'USD')})</span>` : `${money(a, 'USD')} <span class="muted">(${money(a * R(), 'JPY')})</span>`;
+const fmtTime = t => { if (!t) return ''; let [h, m] = t.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(m)} ${ap}`; };
+const fmtDay = k => keyDate(k).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+const fmtDT = s => s ? `${fmtDay(s.slice(0, 10))}${s.length > 10 ? ', ' + fmtTime(s.slice(11, 16)) : ''}` : 'Not set';
+const mapsLink = q => `https://maps.apple.com/?q=${encodeURIComponent(q)}`;
+const safeUrl = u => !u ? '' : /^https?:\/\//i.test(u) ? u : 'https://' + u;
+const opt = (v, label, cur) => `<option value="${esc(v)}"${cur === v ? ' selected' : ''}>${esc(label)}</option>`;
+const curSel = (cur, dflt) => `<select class="input" name="cur" aria-label="Currency" style="flex:0 0 104px">${opt('JPY', '¥ yen', cur || dflt)}${opt('USD', '$ USD', cur || dflt)}</select>`;
+function tripDays() {
+  const out = [], a = keyDate(S.jp.start), b = keyDate(S.jp.end);
+  if (!(a <= b)) return out;
+  for (const d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) out.push(dk(d));
+  return out;
+}
+const JARR = {item:'items', exp:'exp', flight:'flights', stay:'stays', place:'places', pack:'pack', prep:'prep', gift:'gifts'};
+const editing = kind => UI.edit && UI.edit.kind === kind ? (S.jp[JARR[kind]].find(x => x.id === UI.edit.id) || null) : null;
+const fval = (o, k) => esc(o ? (o[k] ?? '') : '');
+function upsert(kind, o) {
+  const arr = S.jp[JARR[kind]];
+  if (UI.edit && UI.edit.kind === kind) { const x = arr.find(y => y.id === UI.edit.id); if (x) { Object.assign(x, o); return 'Updated.'; } }
+  o.id = 'j' + Date.now(); arr.push(o); return 'Saved.';
+}
+const formActions = kind => `<div class="btns"><button class="btn" type="submit">${editing(kind) ? 'Save changes' : 'Save'}</button>${editing(kind) ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div>`;
+const tokyoNow = () => new Date().toLocaleTimeString(undefined, {timeZone:'Asia/Tokyo', hour:'numeric', minute:'2-digit'});
+
+/* =========================================================
+   Japan: views
+   ========================================================= */
+function jpSubtitle() {
+  const f = k => keyDate(k).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+  return `${f(S.jp.start)} to ${f(S.jp.end)}`;
+}
+function countdownCard() {
+  const days = tripDays(), t = today();
+  if (!days.length) return `<section class="card"><h2>Set your trip dates</h2><p class="note">Go to Lists, then Info, to add them.</p></section>`;
+  let main;
+  if (t < S.jp.start) { const n = Math.round((keyDate(S.jp.start) - keyDate(t)) / 864e5); main = `<span class="big">${n}</span><span class="small muted">${n === 1 ? 'day' : 'days'} until Japan</span>`; }
+  else if (t > S.jp.end) main = `<h2>Welcome back</h2><span class="small muted">Your trip is complete.</span>`;
+  else main = `<span class="big">Day ${days.indexOf(t) + 1}</span><span class="small muted">of ${days.length} in Japan</span>`;
+  return `<section class="card"><div class="row"><div>${main}</div><div style="text-align:right"><span class="small muted">Tokyo now</span><b style="display:block;font-size:20px" id="jpClock">${tokyoNow()}</b></div></div></section>`;
+}
+function dayEvents(k) {
+  const ev = S.jp.items.filter(i => i.d === k).map(i => Object.assign({}, i, {kind:'item'}));
+  S.jp.flights.forEach(f => {
+    if (f.dep && f.dep.slice(0, 10) === k) ev.push({auto:true, time:f.dep.slice(11, 16), title:`✈️ Flight ${f.from} → ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
+    if (f.arr && f.arr.slice(0, 10) === k) ev.push({auto:true, time:f.arr.slice(11, 16), title:`🛬 Land in ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
+  });
+  S.jp.stays.forEach(s => {
+    if (s.ci === k) ev.push({auto:true, time:s.cit, title:`🏠 Check in: ${s.name}`, place:s.address});
+    if (s.co === k) ev.push({auto:true, time:s.cot, title:`🧳 Check out: ${s.name}`, place:s.address});
+  });
+  return ev.sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+}
+function calendar() {
+  const trip = new Set(tripDays()), s = keyDate(S.jp.start), base = new Date(s.getFullYear(), s.getMonth() + (UI.jmo || 0), 1);
+  const y = base.getFullYear(), m = base.getMonth(), n = new Date(y, m + 1, 0).getDate(), t = today();
+  let cells = '<span></span>'.repeat(base.getDay());
+  for (let d = 1; d <= n; d++) {
+    const k = dk(new Date(y, m, d)), cnt = dayEvents(k).length;
+    cells += `<button class="cd${trip.has(k) ? ' trip' : ''}${S.jp.sel === k ? ' sel' : ''}${k === t ? ' now' : ''}" data-act="jDay" data-k="${k}" aria-label="${esc(fmtDay(k))}${cnt ? `, ${plural(cnt, 'plan')}` : ''}">${d}${cnt ? '<i></i>' : ''}</button>`;
+  }
+  return `<section class="card"><div class="cal-head"><button class="btn sm ghost" data-act="jMonth" data-n="-1" aria-label="Previous month">‹</button>
+    <h2>${base.toLocaleDateString(undefined, {month:'long', year:'numeric'})}</h2><button class="btn sm ghost" data-act="jMonth" data-n="1" aria-label="Next month">›</button></div>
+    <div class="cal">${[...'SMTWTFS'].map(x => `<b>${x}</b>`).join('')}${cells}</div></section>`;
+}
+function viewJPlan() {
+  const days = tripDays(), t = today();
+  if (!S.jp.sel) S.jp.sel = days.includes(t) ? t : (days[0] || t);
+  const k = S.jp.sel, idx = days.indexOf(k), ev = dayEvents(k), ed = editing('item');
+  const evRow = e => `<div class="ev${e.auto ? ' auto' : ''}"><span class="ev-t">${e.time ? fmtTime(e.time) : 'Any time'}</span>
+    <div class="ev-b"><b>${e.auto ? '' : catEm(e.cat) + ' '}${esc(e.title)}</b>${e.place ? `<a href="${mapsLink(e.place)}" target="_blank" rel="noopener">📍 ${esc(e.place)}</a>` : ''}
+    ${e.note ? `<span class="small muted">${esc(e.note)}</span>` : ''}${e.cost ? `<span class="small">${both(e.cost, e.cur)}</span>` : ''}</div>
+    ${e.auto ? '' : `<div class="ev-a"><button class="link" data-act="jEdit" data-kind="item" data-id="${esc(e.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="item" data-id="${esc(e.id)}" data-confirm>Delete</button></div>`}</div>`;
+  return `${countdownCard()}${todayCard()}${calendar()}
+    <section class="card"><h2>${esc(fmtDay(k))}</h2><span class="small muted">${idx >= 0 ? `Day ${idx + 1} of ${days.length}` : 'Outside your trip dates'}</span>
+      ${ev.length ? ev.map(evRow).join('') : '<p class="note">Nothing planned yet. Flights and check-ins show up here on their own.</p>'}
+      <details class="mt" ${det('jAdd', !!ed)}><summary class="link">${ed ? 'Edit plan' : '+ Add a plan to this day'}</summary>
+        <form data-form="item" class="stack"><input type="hidden" name="d" value="${esc(ed ? ed.d : k)}">
+          <div class="field"><input class="input" type="time" name="time" value="${fval(ed, 'time')}" aria-label="Time" style="flex:0 0 132px">
+            <select class="input" name="cat" aria-label="Type">${JP_CATS.filter(c => c[0] !== 'flights').map(c => opt(c[0], c[1] + ' ' + c[2], ed ? ed.cat : 'activity')).join('')}</select></div>
+          <input class="input" name="title" placeholder="What, like Shibuya Sky" value="${fval(ed, 'title')}" aria-label="What">
+          <input class="input" name="place" placeholder="Place or address (optional)" value="${fval(ed, 'place')}" aria-label="Place">
+          <div class="field"><input class="input" name="cost" inputmode="decimal" placeholder="Cost (optional)" value="${ed && ed.cost ? ed.cost : ''}" aria-label="Cost">${curSel(ed && ed.cur, 'JPY')}</div>
+          <textarea class="input" name="note" style="min-height:70px" placeholder="Notes, like book tickets ahead" aria-label="Notes">${fval(ed, 'note')}</textarea>
+          ${formActions('item')}</form></details></section>
+    <button class="btn ghost block" data-act="jIcs">Add plans to iPhone Calendar</button>
+    <p class="note">Adds your plans, check-ins and check-outs in Tokyo time. Flights aren't included because their times depend on each airport's time zone.</p>`;
+}
+function jTotals() {
+  const J = S.jp;
+  const booked = J.flights.reduce((t, f) => t + toUSD(f.cost, f.cur), 0) + J.stays.reduce((t, s) => t + toUSD(s.cost, s.cur), 0);
+  const spent = J.exp.reduce((t, x) => t + toUSD(x.amount, x.cur), 0);
+  const planned = J.items.reduce((t, i) => t + toUSD(i.cost, i.cur), 0);
+  const cats = {};
+  J.flights.forEach(f => cats.flights = (cats.flights || 0) + toUSD(f.cost, f.cur));
+  J.stays.forEach(s => cats.stay = (cats.stay || 0) + toUSD(s.cost, s.cur));
+  J.exp.forEach(x => cats[x.cat || 'other'] = (cats[x.cat || 'other'] || 0) + toUSD(x.amount, x.cur));
+  return {booked, spent, planned, cats};
+}
+function viewJMoney() {
+  const J = S.jp, B = num(J.budget), {booked, spent, planned, cats} = jTotals(), used = booked + spent, left = B - used;
+  const days = tripDays(), t = today(), daysLeft = t < J.start ? days.length : t > J.end ? 0 : days.length - days.indexOf(t);
+  const ed = editing('exp'), catList = Object.entries(cats).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]), maxC = Math.max(1, ...catList.map(c => c[1]));
+  const byDate = {}; J.exp.forEach(x => (byDate[x.date || ''] = byDate[x.date || ''] || []).push(x));
+  return `<section class="card"><h2>Overview</h2>
+      ${B ? `<div class="trend"><b>${money(left, 'USD')}</b><span>${left >= 0 ? 'left' : 'over'} of your ${money(B, 'USD')} budget</span></div>
+        <div class="meter"><i style="width:${Math.min(100, used / B * 100)}%${left < 0 ? ';background:var(--danger)' : ''}"></i></div>` : '<p class="note">Set a total budget below to track what you have left.</p>'}
+      <div class="stats"><div class="stat"><b>${money(booked, 'USD')}</b><span>booked</span></div><div class="stat"><b>${money(spent, 'USD')}</b><span>spent</span></div>
+        <div class="stat"><b>${B && daysLeft ? money(Math.max(0, left) / daysLeft, 'USD') : '–'}</b><span>per day left</span></div></div>
+      ${jpSaved()}${planned ? `<p class="note">Your itinerary has ${money(planned, 'USD')} in planned costs. They count once you log them as spending.</p>` : ''}
+      <details class="mt" ${det('jBudget', !B)}><summary class="link">${B ? 'Change budget' : 'Set budget'}</summary>
+        <form data-form="budget" class="field mt"><input class="input" name="budget" inputmode="decimal" placeholder="Total budget in US dollars" value="${B || ''}" aria-label="Total budget in US dollars"><button class="btn" type="submit">Save</button></form></details></section>
+    ${catList.length ? `<section class="card"><h2>Where it's going</h2>${catList.map(([c, v]) => `<div class="crow"><div class="row"><b>${catEm(c)} ${catLabel(c)}</b><span>${money(v, 'USD')}</span></div><div class="cbar"><i style="width:${v / maxC * 100}%"></i></div></div>`).join('')}</section>` : ''}
+    <details class="card" ${det('jExpForm', !!ed || !J.exp.length)}><summary class="sum"><h2>${ed ? 'Edit spending' : 'Log spending'}</h2><span class="small muted">Booked flights and stays are counted for you</span></summary>
+      <form data-form="exp" class="stack">
+        <input class="input" name="title" placeholder="What, like Ramen in Shinjuku" value="${fval(ed, 'title')}" aria-label="What">
+        <div class="field"><input class="input" name="amount" inputmode="decimal" placeholder="Amount" value="${ed ? ed.amount : ''}" aria-label="Amount">${curSel(ed && ed.cur, 'JPY')}</div>
+        <div class="field"><select class="input" name="cat" aria-label="Category">${JP_CATS.map(c => opt(c[0], c[1] + ' ' + c[2], ed ? ed.cat : 'food')).join('')}</select>
+          <input class="input" type="date" name="date" value="${ed ? esc(ed.date) : t}" aria-label="Date" style="flex:0 0 150px"></div>
+        ${formActions('exp')}</form></details>
+    ${Object.keys(byDate).sort().reverse().map(d => `<section class="card"><h3>${d ? esc(fmtDay(d)) : 'No date'}</h3>
+      ${byDate[d].map(x => `<div class="ev"><span class="ev-t" style="width:26px;font-size:18px">${catEm(x.cat)}</span><div class="ev-b"><b>${esc(x.title)}</b><span class="small">${both(x.amount, x.cur)}</span></div>
+        <div class="ev-a"><button class="link" data-act="jEdit" data-kind="exp" data-id="${esc(x.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="exp" data-id="${esc(x.id)}" data-confirm>Delete</button></div></div>`).join('')}</section>`).join('')}`;
+}
+let rateTried = false;
+function fetchRate(quiet) {
+  return fetch('https://api.frankfurter.dev/v1/latest?from=USD&to=JPY').then(r => r.json()).then(d => {
+    const v = d && d.rates && d.rates.JPY; if (!(v > 0)) throw 0;
+    S.jp.rate = {v, d:d.date || today(), src:'ecb'}; save(); render();
+    if (!quiet) toast(`Rate updated: ¥${fmtN(v)} per dollar.`);
+  }).catch(() => { if (!quiet) toast("Couldn't get the rate. Check your connection or set it yourself."); });
+}
+function viewJConv() {
+  const r = R(), J = S.jp;
+  if (!rateTried && J.rate.src !== 'manual' && Date.now() - keyDate(J.rate.d).getTime() > 2 * 864e5) { rateTried = true; setTimeout(() => fetchRate(true), 0); }
+  return `<section class="card"><h2>Yen and dollars</h2>
+      <label class="label" for="cvJ">Yen</label><input class="input big-in" id="cvJ" inputmode="decimal" placeholder="¥0" autocomplete="off">
+      <label class="label" for="cvU">US dollars</label><input class="input big-in" id="cvU" inputmode="decimal" placeholder="$0" autocomplete="off">
+      <p class="note">1 US dollar = ¥${fmtN(r)}. ${J.rate.src === 'manual' ? 'You set this rate' : 'Exchange rate from the European Central Bank'} on ${esc(fmtDay(J.rate.d))}.</p>
+      <div class="btns mt"><button class="btn sm" data-act="jRate">Update rate</button></div>
+      <details class="mt" ${det('jRateForm')}><summary class="link">Set the rate yourself</summary>
+        <form data-form="rate" class="field mt"><input class="input" name="rate" inputmode="decimal" placeholder="Yen per dollar, like 150" aria-label="Yen per dollar"><button class="btn" type="submit">Save</button></form></details></section>
+    <section class="card"><h2>Quick prices</h2>${[100, 300, 500, 1000, 3000, 5000, 10000, 20000, 50000].map(y => `<div class="lrow"><b>¥${y.toLocaleString()}</b><span>${money(y / r, 'USD')}</span></div>`).join('')}</section>
+    <section class="card"><h2>Good to know</h2>
+      <div class="lrow"><span>Lots of small shops, shrines and food stalls only take cash, so keep some yen on you.</span></div>
+      <div class="lrow"><span>7-Eleven ATMs usually accept US cards.</span></div>
+      <div class="lrow"><span>If a card machine asks whether to pay in dollars or yen, pick yen. Paying in dollars usually costs more.</span></div>
+      <div class="lrow"><span>Tipping isn't expected in Japan.</span></div></section>`;
+}
+function viewJFlights() {
+  const ed = editing('flight'), F = S.jp.flights.slice().sort((a, b) => (a.dep || '').localeCompare(b.dep || ''));
+  const row = (l, v) => v ? `<div class="lrow"><span class="muted">${l}</span><span>${v}</span></div>` : '';
+  return `${F.map(f => `<section class="card"><span class="small muted">${esc([f.airline, f.num].filter(Boolean).join(' ') || 'Flight')}</span>
+      <h2 style="font-size:24px;margin-top:2px">${esc(f.from)} → ${esc(f.to)}</h2>
+      <div class="pair"><div><span>Departs</span><b>${esc(fmtDT(f.dep))}</b></div><div><span>Arrives</span><b>${esc(fmtDT(f.arr))}</b></div></div>
+      <div class="mt">${f.conf ? `<div class="lrow"><span class="muted">Confirmation</span><span><b>${esc(f.conf)}</b> <button class="link" data-act="copy" data-v="${esc(f.conf)}">Copy</button></span></div>` : ''}
+      ${row('Seat', esc(f.seat))}${row('Cost', f.cost ? both(f.cost, f.cur) : '')}${row('Notes', esc(f.notes))}</div>
+      <div class="row mt"><button class="link" data-act="jEdit" data-kind="flight" data-id="${esc(f.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="flight" data-id="${esc(f.id)}" data-confirm>Delete</button></div></section>`).join('')}
+    <details class="card" ${det('jFlightForm', !F.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit flight' : 'Add a flight'}</h2><span class="small muted">Shows up on your itinerary automatically</span></summary>
+      <form data-form="flight" class="stack">
+        <div class="ff"><label>From<input class="input" name="from" placeholder="MCO" value="${fval(ed, 'from')}"></label><label>To<input class="input" name="to" placeholder="HND" value="${fval(ed, 'to')}"></label>
+          <label>Airline<input class="input" name="airline" placeholder="Airline" value="${fval(ed, 'airline')}"></label><label>Flight number<input class="input" name="num" placeholder="NH 113" value="${fval(ed, 'num')}"></label></div>
+        <div class="ff one"><label>Departs (local time)<input class="input" type="datetime-local" name="dep" value="${fval(ed, 'dep')}"></label><label>Arrives (local time)<input class="input" type="datetime-local" name="arr" value="${fval(ed, 'arr')}"></label></div>
+        <div class="ff"><label>Confirmation<input class="input" name="conf" value="${fval(ed, 'conf')}"></label><label>Seat<input class="input" name="seat" value="${fval(ed, 'seat')}"></label></div>
+        <div class="field"><input class="input" name="cost" inputmode="decimal" placeholder="Cost" value="${ed && ed.cost ? ed.cost : ''}" aria-label="Cost">${curSel(ed && ed.cur, 'USD')}</div>
+        <textarea class="input" name="notes" style="min-height:70px" placeholder="Notes, like baggage allowance" aria-label="Notes">${fval(ed, 'notes')}</textarea>
+        ${formActions('flight')}</form></details>
+    <p class="note">Tokyo is 14 hours ahead of Florida in winter, so you'll land on a later date than it feels like.</p>`;
+}
+function viewJStays() {
+  const ed = editing('stay'), t = today(), L = S.jp.stays.slice().sort((a, b) => (a.ci || '').localeCompare(b.ci || ''));
+  const row = (l, v) => v ? `<div class="lrow"><span class="muted">${l}</span><span>${v}</span></div>` : '';
+  const nights = s => s.ci && s.co ? Math.round((keyDate(s.co) - keyDate(s.ci)) / 864e5) : 0;
+  return `${L.map(s => `<section class="card"><span class="small muted">${esc(s.kind || 'Stay')}${nights(s) ? `, ${plural(nights(s), 'night')}` : ''}</span>
+      <h2 style="font-size:22px;margin-top:2px">${esc(s.name)} ${s.ci && s.co && t >= s.ci && t < s.co ? '<span class="pill">Tonight</span>' : ''}</h2>
+      ${s.address ? `<a class="maplink" href="${mapsLink(s.address)}" target="_blank" rel="noopener">📍 ${esc(s.address)}</a>` : ''}
+      <div class="pair"><div><span>Check in</span><b>${s.ci ? esc(fmtDay(s.ci)) : 'Not set'}${s.cit ? ', ' + fmtTime(s.cit) : ''}</b></div><div><span>Check out</span><b>${s.co ? esc(fmtDay(s.co)) : 'Not set'}${s.cot ? ', ' + fmtTime(s.cot) : ''}</b></div></div>
+      <div class="mt">${s.conf ? `<div class="lrow"><span class="muted">Confirmation</span><span><b>${esc(s.conf)}</b> <button class="link" data-act="copy" data-v="${esc(s.conf)}">Copy</button></span></div>` : ''}
+      ${row('Getting in', esc(s.entry))}${row('Wi-Fi', esc(s.wifi))}${row('Host or contact', esc(s.host))}${row('Cost', s.cost ? both(s.cost, s.cur) : '')}${row('Notes', esc(s.notes))}
+      ${s.link ? `<div class="lrow"><span class="muted">Listing</span><a class="maplink" href="${esc(safeUrl(s.link))}" target="_blank" rel="noopener">Open</a></div>` : ''}</div>
+      <div class="row mt"><button class="link" data-act="jEdit" data-kind="stay" data-id="${esc(s.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="stay" data-id="${esc(s.id)}" data-confirm>Delete</button></div></section>`).join('')}
+    <details class="card" ${det('jStayForm', !L.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit stay' : 'Add a stay'}</h2><span class="small muted">Airbnb, hotel or anywhere you sleep</span></summary>
+      <form data-form="stay" class="stack">
+        <div class="field"><input class="input" name="name" placeholder="Name, like Shinjuku apartment" value="${fval(ed, 'name')}" aria-label="Name">
+          <select class="input" name="kind" aria-label="Type" style="flex:0 0 120px">${['Airbnb', 'Hotel', 'Hostel', 'Ryokan', 'Other'].map(k => opt(k, k, ed ? ed.kind : 'Airbnb')).join('')}</select></div>
+        <input class="input" name="address" placeholder="Address" value="${fval(ed, 'address')}" aria-label="Address">
+        <div class="ff"><label>Check-in date<input class="input" type="date" name="ci" value="${fval(ed, 'ci')}"></label><label>Time<input class="input" type="time" name="cit" value="${fval(ed, 'cit')}"></label>
+          <label>Check-out date<input class="input" type="date" name="co" value="${fval(ed, 'co')}"></label><label>Time<input class="input" type="time" name="cot" value="${fval(ed, 'cot')}"></label></div>
+        <div class="ff"><label>Confirmation<input class="input" name="conf" value="${fval(ed, 'conf')}"></label><label>Host or contact<input class="input" name="host" value="${fval(ed, 'host')}"></label></div>
+        <input class="input" name="entry" placeholder="How to get in, like door code or key box" value="${fval(ed, 'entry')}" aria-label="How to get in">
+        <input class="input" name="wifi" placeholder="Wi-Fi name and password" value="${fval(ed, 'wifi')}" aria-label="Wi-Fi">
+        <input class="input" name="link" placeholder="Listing link" value="${fval(ed, 'link')}" aria-label="Listing link" inputmode="url" autocapitalize="off">
+        <div class="field"><input class="input" name="cost" inputmode="decimal" placeholder="Total cost" value="${ed && ed.cost ? ed.cost : ''}" aria-label="Total cost">${curSel(ed && ed.cur, 'USD')}</div>
+        <textarea class="input" name="notes" style="min-height:70px" placeholder="Notes" aria-label="Notes">${fval(ed, 'notes')}</textarea>
+        ${formActions('stay')}</form></details>`;
+}
+function viewJPack() {
+  const P = S.jp.pack, done = P.filter(p => p.done).length, cats = [...new Set(P.map(p => p.cat))];
+  return `<section class="card"><div class="row"><h2>Packed</h2><b>${done} / ${P.length}</b></div><div class="meter"><i style="width:${P.length ? done / P.length * 100 : 0}%"></i></div></section>
+    ${cats.map(c => `<section class="card"><h3>${esc(c)}</h3>${P.filter(p => p.cat === c).map(p => `<div class="pk${p.done ? ' done' : ''}">
+      <button class="check sm" aria-pressed="${!!p.done}" aria-label="Packed: ${esc(p.t)}" data-act="jToggle" data-kind="pack" data-id="${esc(p.id)}">${ICON_CHECK}</button><span>${esc(p.t)}</span>
+      <button class="link quiet" data-act="jDel" data-kind="pack" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`).join('')}</section>`).join('')}
+    <section class="card"><h2>Add an item</h2><form data-form="pack" class="stack"><input class="input" name="t" placeholder="Item" aria-label="Item">
+      <div class="field"><select class="input" name="cat" aria-label="Category">${[...new Set([...cats, 'Other'])].map(c => opt(c, c, 'Other')).join('')}</select><button class="btn" type="submit">Add</button></div></form></section>
+    ${done ? '<button class="link danger" data-act="jPackReset" data-confirm>Uncheck everything</button>' : ''}`;
+}
+function viewJPlaces() {
+  const L = S.jp.places.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+  return `<section class="card"><h2>Add a place</h2><form data-form="place" class="stack">
+      <input class="input" name="name" placeholder="Place, like teamLab Planets" aria-label="Place">
+      <input class="input" name="area" placeholder="Area, like Toyosu (optional)" aria-label="Area">
+      <input class="input" name="note" placeholder="Note (optional)" aria-label="Note">
+      <button class="btn block" type="submit">Add to list</button></form></section>
+    ${L.length ? `<section class="card"><h2>Want to go</h2>${L.map(p => `<div class="pk${p.done ? ' done' : ''}">
+      <button class="check sm" aria-pressed="${!!p.done}" aria-label="Been there: ${esc(p.name)}" data-act="jToggle" data-kind="place" data-id="${esc(p.id)}">${ICON_CHECK}</button>
+      <span><b>${esc(p.name)}</b>${p.area ? `<span class="small muted">, ${esc(p.area)}</span>` : ''}${p.note ? `<span class="small muted" style="display:block">${esc(p.note)}</span>` : ''}
+        <a class="maplink" href="${mapsLink([p.name, p.area, 'Japan'].filter(Boolean).join(' '))}" target="_blank" rel="noopener">Map</a></span>
+      <button class="link quiet" data-act="jDel" data-kind="place" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.name)}">✕</button></div>`).join('')}</section>`
+      : emptyCard('No places yet', 'Save spots you want to see. Check them off once you go.')}`;
+}
+const PHRASES = [
+  ['Hello','こんにちは','konnichiwa'],['Good morning','おはようございます','ohayō gozaimasu'],['Thank you','ありがとうございます','arigatō gozaimasu'],
+  ['Excuse me / Sorry','すみません','sumimasen'],['This one, please','これをください','kore o kudasai'],['How much is it?','いくらですか？','ikura desu ka?'],
+  ['Can I pay by card?','カードで払えますか？','kādo de haraemasu ka?'],['Check, please','お会計お願いします','o-kaikei onegai shimasu'],
+  ['Table for one','一人です','hitori desu'],['Where is the toilet?','トイレはどこですか？','toire wa doko desu ka?'],['Where is the station?','駅はどこですか？','eki wa doko desu ka?'],
+  ['Do you speak English?','英語を話せますか？','eigo o hanasemasu ka?'],["I don't understand",'わかりません','wakarimasen'],['Delicious!','おいしい！','oishii!'],
+  ['I have an allergy to ___','___アレルギーがあります','___ arerugī ga arimasu'],['Help!','助けて！','tasukete!']];
+function viewJPhrases() {
+  return `<section class="card">${PHRASES.map(([en, ja, ro]) => `<div class="phr"><div><span class="small muted">${esc(en)}</span><span class="jp" lang="ja">${ja}</span><span class="small muted">${esc(ro)}</span></div>
+    <button class="btn sm ghost" data-act="copy" data-v="${esc(ja)}" aria-label="Copy ${esc(en)} in Japanese">Copy</button></div>`).join('')}</section>
+    <p class="note">Tap Copy to paste a phrase into a translator app, or just show your screen.</p>`;
+}
+function viewJInfo() {
+  const J = S.jp;
+  return `<section class="card"><h2>Trip details</h2><form data-form="trip" class="stack mt">
+      <div class="ff"><label>First day<input class="input" type="date" name="start" value="${esc(J.start)}"></label><label>Last day<input class="input" type="date" name="end" value="${esc(J.end)}"></label></div>
+      <button class="btn" type="submit">Save dates</button></form></section>
+    <section class="card"><div class="row"><h2>Tokyo time</h2><b style="font-size:20px" id="jpClock">${tokyoNow()}</b></div><p class="note">Japan is 14 hours ahead of Florida in winter.</p></section>
+    <section class="card"><h2>Emergency</h2>
+      <div class="lrow"><b>Police</b><a class="maplink" href="tel:110">110</a></div>
+      <div class="lrow"><b>Ambulance or fire</b><a class="maplink" href="tel:119">119</a></div>
+      <div class="lrow"><b>US Embassy Tokyo</b><a class="maplink" href="tel:+81332245000">+81 3-3224-5000</a></div>
+      <p class="note">The embassy number works around the clock for US citizens in an emergency.</p></section>
+    <section class="card"><h2>Good to know</h2>
+      <div class="lrow"><span>Japan uses the same plug shape as the US, so your chargers work without an adapter.</span></div>
+      <div class="lrow"><span>Add a Suica or PASMO card to Apple Wallet to tap through trains and pay at convenience stores.</span></div>
+      <div class="lrow"><span>Public trash cans are rare. Carry a small bag for trash.</span></div>
+      <div class="lrow"><span>If you bring medication, check Japan's rules first. Some common US cold medicines aren't allowed.</span></div></section>
+    <section class="card"><h2>Notes</h2><textarea class="input mt" data-bind="jnotes" placeholder="Anything else, like JR pass info or gift ideas" aria-label="Trip notes">${esc(J.notes)}</textarea></section>`;
+}
+/* ----- Japan: today, to-do, gifts, journal, calendar export ----- */
+const JP_PREP = `60|Check your passport is valid for the whole trip
+30|Book popular spots that sell out, like Shibuya Sky or teamLab
+14|Plan how you'll get from the airport to your first stay
+7|Set up an eSIM or pocket Wi-Fi
+7|Check your cards work abroad and have no foreign transaction fee
+7|Get some yen for arrival
+7|Save a photo of your passport in a hidden album
+3|Fill out Visit Japan Web for immigration and customs
+3|Add a Suica or PASMO card to Apple Wallet
+2|Download offline Google Maps for Tokyo
+1|Check in for your flight
+1|Back up this app`;
+const prepSeed = () => JP_PREP.split('\n').map((l, i) => { const [b, t] = l.split('|'); return {id:'p' + i, t, before:+b, done:false}; });
+const prepDate = p => { if (p.due) return p.due; const d = keyDate(S.jp.start); d.setDate(d.getDate() - (p.before || 0)); return dk(d); };
+const prepSorted = () => S.jp.prep.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || prepDate(a).localeCompare(prepDate(b)));
+function prepRow(p) {
+  const due = prepDate(p), late = !p.done && due < today();
+  return `<div class="pk${p.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!p.done}" aria-label="Done: ${esc(p.t)}" data-act="jToggle" data-kind="prep" data-id="${esc(p.id)}">${ICON_CHECK}</button>
+    <span>${esc(p.t)}<span class="small${late ? '' : ' muted'}" style="display:block${late ? ';color:var(--danger);font-weight:700' : ''}">${late ? 'Overdue, was ' : 'By '}${esc(fmtDay(due))}</span></span>
+    <button class="link quiet" data-act="jDel" data-kind="prep" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`;
+}
+function todayCard() {
+  const t = today(), J = S.jp;
+  if (t < J.start) {
+    const next = prepSorted().filter(p => !p.done).slice(0, 3);
+    if (!next.length) return '';
+    return `<section class="card"><div class="row"><h2>Up next to prepare</h2><button class="link" data-act="go" data-to="jprep">See all</button></div>${next.map(prepRow).join('')}</section>`;
+  }
+  if (t > J.end) return '';
+  const ev = dayEvents(t), stay = J.stays.find(s => s.ci && s.co && t >= s.ci && t < s.co);
+  return `<section class="card"><h2>Today</h2>
+    ${ev.length ? ev.map(e => `<div class="lrow"><span class="muted" style="flex:none;width:72px">${e.time ? fmtTime(e.time) : 'Any time'}</span><span style="text-align:left;flex:1;color:var(--ink)">${esc(e.title)}</span></div>`).join('') : '<p class="note">Nothing planned. A free day.</p>'}
+    ${stay ? `<span class="label">Tonight</span><b>${esc(stay.name)}</b>${stay.address ? `<a class="maplink" style="display:block" href="${mapsLink(stay.address)}" target="_blank" rel="noopener">📍 ${esc(stay.address)}</a>` : ''}
+      ${stay.entry ? `<p class="small mt">Getting in: <b>${esc(stay.entry)}</b></p>` : ''}${stay.wifi ? `<p class="small">Wi-Fi: <b>${esc(stay.wifi)}</b></p>` : ''}` : ''}
+    <span class="label">Quick convert</span><div class="field"><input class="input" id="cvJ" inputmode="decimal" placeholder="¥" aria-label="Yen" autocomplete="off"><input class="input" id="cvU" inputmode="decimal" placeholder="$" aria-label="US dollars" autocomplete="off"></div></section>`;
+}
+function viewJPrep() {
+  const P = S.jp.prep, done = P.filter(p => p.done).length;
+  return `<section class="card"><div class="row"><h2>Before you go</h2><b>${done} / ${P.length}</b></div><div class="meter"><i style="width:${P.length ? done / P.length * 100 : 0}%"></i></div>
+      <p class="note">Due dates move with your trip dates.</p></section>
+    <section class="card">${prepSorted().map(prepRow).join('') || '<p class="note">No tasks yet.</p>'}</section>
+    <section class="card"><h2>Add a task</h2><form data-form="prep" class="stack">
+      <input class="input" name="t" placeholder="Task, like exchange money" aria-label="Task">
+      <div class="field"><input class="input" type="date" name="due" aria-label="Due date"><button class="btn" type="submit">Add</button></div></form></section>`;
+}
+function viewJGifts() {
+  const G = S.jp.gifts, bought = G.filter(g => g.done).length, total = G.reduce((t, g) => t + toUSD(g.budget, g.cur), 0);
+  const people = [...new Set(G.map(g => g.who || 'Anyone'))];
+  return `<section class="card"><div class="row"><h2>Gifts</h2><b>${bought} / ${G.length} bought</b></div>
+      ${G.length ? `<p class="note">Planned gift budget: <b>${money(total, 'USD')}</b> (${money(total * R(), 'JPY')}). Log what you buy in Money so it counts.</p>` : '<p class="note">Plan who you\'re buying for so you don\'t overspend at the end of the trip.</p>'}</section>
+    ${people.map(p => `<section class="card"><h3>${esc(p)}</h3>${G.filter(g => (g.who || 'Anyone') === p).map(g => `<div class="pk${g.done ? ' done' : ''}">
+      <button class="check sm" aria-pressed="${!!g.done}" aria-label="Bought: ${esc(g.what)}" data-act="jToggle" data-kind="gift" data-id="${esc(g.id)}">${ICON_CHECK}</button>
+      <span>${esc(g.what)}${g.budget ? `<span class="small muted" style="display:block">Up to ${both(g.budget, g.cur)}</span>` : ''}</span>
+      <button class="link quiet" data-act="jDel" data-kind="gift" data-id="${esc(g.id)}" data-confirm aria-label="Remove ${esc(g.what)}">✕</button></div>`).join('')}</section>`).join('')}
+    <section class="card"><h2>Add a gift</h2><form data-form="gift" class="stack">
+      <input class="input" name="who" placeholder="For who" aria-label="For who" list="giftWho"><datalist id="giftWho">${people.filter(p => p !== 'Anyone').map(p => `<option value="${esc(p)}">`).join('')}</datalist>
+      <input class="input" name="what" placeholder="Idea, like KitKats or a keychain" aria-label="Gift idea">
+      <div class="field"><input class="input" name="budget" inputmode="decimal" placeholder="Budget (optional)" aria-label="Budget">${curSel('', 'JPY')}</div>
+      <button class="btn block" type="submit">Add</button></form></section>`;
+}
+function viewJJournal() {
+  const days = tripDays(), t = today();
+  const k = days.includes(S.jp.jsel) ? S.jp.jsel : (days.includes(t) ? t : days[0]);
+  if (!k) return emptyCard('Set your trip dates', 'Add them in Lists, then Info.');
+  const e = S.jp.journal[k] || {}, written = days.filter(d => S.jp.journal[d] && (S.jp.journal[d].text || S.jp.journal[d].best));
+  return `<section class="card"><select class="input" data-bind="jjday" aria-label="Day">${days.map((d, i) => `<option value="${d}"${d === k ? ' selected' : ''}>Day ${i + 1}, ${esc(fmtDay(d))}${S.jp.journal[d] && S.jp.journal[d].text ? ' ✓' : ''}</option>`).join('')}</select>
+      <label class="label" for="jjBest">Best thing today</label><input class="input" id="jjBest" data-bind="jj" data-k="${k}" data-f="best" value="${esc(e.best || '')}" placeholder="Like the ramen in Shinjuku">
+      <label class="label" for="jjText">What happened</label><textarea class="input" id="jjText" data-bind="jj" data-k="${k}" data-f="text" placeholder="Where you went, who you met, what you ate">${esc(e.text || '')}</textarea>
+      <p class="note">Saves as you type.</p></section>
+    ${written.filter(d => d !== k).reverse().map(d => { const x = S.jp.journal[d];
+      return `<details class="card" ${det('jj-' + d)}><summary class="sum"><h3>Day ${days.indexOf(d) + 1}, ${esc(fmtDay(d))}</h3><span class="small muted">${esc(x.best || 'No highlight')}</span></summary><p>${esc(x.text || '').replace(/\n/g, '<br>')}</p></details>`; }).join('')}`;
+}
+function icsFile() {
+  const J = S.jp, stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+  const escI = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  const d8 = k => k.replace(/-/g, '');
+  const ev = [];
+  const add = (uid, k, time, title, place, note) => {
+    const lines = ['BEGIN:VEVENT', `UID:${uid}@lift-log`, `DTSTAMP:${stamp}`];
+    if (time) { const [h, m] = time.split(':').map(Number), end = Math.min(h + 1, 23); lines.push(`DTSTART;TZID=Asia/Tokyo:${d8(k)}T${pad(h)}${pad(m)}00`, `DTEND;TZID=Asia/Tokyo:${d8(k)}T${pad(end)}${pad(end === h + 1 ? m : 59)}00`); }
+    else { const n = keyDate(k); n.setDate(n.getDate() + 1); lines.push(`DTSTART;VALUE=DATE:${d8(k)}`, `DTEND;VALUE=DATE:${d8(dk(n))}`); }
+    lines.push(`SUMMARY:${escI(title)}`); if (place) lines.push(`LOCATION:${escI(place)}`); if (note) lines.push(`DESCRIPTION:${escI(note)}`);
+    lines.push('END:VEVENT'); ev.push(lines.join('\r\n'));
+  };
+  J.items.forEach(i => add(i.id, i.d, i.time, i.title, i.place, i.note));
+  J.stays.forEach(s => { if (s.ci) add(s.id + '-in', s.ci, s.cit, `Check in: ${s.name}`, s.address, s.entry); if (s.co) add(s.id + '-out', s.co, s.cot, `Check out: ${s.name}`, s.address, ''); });
+  const tz = ['BEGIN:VTIMEZONE', 'TZID:Asia/Tokyo', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900', 'TZNAME:JST', 'END:STANDARD', 'END:VTIMEZONE'].join('\r\n');
+  return {count:ev.length, text:['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Lift Log//Japan trip//EN', 'CALSCALE:GREGORIAN', tz, ...ev, 'END:VCALENDAR'].join('\r\n')};
+}
+const JVIEWS = {jprep:viewJPrep, jgifts:viewJGifts, jjournal:viewJJournal, jplan:viewJPlan, jmoney:viewJMoney, jconv:viewJConv, jflights:viewJFlights, jstays:viewJStays, jpack:viewJPack, jplaces:viewJPlaces, jphrases:viewJPhrases, jinfo:viewJInfo};
+
+/* =========================================================
+   Japan: actions and forms
+   ========================================================= */
+const FORM_KEY = {item:'jAdd', exp:'jExpForm', flight:'jFlightForm', stay:'jStayForm'};
+const JACT = {
+  mode: d => {
+    if (S.mode === d.k) return false;
+    S.lastMode[S.mode] = S.tab; S.mode = d.k; UI.edit = null;
+    const t = S.lastMode[d.k];
+    go(t && TAB_INFO[t] && (TAB_INFO[t].g === 'settings' || MODES[d.k].nav.some(n => n[0] === TAB_INFO[t].g)) ? t : firstTab(d.k));
+  },
+  jDay: d => { S.jp.sel = d.k; if (UI.edit && UI.edit.kind === 'item') UI.edit = null; },
+  jMonth: d => { UI.jmo = (UI.jmo || 0) + (+d.n); },
+  jEdit: d => { UI.edit = {kind:d.kind, id:d.id}; UI.open[FORM_KEY[d.kind]] = true; },
+  cancelEdit: () => { const k = UI.edit && UI.edit.kind; UI.edit = null; if (k) UI.open[FORM_KEY[k]] = false; },
+  jDel: d => { const a = JARR[d.kind]; S.jp[a] = S.jp[a].filter(x => x.id !== d.id); if (UI.edit && UI.edit.id === d.id) UI.edit = null; },
+  jToggle: d => { const x = S.jp[JARR[d.kind]].find(y => y.id === d.id); if (x) x.done = !x.done; },
+  jPackReset: () => { S.jp.pack.forEach(p => { p.done = false; }); },
+  jRate: () => { fetchRate(false); return false; },
+  jIcs: () => {
+    const f = icsFile(); if (!f.count) { toast('Add some plans or stays first.'); return false; }
+    let framed = true; try { framed = window.top !== window; } catch (e) {}
+    if (framed) { toast('This works from your Home Screen app.'); return false; }
+    const url = URL.createObjectURL(new Blob([f.text], {type:'text/calendar'})), a = document.createElement('a');
+    a.href = url; a.download = 'japan-trip.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+    toast(`Calendar file with ${plural(f.count, 'event')} is ready. Open it to add them.`); return false;
+  },
+  copy: d => {
+    try { navigator.clipboard.writeText(d.v).then(() => toast('Copied.'), () => toast("Couldn't copy here.")); } catch (e) { toast("Couldn't copy here."); }
+    return false;
+  },
+};
+const SAVE = {
+  item: o => { if (!o.title) { toast('Add what the plan is first.'); return false; } o.cost = num(o.cost); toast(upsert('item', o)); UI.open.jAdd = false; },
+  exp: o => { o.amount = num(o.amount); if (!o.title || !(o.amount > 0)) { toast('Add what it was and how much.'); return false; } toast(upsert('exp', o)); UI.open.jExpForm = false; },
+  flight: o => { if (!o.from || !o.to) { toast('Add where you fly from and to.'); return false; } o.from = o.from.toUpperCase(); o.to = o.to.toUpperCase(); o.cost = num(o.cost); toast(upsert('flight', o)); UI.open.jFlightForm = false; },
+  stay: o => { if (!o.name) { toast('Add the name of the place.'); return false; } if (o.ci && o.co && o.co < o.ci) { toast('Check-out is before check-in.'); return false; } o.cost = num(o.cost); toast(upsert('stay', o)); UI.open.jStayForm = false; },
+  place: o => { if (!o.name) { toast('Add a place name.'); return false; } o.done = false; S.jp.places.push(Object.assign(o, {id:'j' + Date.now()})); toast('Added.'); },
+  pack: o => { if (!o.t) { toast('Type an item first.'); return false; } S.jp.pack.push({id:'k' + Date.now(), t:o.t, cat:o.cat || 'Other', done:false}); },
+  prep: o => { if (!o.t) { toast('Type a task first.'); return false; } S.jp.prep.push({id:'p' + Date.now(), t:o.t, due:o.due || '', before:0, done:false}); toast('Task added.'); },
+  gift: o => { if (!o.what) { toast('Add a gift idea first.'); return false; } S.jp.gifts.push({id:'g' + Date.now(), who:o.who, what:o.what, budget:num(o.budget), cur:o.cur, done:false}); toast('Gift added.'); },
+  budget: o => { S.jp.budget = num(o.budget); UI.open.jBudget = false; toast('Budget saved.'); },
+  rate: o => { const v = num(o.rate); if (!(v > 0)) { toast('Enter a rate like 150.'); return false; } S.jp.rate = {v, d:today(), src:'manual'}; UI.open.jRateForm = false; toast('Rate saved.'); },
+  trip: o => { if (!o.start || !o.end || o.end < o.start) { toast('Check your trip dates.'); return false; } S.jp.start = o.start; S.jp.end = o.end; S.jp.sel = null; UI.jmo = 0; toast('Trip dates saved.'); },
+};
+document.addEventListener('submit', e => {
+  const f = e.target, kind = f.dataset && f.dataset.form; if (!kind || !SAVE[kind]) return;
+  e.preventDefault();
+  const o = {}; new FormData(f).forEach((v, k) => { o[k] = typeof v === 'string' ? v.trim() : v; });
+  if (SAVE[kind](o) === false) return;
+  UI.edit = null; afterChange();
+});
+
+/* =========================================================
+   Shows & Books mode
+   ========================================================= */
+Object.assign(ICON, {
+  play:'<circle cx="12" cy="12" r="8.5"/><path d="M10 8.8l5 3.2-5 3.2z"/>',
+  shelf:'<path d="M5 4v16M9.5 4v16M14 5.5l4.5 14.5M3.5 20h17"/>',
+  plus:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>'});
+MODES.media = {label:'Shows & Books', em:'📚', nav:[['mnow','Now','play'],['mlib','Library','shelf'],['madd','Add','plus'],['mstats','Stats','progress'],['settings','Settings','settings']]};
+Object.assign(TAB_INFO, {mnow:{g:'mnow',t:'Now'}, mlib:{g:'mlib',t:'Library'}, madd:{g:'madd',t:'Add'}, mstats:{g:'mstats',t:'Stats'}});
+Object.assign(GROUPS, {mnow:['mnow'], mlib:['mlib'], madd:['madd'], mstats:['mstats']});
+const MD_TYPES = [['anime','Anime','ep'],['show','TV show','ep'],['movie','Movie','ep'],['manga','Manga','ch'],['manhwa','Manhwa','ch'],['webtoon','Webtoon','ch'],['ln','Light novel','vol'],['book','Book','page']];
+const MD_ST = [['now','In progress'],['plan','Want to start'],['hold','On hold'],['done','Finished'],['drop','Dropped']];
+const MD_UNITS = {ep:['Episode','Ep'], ch:['Chapter','Ch'], vol:['Volume','Vol'], page:['Page','Page']};
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const isWatch = t => ['anime', 'show', 'movie'].includes(t);
+const stLabel = (s, type) => s === 'now' ? (isWatch(type) ? 'Watching' : 'Reading') : (MD_ST.find(x => x[0] === s) || MD_ST[1])[1];
+const typeLabel = t => (MD_TYPES.find(x => x[0] === t) || MD_TYPES[0])[1];
+const unitOf = m => MD_UNITS[m.unit] || MD_UNITS.ep;
+const hasDay = m => m.day !== '' && m.day != null;
+const mFind = id => S.md.items.find(x => x.id === id);
+let MQ = '';
+function normalizeMd(s) {
+  if (!s.md || typeof s.md !== 'object') s.md = {};
+  if (!Array.isArray(s.md.items)) s.md.items = [];
+  if (!s.md.count || typeof s.md.count !== 'object') s.md.count = {};
+  s.md.fs = s.md.fs || 'all'; s.md.ft = s.md.ft || 'all'; s.md.sort = s.md.sort || 'updated';
+}
+function progText(m) {
+  if (m.type === 'movie') return m.status === 'done' ? 'Watched' : 'Not watched yet';
+  return `${unitOf(m)[1]} ${m.prog || 0}${m.total ? ` of ${m.total}` : ''}`;
+}
+function stars(m, interactive) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    const on = (m.rating || 0) >= i;
+    s += interactive ? `<button class="star${on ? ' on' : ''}" data-act="mRate" data-id="${esc(m.id)}" data-v="${i}" aria-label="Rate ${i} out of 5">★</button>` : `<span class="star${on ? ' on' : ''}">★</span>`;
+  }
+  return `<span class="stars"${interactive ? '' : ` role="img" aria-label="${m.rating || 0} out of 5 stars"`}>${s}</span>`;
+}
+function nowRow(m) {
+  const pct = m.total ? Math.min(100, (m.prog || 0) / m.total * 100) : 0;
+  return `<div class="mrow">${cover(m)}<div><b>${esc(m.title)}</b><span class="small muted">${progText(m)}${m.platform ? ', ' + esc(m.platform) : ''}${hasDay(m) ? `, new on ${DAYS[+m.day].slice(0, 3)}` : ''}</span>${airText(m) ? `<span class="small" style="display:block;color:var(--accent);font-weight:700">${airText(m)}</span>` : ''}
+    ${m.total && m.type !== 'movie' ? `<div class="cbar"><i style="width:${pct}%"></i></div>` : ''}</div>
+    ${m.type === 'movie' ? `<button class="btn sm" data-act="mDone" data-id="${esc(m.id)}">Watched</button>`
+      : `<button class="btn sm" style="min-width:76px" data-act="mInc" data-id="${esc(m.id)}" aria-label="Add one ${unitOf(m)[0].toLowerCase()} to ${esc(m.title)}">+1 ${unitOf(m)[1]}</button>`}</div>`;
+}
+function viewMNow() {
+  const I = S.md.items, dow = new Date().getDay();
+  if (!airTried && Date.now() - (S.md.airAt || 0) > 3 * 36e5) { airTried = true; setTimeout(refreshAiring, 0); }
+  if (!I.length) return emptyCard('Nothing here yet', 'Add a show, anime, manga or book and it shows up here.', 'Add one', 'data-act="go" data-to="madd"');
+  const now = I.filter(m => m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  const airsToday = m => m.next && dk(new Date(m.next.at)) === today();
+  const outToday = now.filter(m => (hasDay(m) && +m.day === dow) || airsToday(m)), plan = I.filter(m => m.status === 'plan').sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 4);
+  return `${outToday.length ? `<section class="card"><h2>New today</h2><p class="note">Today: ${outToday.map(m => `<b>${esc(m.title)}</b>${airsToday(m) ? ` (Ep ${m.next.ep} at ${new Date(m.next.at).toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'})})` : ''}`).join(', ')}.</p></section>` : ''}
+    <section class="card"><h2>Continue</h2>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress. Start something from your Want to start list.</p>'}</section>
+    ${plan.length ? `<section class="card"><div class="row"><h2>Want to start</h2><button class="link" data-act="mFilter" data-s="plan">See all</button></div>
+      ${plan.map(m => `<div class="mrow">${cover(m)}<div><b>${esc(m.title)}</b><span class="small muted">${typeLabel(m.type)}${m.platform ? ', ' + esc(m.platform) : ''}</span></div><button class="btn sm ghost" data-act="mStart" data-id="${esc(m.id)}">Start</button></div>`).join('')}</section>` : ''}`;
+}
+function mdList() {
+  const fs = S.md.fs, ft = S.md.ft, q = norm(MQ), so = S.md.sort;
+  const L = S.md.items.filter(m => (fs === 'all' || m.status === fs) && (ft === 'all' || m.type === ft) && (!q || [m.title, m.notes, m.platform].some(v => norm(v || '').includes(q))));
+  L.sort(so === 'title' ? (a, b) => a.title.localeCompare(b.title) : so === 'rating' ? (a, b) => (b.rating || 0) - (a.rating || 0) : (a, b) => (b.updated || 0) - (a.updated || 0));
+  if (!L.length) return emptyCard(q ? 'No matches' : 'Nothing here yet', q ? 'Try another search.' : 'Add something from the Add tab, or pick a different filter.');
+  return L.map(m => `<details class="card" ${det('m-' + m.id)}><summary class="sum"><div class="mhead">${cover(m)}<div><h3>${m.fav ? '❤️ ' : ''}${esc(m.title)}</h3>
+      <span class="small muted">${typeLabel(m.type)}, ${stLabel(m.status, m.type)}${m.type !== 'movie' ? ', ' + progText(m) : ''}</span>${m.rating ? stars(m) : ''}</div></div></summary>
+    ${m.total && m.type !== 'movie' ? `<div class="cbar"><i style="width:${Math.min(100, (m.prog || 0) / m.total * 100)}%"></i></div>` : ''}
+    ${m.type !== 'movie' ? `<div class="btns mt"><button class="btn sm ghost" data-act="mDec" data-id="${esc(m.id)}" aria-label="Take one off">−1</button><button class="btn sm" data-act="mInc" data-id="${esc(m.id)}">+1 ${unitOf(m)[1]}</button></div>` : ''}
+    <span class="label">Status</span><select class="input" data-bind="mstatus" data-id="${esc(m.id)}" aria-label="Status">${MD_ST.map(([k]) => opt(k, stLabel(k, m.type), m.status)).join('')}</select>
+    <span class="label">Your rating</span>${stars(m, true)}
+    ${m.platform ? `<p class="small mt">Where: <b>${esc(m.platform)}</b></p>` : ''}${m.season ? `<p class="small">Season or part: <b>${esc(m.season)}</b></p>` : ''}
+    ${hasDay(m) ? `<p class="small">New ${unitOf(m)[0].toLowerCase()}s on ${DAYS[+m.day]}</p>` : ''}${m.notes ? `<p class="small muted mt">${esc(m.notes).replace(/\n/g, '<br>')}</p>` : ''}
+    <div class="row mt"><button class="link" data-act="mEdit" data-id="${esc(m.id)}">Edit</button><button class="link" data-act="mFav" data-id="${esc(m.id)}">${m.fav ? 'Unfavorite' : 'Favorite'}</button>
+      <button class="link danger" data-act="mDel" data-id="${esc(m.id)}" data-confirm>Delete</button></div></details>`).join('');
+}
+function viewMLib() {
+  const I = S.md.items, counts = {}, types = [...new Set(I.map(m => m.type))];
+  I.forEach(m => { counts[m.status] = (counts[m.status] || 0) + 1; });
+  return `<input class="input" id="mdSearch" type="search" placeholder="Search titles, notes or where" value="${esc(MQ)}" autocomplete="off" aria-label="Search">
+    <div class="chips mt">${chip(`All ${I.length}`, S.md.fs === 'all', 'data-act="mFilter" data-s="all"')}${MD_ST.map(([k, l]) => chip(`${l} ${counts[k] || 0}`, S.md.fs === k, `data-act="mFilter" data-s="${k}"`)).join('')}</div>
+    ${types.length > 1 ? `<div class="chips mt">${chip('All types', S.md.ft === 'all', 'data-act="mType" data-t="all"')}${types.map(t => chip(typeLabel(t), S.md.ft === t, `data-act="mType" data-t="${t}"`)).join('')}</div>` : ''}
+    <div class="row mt mb"><span class="small muted">Sort by</span><select class="input" style="width:auto" data-bind="msort" aria-label="Sort by">${opt('updated', 'Recently updated', S.md.sort)}${opt('title', 'Title', S.md.sort)}${opt('rating', 'Rating', S.md.sort)}</select></div>
+    <div id="mdList">${mdList()}</div>`;
+}
+function viewMAdd() {
+  const ed = UI.edit && UI.edit.kind === 'media' ? mFind(UI.edit.id) : null;
+  return `<section class="card"><h2>${ed ? 'Edit ' + esc(ed.title) : 'Add a show or book'}</h2>
+      <div class="field mt"><input class="input" id="mdQ" type="search" placeholder="Search for a cover and details" value="${ed ? esc(ed.title) : ''}" data-enter="mSearch" autocomplete="off" aria-label="Search for a title"><button class="btn" type="button" data-act="mSearch">Search</button></div>
+      <p class="note">Set the type below first. Anime, manga, manhwa and light novels come from AniList, TV shows from TVmaze, and books from Open Library.</p>
+      <div id="mdRes"></div>
+      <div class="mhead mt" id="mdPicked">${ed && ed.img ? `${cover(ed, 'lg')}<button type="button" class="link danger" data-act="mNoCover">Remove cover</button>` : ''}</div>
+      <form data-form="media" class="stack mt">
+      <input type="hidden" name="img" value="${fval(ed, 'img')}"><input type="hidden" name="src" value="${fval(ed, 'src')}">
+      <input class="input" name="title" placeholder="Title" value="${fval(ed, 'title')}" aria-label="Title">
+      <div class="ff">
+        <label>Type<select class="input" name="type">${MD_TYPES.map(([k, l]) => opt(k, l, ed ? ed.type : 'anime')).join('')}</select></label>
+        <label>Status<select class="input" name="status">${MD_ST.map(([k, l]) => opt(k, l, ed ? ed.status : 'now')).join('')}</select></label>
+        <label>Up to<input class="input" name="prog" inputmode="numeric" placeholder="0" value="${ed && ed.prog ? ed.prog : ''}"></label>
+        <label>Out of<input class="input" name="total" inputmode="numeric" placeholder="Not sure" value="${ed && ed.total ? ed.total : ''}"></label>
+        <label>Count by<select class="input" name="unit">${opt('', 'Match the type', ed ? '' : '')}${Object.entries(MD_UNITS).map(([k, v]) => opt(k, v[0] + 's', ed ? ed.unit : '')).join('')}</select></label>
+        <label>Season or part<input class="input" name="season" placeholder="Season 2" value="${fval(ed, 'season')}"></label>
+        <label>Where<input class="input" name="platform" placeholder="Crunchyroll" value="${fval(ed, 'platform')}"></label>
+        <label>New ones on<select class="input" name="day">${opt('', 'No set day', ed && hasDay(ed) ? String(ed.day) : '')}${DAYS.map((d, i) => opt(String(i), d, ed && hasDay(ed) ? String(ed.day) : '')).join('')}</select></label></div>
+      <textarea class="input" name="notes" style="min-height:80px" placeholder="Notes, like where you left off or who recommended it" aria-label="Notes">${fval(ed, 'notes')}</textarea>
+      <label class="setrow"><span>Favorite</span><input type="checkbox" name="fav"${ed && ed.fav ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
+      <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add'}</button>${ed ? '<button class="btn ghost" type="button" data-act="mCancel">Cancel</button>' : ''}</div></form></section>
+    <p class="note">"On hold" is for things you stopped but plan to come back to. "Dropped" is for things you're done with.</p>`;
+}
+function viewMStats() {
+  const I = S.md.items, y = new Date().getFullYear();
+  if (!I.length) return emptyCard('No stats yet', 'Add a few shows or books to see your stats.', 'Add one', 'data-act="go" data-to="madd"');
+  const c = s => I.filter(m => m.status === s).length, finY = I.filter(m => m.status === 'done' && m.finished && new Date(m.finished).getFullYear() === y).length;
+  const top = I.filter(m => m.rating >= 4).sort((a, b) => b.rating - a.rating).slice(0, 8), favs = I.filter(m => m.fav);
+  const byType = MD_TYPES.map(([k, l]) => [l, I.filter(m => m.type === k).length]).filter(x => x[1]), maxT = Math.max(1, ...byType.map(x => x[1]));
+  return `<section class="card"><h2>Overview</h2>
+      <div class="stats"><div class="stat"><b>${c('now')}</b><span>in progress</span></div><div class="stat"><b>${finY}</b><span>finished in ${y}</span></div><div class="stat"><b>${c('plan')}</b><span>want to start</span></div></div>
+      <div class="stats"><div class="stat"><b>${short(S.md.count.ep || 0)}</b><span>episodes</span></div><div class="stat"><b>${short(S.md.count.ch || 0)}</b><span>chapters</span></div><div class="stat"><b>${c('hold')}</b><span>on hold</span></div></div>
+      <p class="note">Episodes and chapters count every +1 you tap in this app.</p></section>
+    <section class="card"><h2>By type</h2>${byType.map(([l, n]) => `<div class="crow"><div class="row"><b>${l}</b><span>${n}</span></div><div class="cbar"><i style="width:${n / maxT * 100}%"></i></div></div>`).join('')}</section>
+    ${top.length ? `<section class="card"><h2>Top rated</h2>${top.map(m => `<div class="mrow">${cover(m)}<div><b>${esc(m.title)}</b>${stars(m)}</div></div>`).join('')}</section>` : ''}
+    ${favs.length ? `<section class="card"><h2>Favorites</h2>${favs.map(m => `<div class="lrow"><b>❤️ ${esc(m.title)}</b><span>${typeLabel(m.type)}</span></div>`).join('')}</section>` : ''}`;
+}
+const MVIEWS = {mnow:viewMNow, mlib:viewMLib, madd:viewMAdd, mstats:viewMStats};
+function finishMedia(m) { m.status = 'done'; m.finished = Date.now(); UI.open['m-' + m.id] = true; toast(`Finished ${m.title}! Rate it in Library.`); }
+const MACT = {
+  mInc: d => {
+    const m = mFind(d.id); if (!m) return false;
+    m.prog = (m.prog || 0) + 1; m.updated = Date.now(); S.md.count[m.unit] = (S.md.count[m.unit] || 0) + 1;
+    if (m.status === 'plan' || m.status === 'hold' || m.status === 'drop') m.status = 'now';
+    if (m.total && m.prog >= m.total && m.status !== 'done') finishMedia(m);
+  },
+  mDec: d => { const m = mFind(d.id); if (!m || !m.prog) return false; m.prog--; m.updated = Date.now(); S.md.count[m.unit] = Math.max(0, (S.md.count[m.unit] || 0) - 1); },
+  mDone: d => { const m = mFind(d.id); if (!m) return false; m.prog = 1; m.total = 1; m.updated = Date.now(); finishMedia(m); },
+  mStart: d => { const m = mFind(d.id); if (!m) return false; m.status = 'now'; m.updated = Date.now(); toast(`Started ${m.title}.`); },
+  mRate: d => { const m = mFind(d.id); if (!m) return false; m.rating = m.rating === +d.v ? 0 : +d.v; },
+  mFav: d => { const m = mFind(d.id); if (!m) return false; m.fav = !m.fav; },
+  mDel: d => { S.md.items = S.md.items.filter(m => m.id !== d.id); },
+  mEdit: d => { UI.edit = {kind:'media', id:d.id}; go('madd'); },
+  mCancel: () => { UI.edit = null; go('mlib'); },
+  mFilter: d => { S.md.fs = d.s; go('mlib'); },
+  mType: d => { S.md.ft = d.t; },
+};
+Object.assign(SAVE, {
+  media: o => {
+    if (!o.title) { toast('Add a title first.'); return false; }
+    const t = MD_TYPES.find(x => x[0] === o.type) || MD_TYPES[0];
+    const rec = {title:o.title, type:t[0], status:o.status || 'now', prog:Math.max(0, Math.round(num(o.prog))), total:Math.max(0, Math.round(num(o.total))),
+      unit:o.unit || t[2], img:o.img || '', src:o.src || '', season:o.season, platform:o.platform, day:o.day, notes:o.notes, fav:o.fav === 'on', updated:Date.now()};
+    if (rec.type === 'movie') { rec.total = 1; rec.prog = rec.status === 'done' ? 1 : 0; }
+    if (rec.status === 'done' && rec.total) rec.prog = Math.max(rec.prog, rec.total);
+    const ed = UI.edit && UI.edit.kind === 'media' ? mFind(UI.edit.id) : null;
+    if (ed) { if (rec.status === 'done' && ed.status !== 'done') rec.finished = Date.now(); Object.assign(ed, rec); toast('Updated.'); go('mlib'); }
+    else { Object.assign(rec, {id:'m' + Date.now(), added:Date.now(), rating:0}); if (rec.status === 'done') rec.finished = Date.now(); S.md.items.push(rec); toast(`Added ${rec.title}.`); if (/^anilist:/.test(rec.src) && rec.type === 'anime') { S.md.airAt = 0; airTried = false; } }
+  }});
+
+/* ----- Covers: search AniList, TVmaze and Open Library ----- */
+let MRES = [];
+const hue = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const tile = (t, cls = '') => `<span class="cover ctile ${cls}" style="background:hsl(${hue(t)} 55% 52%)" aria-hidden="true">${esc((String(t).trim()[0] || '?').toUpperCase())}</span>`;
+const cover = (m, cls = '') => m.img ? `<img class="cover ${cls}" src="${esc(m.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-t="${esc(m.title)}">` : tile(m.title, cls);
+document.addEventListener('error', e => {
+  const t = e.target;
+  if (t && t.tagName === 'IMG' && t.classList.contains('cover')) t.outerHTML = tile(t.dataset.t || '?', t.classList.contains('lg') ? 'lg' : '');
+}, true);
+const ALQ = 'query($s:String,$t:MediaType){Page(perPage:8){media(search:$s,type:$t,sort:SEARCH_MATCH){id title{romaji english} format episodes chapters volumes countryOfOrigin startDate{year} coverImage{medium large}}}}';
+function alType(m) {
+  if (m.format === 'MOVIE') return 'movie';
+  if (m.format === 'NOVEL') return 'ln';
+  if (m.format === 'MANGA' || m.format === 'ONE_SHOT') return m.countryOfOrigin === 'KR' ? 'manhwa' : 'manga';
+  return 'anime';
+}
+async function mdSearch(q, type) {
+  if (type === 'show') {
+    const d = await (await fetch('https://api.tvmaze.com/search/shows?q=' + encodeURIComponent(q))).json();
+    return d.slice(0, 8).map(x => x.show).map(s => ({title:s.name, type:'show', total:0, unit:'ep', img:(s.image && s.image.medium) || '',
+      year:s.premiered ? s.premiered.slice(0, 4) : '', platform:(s.network && s.network.name) || (s.webChannel && s.webChannel.name) || '', src:'tvmaze:' + s.id}));
+  }
+  if (type === 'book') {
+    const d = await (await fetch('https://openlibrary.org/search.json?limit=8&fields=key,title,author_name,cover_i,number_of_pages_median,first_publish_year&q=' + encodeURIComponent(q))).json();
+    return (d.docs || []).map(b => ({title:b.title, alt:(b.author_name || []).slice(0, 2).join(', '), type:'book', total:b.number_of_pages_median || 0, unit:'page',
+      img:b.cover_i ? `https://covers.openlibrary.org/b/id/${b.cover_i}-M.jpg` : '', year:b.first_publish_year || '', src:'ol:' + b.key}));
+  }
+  const r = await fetch('https://graphql.anilist.co', {method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
+    body:JSON.stringify({query:ALQ, variables:{s:q, t:(type === 'anime' || type === 'movie') ? 'ANIME' : 'MANGA'}})});
+  const d = await r.json();
+  return ((d.data && d.data.Page && d.data.Page.media) || []).map(m => {
+    const t = alType(m), watch = t === 'anime' || t === 'movie';
+    return {title:m.title.english || m.title.romaji, alt:m.title.english && m.title.romaji !== m.title.english ? m.title.romaji : '', type:t,
+      total:(t === 'ln' ? m.volumes : watch ? m.episodes : m.chapters) || 0, unit:t === 'ln' ? 'vol' : watch ? 'ep' : 'ch',
+      img:(m.coverImage && (m.coverImage.large || m.coverImage.medium)) || '', year:m.startDate && m.startDate.year, src:'anilist:' + m.id};
+  });
+}
+Object.assign(MACT, {
+  mSearch: () => {
+    const q = $('#mdQ').value.trim(); if (!q) { toast('Type a title to search.'); return false; }
+    const type = $('form[data-form="media"] [name="type"]').value, box = $('#mdRes');
+    box.innerHTML = '<p class="note">Searching</p>';
+    mdSearch(q, type).then(r => {
+      MRES = r;
+      box.innerHTML = r.length ? r.map((x, i) => `<button type="button" class="res" data-act="mPick" data-i="${i}">${cover(x)}<span><b>${esc(x.title)}</b>
+        <span class="small muted" style="display:block">${[x.alt, typeLabel(x.type), x.year, x.total ? `${x.total} ${MD_UNITS[x.unit][0].toLowerCase()}s` : ''].filter(Boolean).map(v => esc(v)).join(', ')}</span></span></button>`).join('')
+        : '<p class="note">No matches. Try a different spelling or another type, or fill it in by hand.</p>';
+    }).catch(() => { box.innerHTML = '<p class="note">Search needs internet. You can still fill it in by hand.</p>'; });
+    return false;
+  },
+  mPick: d => {
+    const x = MRES[+d.i]; if (!x) return false;
+    const f = $('form[data-form="media"]'), el = n => f.elements.namedItem(n);
+    el('title').value = x.title; el('type').value = x.type; el('unit').value = '';
+    if (x.total) el('total').value = x.total;
+    if (x.platform && !el('platform').value) el('platform').value = x.platform;
+    el('img').value = x.img || ''; el('src').value = x.src || '';
+    $('#mdPicked').innerHTML = x.img ? `${cover(x, 'lg')}<span class="small muted">Cover added. Fill in the rest and save.</span>` : '<span class="small muted">No cover for this one, but the details are filled in.</span>';
+    $('#mdRes').innerHTML = '';
+    return false;
+  },
+  mNoCover: () => { const f = $('form[data-form="media"]'); f.elements.namedItem('img').value = ''; f.elements.namedItem('src').value = ''; $('#mdPicked').innerHTML = ''; return false; },
+});
+
+/* ----- AniList import and airing times ----- */
+const AL_URL = 'https://graphql.anilist.co';
+const AL_ST = {CURRENT:'now', REPEATING:'now', PLANNING:'plan', PAUSED:'hold', COMPLETED:'done', DROPPED:'drop'};
+const AL_LIST = 'query($u:String,$t:MediaType){MediaListCollection(userName:$u,type:$t){lists{entries{status progress progressVolumes score(format:POINT_5) completedAt{year month day} media{id title{romaji english} format episodes chapters volumes countryOfOrigin coverImage{large medium} nextAiringEpisode{episode airingAt}}}}}}';
+const alPost = (query, variables) => fetch(AL_URL, {method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body:JSON.stringify({query, variables})}).then(r => r.json());
+async function importAniList(user) {
+  const st = () => $('#alStatus');
+  if (st()) st().textContent = 'Importing your lists';
+  try {
+    let added = 0, updated = 0;
+    for (const t of ['ANIME', 'MANGA']) {
+      const d = await alPost(AL_LIST, {u:user, t});
+      if (d.errors && d.errors.length) {
+        const msg = d.errors[0].message || '';
+        throw new Error(/private/i.test(msg) ? 'That AniList profile is private. Make it public in AniList settings, then try again.' : /not found/i.test(msg) ? 'No AniList user with that name. Check the spelling.' : msg);
+      }
+      const lists = (d.data && d.data.MediaListCollection && d.data.MediaListCollection.lists) || [];
+      lists.forEach(l => (l.entries || []).forEach(e => {
+        const m = e.media, type = alType(m), watch = type === 'anime' || type === 'movie', src = 'anilist:' + m.id;
+        const unit = watch ? 'ep' : type === 'ln' && e.progressVolumes ? 'vol' : 'ch';
+        const c = e.completedAt || {}, finished = c.year ? new Date(c.year, (c.month || 1) - 1, c.day || 1).getTime() : null;
+        const rec = {title:m.title.english || m.title.romaji, type, status:AL_ST[e.status] || 'plan', unit,
+          prog:unit === 'vol' ? e.progressVolumes : (e.progress || 0), total:(unit === 'vol' ? m.volumes : unit === 'ep' ? m.episodes : m.chapters) || 0,
+          img:(m.coverImage && (m.coverImage.large || m.coverImage.medium)) || '', src, rating:Math.round(e.score || 0),
+          next:m.nextAiringEpisode ? {ep:m.nextAiringEpisode.episode, at:m.nextAiringEpisode.airingAt * 1000} : null};
+        if (type === 'movie') { rec.total = 1; rec.prog = rec.status === 'done' ? 1 : 0; }
+        const ex = S.md.items.find(x => x.src === src);
+        if (ex) {
+          Object.assign(ex, {status:rec.status, prog:rec.prog, unit:rec.unit, total:rec.total || ex.total, img:ex.img || rec.img, rating:rec.rating || ex.rating, next:rec.next});
+          if (rec.status === 'done' && !ex.finished) ex.finished = finished || Date.now();
+          updated++;
+        } else {
+          added++;
+          S.md.items.push(Object.assign(rec, {id:'m' + m.id + '-' + Date.now().toString(36), added:Date.now(), updated:Date.now() - added, finished,
+            platform:'', season:'', notes:'', fav:false, day:''}));
+        }
+      }));
+    }
+    S.md.airAt = Date.now(); save(); render();
+    toast(`AniList: ${plural(added, 'new title')}, ${updated} updated.`);
+  } catch (e) {
+    const msg = e && e.message && !/fetch|network|load failed/i.test(e.message) ? e.message : 'Importing needs internet. Try again when you are online.';
+    if (st()) st().textContent = msg; toast(msg);
+  }
+}
+let airTried = false;
+async function refreshAiring() {
+  const ids = [...new Set(S.md.items.filter(m => m.type === 'anime' && m.status !== 'done' && m.status !== 'drop' && /^anilist:\d+$/.test(m.src || '')).map(m => +m.src.split(':')[1]))];
+  if (!ids.length) return;
+  try {
+    const d = await alPost('query($ids:[Int]){Page(perPage:50){media(id_in:$ids,type:ANIME){id episodes nextAiringEpisode{episode airingAt}}}}', {ids:ids.slice(0, 50)});
+    ((d.data && d.data.Page && d.data.Page.media) || []).forEach(x => S.md.items.filter(m => m.src === 'anilist:' + x.id).forEach(m => {
+      m.next = x.nextAiringEpisode ? {ep:x.nextAiringEpisode.episode, at:x.nextAiringEpisode.airingAt * 1000} : null;
+      if (x.episodes) m.total = x.episodes;
+    }));
+    S.md.airAt = Date.now(); save(); if (S.tab === 'mnow') render();
+  } catch (e) {}
+}
+function fmtRel(ms) {
+  const min = Math.round(ms / 6e4), h = Math.round(ms / 36e5), d = Math.round(ms / 864e5);
+  return min < 60 ? `in ${min} min` : h < 24 ? `in ${h} ${h === 1 ? 'hour' : 'hours'}` : `in ${d} ${d === 1 ? 'day' : 'days'}`;
+}
+function airText(m) {
+  if (!m.next) return '';
+  const now = Date.now(), prog = m.prog || 0;
+  if (m.next.at > now) {
+    const behind = m.next.ep - 1 - prog;
+    return `${behind > 0 ? `${behind} new ${behind === 1 ? 'episode' : 'episodes'} out. ` : ''}Ep ${m.next.ep} ${fmtRel(m.next.at - now)}`;
+  }
+  return prog < m.next.ep ? `Ep ${m.next.ep} is out` : '';
+}
+
+/* ----- App version and update banner ----- */
+const APP_VERSION = '1.0';
+let updateReady = false, hadController = false;
+try {
+  if ('serviceWorker' in navigator) {
+    hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) { updateReady = true; render(); } hadController = true; });
+  }
+} catch (e) {}
+const updateBanner = () => updateReady ? `<div class="card flat" style="border-color:var(--accent)"><div class="row"><span class="small"><b>A new version is ready.</b> Reload to use it.</span><button class="btn sm" data-act="reloadApp">Reload</button></div></div>` : '';
+Object.assign(JACT, {reloadApp: () => { location.reload(); return false; }});
+Object.assign(SAVE, {alimport: o => { if (!o.user) { toast('Type your AniList username.'); return false; } S.md.al = o.user; save(); importAniList(o.user); return false; }});
+
+/* =========================================================
+   Savings mode
+   ========================================================= */
+Object.assign(ICON, {
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'});
+MODES.save = {label:'Savings', em:'💰', nav:[['vgoals','Goals','target'],['vadd','New goal','plus'],['vhist','History','clock'],['settings','Settings','settings']]};
+Object.assign(TAB_INFO, {vgoals:{g:'vgoals',t:'Savings goals'}, vadd:{g:'vadd',t:'New goal'}, vhist:{g:'vhist',t:'History'}});
+Object.assign(GROUPS, {vgoals:['vgoals'], vadd:['vadd'], vhist:['vhist']});
+const SV_EMOJI = ['🎤','🎨','🚗','💍','✈️','🎮','📱','💻','🏠','🎁','🛟','⭐'];
+const SV_SUGGEST = [['🎤','Ado VIP tickets',1000,''],['🎨','Profile picture commission',300,''],['💍','Arkansas wedding trip',0,'2027-11-06'],['🚗','Toyota Corolla SE',0,''],['🛟','Emergency fund',1000,'']];
+const SV_FREQ = {weekly:[7,'week','Every week'], biweekly:[14,'paycheck','Every 2 weeks'], semimonthly:[15.22,'paycheck','Twice a month'], monthly:[30.44,'month','Once a month']};
+function normalizeSv(s) {
+  if (!s.sv || typeof s.sv !== 'object') s.sv = {};
+  if (!Array.isArray(s.sv.goals)) s.sv.goals = [];
+  if (!Array.isArray(s.sv.tx)) s.sv.tx = [];
+  if (!SV_FREQ[s.sv.freq]) s.sv.freq = 'biweekly';
+}
+const usd = a => money(a, 'USD');
+const svGoal = id => S.sv.goals.find(g => g.id === id);
+const svSaved = g => S.sv.tx.filter(t => t.g === g.id).reduce((a, t) => a + num(t.amt), 0);
+const svDone = g => num(g.target) > 0 && svSaved(g) >= num(g.target);
+function svPlan(g) {
+  const s = svSaved(g), target = num(g.target), left = Math.max(0, target - s);
+  if (!target) return 'No target amount set.';
+  if (left <= 0) return num(g.dream) > s ? `Minimum reached! ${usd(num(g.dream) - s)} more for your dream amount.` : 'Goal reached!';
+  const [days, word] = SV_FREQ[S.sv.freq];
+  if (g.date) {
+    const dd = (keyDate(g.date) - keyDate(today())) / 864e5;
+    if (dd <= 0) return `The target date has passed. ${usd(left)} to go.`;
+    const n = Math.max(1, Math.ceil(dd / days));
+    return `Save <b>${usd(left / n)} per ${word}</b> to reach it by ${esc(fmtMD(keyDate(g.date)))}${keyDate(g.date).getFullYear() !== new Date().getFullYear() ? ', ' + keyDate(g.date).getFullYear() : ''}.`;
+  }
+  const since = Date.now() - 60 * 864e5, perDay = S.sv.tx.filter(t => t.g === g.id && num(t.amt) > 0 && keyDate(t.d).getTime() >= since).reduce((a, t) => a + num(t.amt), 0) / 60;
+  if (perDay > 0) {
+    const d = new Date(); d.setDate(d.getDate() + Math.ceil(left / perDay));
+    return `${usd(left)} to go. At your recent pace, you'll get there around <b>${esc(fmtMD(d))}${d.getFullYear() !== new Date().getFullYear() ? ', ' + d.getFullYear() : ''}</b>.`;
+  }
+  return `${usd(left)} to go. Add a target date to see how much to save each ${word}.`;
+}
+function svAdd(gid, amt, note) {
+  const g = svGoal(gid); if (!g || !amt) return false;
+  const before = svSaved(g);
+  if (amt < 0 && before + amt < -0.001) { toast(`Only ${usd(before)} is saved in ${g.name}.`); return false; }
+  S.sv.tx.push({id:'t' + Date.now(), g:gid, amt, d:today(), note:note || ''});
+  const after = before + amt, target = num(g.target);
+  if (target && before < target && after >= target) { g.done = Date.now(); toast(`🎉 Goal reached: ${g.name}!`); }
+  else { if (target && after < target) g.done = null; toast(`${amt > 0 ? 'Added' : 'Took out'} ${usd(Math.abs(amt))} ${amt > 0 ? 'to' : 'from'} ${g.name}.`); }
+}
+function goalCard(g) {
+  const s = svSaved(g), target = num(g.target), pct = target ? Math.min(100, Math.round(s / target * 100)) : 0;
+  return `<section class="card"><div class="row"><div class="mhead"><span class="gem" aria-hidden="true">${esc(g.em || '💰')}</span><div><h3>${esc(g.name)}</h3>
+      <span class="small muted">${usd(s)}${target ? ` of ${usd(target)}` : ' saved'}</span></div></div>${target ? `<b>${pct}%</b>` : ''}</div>
+    ${target ? `<div class="meter"><i style="width:${pct}%"></i></div>` : ''}
+    ${num(g.dream) > target && target ? `<p class="small mt">Dream amount <b>${usd(num(g.dream))}</b>: ${Math.min(100, Math.round(s / num(g.dream) * 100))}% there</p><div class="cbar"><i style="width:${Math.min(100, s / num(g.dream) * 100)}%;background:var(--accent-2)"></i></div>` : ''}
+    ${g.jp ? '<p class="small mt">🗾 Counts toward your Japan trip budget</p>' : ''}
+    <p class="note">${svPlan(g)}</p>
+    ${svDone(g) && !(num(g.dream) > s) ? '' : `<div class="chips mt">${[5, 10, 20, 50, 100].map(v => `<button class="chip" data-act="sQuick" data-id="${esc(g.id)}" data-v="${v}">+$${v}</button>`).join('')}</div>`}
+    <details class="mt" ${det('sv-' + g.id)}><summary class="link">Other amount, notes and edit</summary>
+      <form data-form="sdep" class="stack mt"><input type="hidden" name="g" value="${esc(g.id)}">
+        <div class="field"><select class="input" name="kind" aria-label="Add or take out" style="flex:0 0 130px">${opt('in', 'Add', 'in')}${opt('out', 'Take out', 'in')}</select>
+          <input class="input" name="amt" inputmode="decimal" placeholder="Amount in $" aria-label="Amount in dollars"></div>
+        <input class="input" name="note" placeholder="Note, like birthday money (optional)" aria-label="Note">
+        <button class="btn" type="submit">Save</button></form>
+      ${g.notes ? `<p class="small muted mt">${esc(g.notes).replace(/\n/g, '<br>')}</p>` : ''}
+      ${g.link ? `<a class="maplink" style="display:inline-block;margin-top:8px" href="${esc(safeUrl(g.link))}" target="_blank" rel="noopener">Open link</a>` : ''}
+      <div class="row mt"><button class="link" data-act="sEdit" data-id="${esc(g.id)}">Edit goal</button><button class="link danger" data-act="sDel" data-id="${esc(g.id)}" data-confirm>Delete goal</button></div></details></section>`;
+}
+function viewVGoals() {
+  const G = S.sv.goals;
+  if (!G.length) return emptyCard('No goals yet', 'Make one for anything you\'re saving up for.', 'Make a goal', 'data-act="go" data-to="vadd"');
+  const active = G.filter(g => !svDone(g)), reached = G.filter(svDone);
+  const savedAll = G.reduce((a, g) => a + svSaved(g), 0), targetActive = active.reduce((a, g) => a + num(g.target), 0), savedActive = active.reduce((a, g) => a + svSaved(g), 0);
+  const ms = new Date(); ms.setDate(1); const mk = dk(ms);
+  const month = S.sv.tx.filter(t => t.d >= mk).reduce((a, t) => a + num(t.amt), 0);
+  return `<section class="card"><h2>Overview</h2>
+      <div class="stats"><div class="stat"><b>${usd(savedAll)}</b><span>saved in total</span></div><div class="stat"><b>${month >= 0 ? '+' : '−'}${usd(Math.abs(month))}</b><span>this month</span></div><div class="stat"><b>${active.length}</b><span>${active.length === 1 ? 'goal' : 'goals'} in progress</span></div></div>
+      ${targetActive ? `<div class="meter"><i style="width:${Math.min(100, savedActive / targetActive * 100)}%"></i></div><p class="note">${usd(savedActive)} of ${usd(targetActive)} across your active goals.</p>` : ''}
+      ${active.length ? `<details class="mt" ${det('payday')}><summary class="link">💵 Payday: split money across your goals</summary>
+        <form data-form="payday" class="stack mt"><div class="field"><input class="input" name="amt" id="payAmt" inputmode="decimal" placeholder="Amount to save, in $" aria-label="Amount to save" autocomplete="off"><button class="btn" type="submit">Save</button></div>
+        <div id="payPrev"></div><p class="note">It splits by each goal's payday share if you set one. Otherwise it uses what each dated goal needs per paycheck, or splits evenly.</p></form></details>` : ''}</section>
+    ${active.map(goalCard).join('')}
+    ${reached.length ? `<h2 class="sec">Reached 🎉</h2>${reached.map(goalCard).join('')}` : ''}`;
+}
+function viewVAdd() {
+  const ed = UI.edit && UI.edit.kind === 'goal' ? svGoal(UI.edit.id) : null, pre = !ed && UI.svPre ? UI.svPre : null, v = ed || pre || {};
+  const em = v.em || '💰';
+  return `${!ed ? `<section class="card"><h2>Ideas</h2><div class="chips mt">${SV_SUGGEST.map((x, i) => chip(x[0] + ' ' + x[1], pre && pre.name === x[1], `data-act="sPre" data-i="${i}"`)).join('')}</div></section>` : ''}
+    <section class="card"><h2>${ed ? 'Edit ' + esc(ed.name) : 'New goal'}</h2><form data-form="sgoal" class="stack mt">
+      <input class="input" name="name" placeholder="What you're saving for" value="${esc(v.name || '')}" aria-label="Goal name">
+      <span class="label">Icon</span><div class="chips">${[...new Set([em, ...SV_EMOJI])].map(e => `<label class="emo"><input type="radio" name="em" value="${e}"${e === em ? ' checked' : ''}><span>${e}</span></label>`).join('')}</div>
+      <div class="ff"><label>Target amount ($)<input class="input" name="target" inputmode="decimal" placeholder="1000" value="${v.target || ''}"></label>
+        <label>Target date (optional)<input class="input" type="date" name="date" value="${esc(v.date || '')}"></label></div>
+      <div class="ff"><label>Dream amount ($)<input class="input" name="dream" inputmode="decimal" placeholder="Optional stretch" value="${v.dream || ''}"></label>
+        <label>Payday share (%)<input class="input" name="pct" inputmode="decimal" placeholder="Optional" value="${v.pct || ''}"></label></div>
+      <label class="setrow"><span>Counts toward my Japan trip budget</span><input type="checkbox" name="jp"${v.jp ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
+      ${ed ? '' : '<label class="ff one"><span class="small muted" style="font-weight:700">Already saved ($)</span><input class="input" name="start" inputmode="decimal" placeholder="0"></label>'}
+      <input class="input" name="link" placeholder="Link, like the ticket or product page (optional)" value="${esc(v.link || '')}" inputmode="url" autocapitalize="off" aria-label="Link">
+      <textarea class="input" name="notes" style="min-height:80px" placeholder="Notes (optional)" aria-label="Notes">${esc(v.notes || '')}</textarea>
+      <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Create goal'}</button>${ed ? '<button class="btn ghost" type="button" data-act="sCancel">Cancel</button>' : ''}</div></form></section>`;
+}
+function viewVHist() {
+  const T = S.sv.tx.slice().sort((a, b) => b.d.localeCompare(a.d) || b.id.localeCompare(a.id));
+  if (!T.length) return emptyCard('Nothing saved yet', 'Money you add or take out of a goal shows up here.');
+  const months = [...Array(6)].map((_, i) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 5 + i); return d; });
+  const totals = months.map(d => { const k = dk(d).slice(0, 7); return S.sv.tx.filter(t => t.d.slice(0, 7) === k && num(t.amt) > 0).reduce((a, t) => a + num(t.amt), 0); });
+  const mx = Math.max(1, ...totals);
+  const byDate = {}; T.forEach(t => (byDate[t.d] = byDate[t.d] || []).push(t));
+  return `<section class="card"><h2>Saved each month</h2><div class="bars" role="img" aria-label="Money added each month for the last 6 months">${months.map((d, i) =>
+      `<div class="b"><div class="col"><span>${totals[i] ? '$' + short(totals[i]) : ''}</span><i style="height:${Math.max(3, totals[i] / mx * 100)}%"></i></div><em>${d.toLocaleDateString(undefined, {month:'short'})}</em></div>`).join('')}</div></section>
+    ${Object.keys(byDate).map(d => `<section class="card"><h3>${esc(fmtDay(d))}</h3>${byDate[d].map(t => { const g = svGoal(t.g), a = num(t.amt);
+      return `<div class="pk"><span class="gem sm" aria-hidden="true">${esc(g ? g.em || '💰' : '❔')}</span><span><b>${esc(g ? g.name : 'Deleted goal')}</b>${t.note ? `<span class="small muted" style="display:block">${esc(t.note)}</span>` : ''}</span>
+        <b style="color:${a >= 0 ? 'var(--good)' : 'var(--danger)'}">${a >= 0 ? '+' : '−'}${usd(Math.abs(a))}</b><button class="link quiet" data-act="sTxDel" data-id="${esc(t.id)}" data-confirm aria-label="Delete this entry">✕</button></div>`; }).join('')}</section>`).join('')}`;
+}
+const svSettings = () => `    <section class="card"><h2>Savings</h2>
+      <label class="setrow"><span>How often you get paid</span><select class="input" data-bind="svfreq">${Object.entries(SV_FREQ).map(([k, v]) => opt(k, v[2], S.sv.freq)).join('')}</select></label>
+      <p class="note">Used to work out how much to save each paycheck for goals with a target date.</p></section>
+`;
+const SVIEWS = {vgoals:viewVGoals, vadd:viewVAdd, vhist:viewVHist};
+const SACT = {
+  sQuick: d => svAdd(d.id, +d.v),
+  sDel: d => { S.sv.goals = S.sv.goals.filter(g => g.id !== d.id); S.sv.tx = S.sv.tx.filter(t => t.g !== d.id); },
+  sTxDel: d => { S.sv.tx = S.sv.tx.filter(t => t.id !== d.id); },
+  sEdit: d => { UI.edit = {kind:'goal', id:d.id}; go('vadd'); },
+  sCancel: () => { UI.edit = null; go('vgoals'); },
+  sPre: d => { const x = SV_SUGGEST[+d.i]; UI.svPre = {em:x[0], name:x[1], target:x[2] || '', date:x[3]}; },
+};
+Object.assign(SAVE, {
+  sgoal: o => {
+    if (!o.name) { toast('Name your goal first.'); return false; }
+    const rec = {name:o.name, em:o.em || '💰', target:num(o.target), date:o.date || '', link:o.link || '', notes:o.notes || '', dream:num(o.dream), pct:num(o.pct), jp:o.jp === 'on'};
+    const ed = UI.edit && UI.edit.kind === 'goal' ? svGoal(UI.edit.id) : null;
+    if (ed) { Object.assign(ed, rec); toast('Goal updated.'); }
+    else {
+      const g = Object.assign(rec, {id:'v' + Date.now(), created:Date.now()}); S.sv.goals.push(g);
+      const st = num(o.start); if (st > 0) S.sv.tx.push({id:'t' + Date.now(), g:g.id, amt:st, d:today(), note:'Starting amount'});
+      toast(`Created ${g.name}.`);
+    }
+    UI.svPre = null; go('vgoals');
+  },
+  sdep: o => {
+    const a = num(o.amt); if (!(a > 0)) { toast('Enter an amount.'); return false; }
+    return svAdd(o.g, o.kind === 'out' ? -a : a, o.note);
+  }});
+
+/* =========================================================
+   Home, School, mode visibility, passcode, savings extras
+   ========================================================= */
+Object.assign(ICON, {home:'<path d="M3.5 11L12 4l8.5 7M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>', due:'<rect x="4" y="4.5" width="16" height="16" rx="2"/><path d="M8 3v3M16 3v3M8.5 13l2.5 2.5 4.5-5"/>'});
+{ // reorder so Home comes first and School sits after Gym
+  const old = Object.assign({}, MODES); Object.keys(MODES).forEach(k => delete MODES[k]);
+  MODES.home = {label:'Home', em:'🏠', nav:[['hhome','Home','home'],['settings','Settings','settings']]};
+  MODES.gym = old.gym;
+  MODES.school = {label:'School', em:'🎓', nav:[['kdue','Due','due'],['kclass','Classes','library'],['knotes','Notes','lists'],['settings','Settings','settings']]};
+  Object.keys(old).filter(k => k !== 'gym').forEach(k => { MODES[k] = old[k]; });
+}
+Object.assign(TAB_INFO, {hhome:{g:'hhome',t:'Home'}, kdue:{g:'kdue',t:'Due'}, kclass:{g:'kclass',t:'Classes'}, knotes:{g:'knotes',t:'Notes'}});
+Object.assign(GROUPS, {hhome:['hhome'], kdue:['kdue'], kclass:['kclass'], knotes:['knotes']});
+const orderedModes = () => ['home', ...((S && S.order) || Object.keys(MODES).filter(k => k !== 'home'))].filter(k => MODES[k]);
+const modeVisible = k => k === 'home' || !(S.hidden || []).includes(k);
+
+/* ----- School data ----- */
+const K_KINDS = [['hw','📝','Assignment'],['exam','🧪','Exam'],['quiz','❓','Quiz'],['lab','🔬','Lab'],['project','🛠️','Project'],['other','📌','Other']];
+const K_COLORS = ['#F0467F','#2BB8D0','#8B6CFF','#F2A541','#2E9E5B','#E8590C','#5E6B78'];
+const K_DAYS = [['M','Mon'],['T','Tue'],['W','Wed'],['R','Thu'],['F','Fri'],['S','Sat'],['U','Sun']];
+const K_REF = `Ohm's law: V = I × R
+Power: P = V × I = I² × R = V² / R
+Resistors in series: R = R1 + R2 + R3 ...
+Resistors in parallel: 1/R = 1/R1 + 1/R2 + ...
+Two in parallel: R = (R1 × R2) / (R1 + R2)
+Resistor colors: Black 0, Brown 1, Red 2, Orange 3, Yellow 4, Green 5, Blue 6, Violet 7, Gray 8, White 9
+Tolerance band: Gold ±5%, Silver ±10%`;
+function normalizeExtra(s) {
+  if (!s.sc || typeof s.sc !== 'object') s.sc = {};
+  for (const k of ['classes', 'tasks']) if (!Array.isArray(s.sc[k])) s.sc[k] = [];
+  if (!Array.isArray(s.sc.notes)) s.sc.notes = [{id:'kref', c:'', title:'Quick reference', body:K_REF}];
+  if (!Array.isArray(s.hidden)) s.hidden = [];
+  s.hidden = s.hidden.filter(k => MODES[k] && k !== 'home');
+  if (typeof s.pin !== 'string') s.pin = '';
+  const all = Object.keys(MODES).filter(k => k !== 'home');
+  if (!Array.isArray(s.order)) s.order = [];
+  s.order = [...s.order.filter(k => all.includes(k)), ...all.filter(k => !s.order.includes(k))];
+  if (!MODES[s.mode] || s.hidden.includes(s.mode)) { s.mode = 'home'; s.tab = 'hhome'; }
+}
+const kClass = id => S.sc.classes.find(c => c.id === id);
+const kKind = k => K_KINDS.find(x => x[0] === k) || K_KINDS[5];
+const dayLetter = d => 'UMTWRFS'[d.getDay()];
+function kGrade(cid) {
+  const g = S.sc.tasks.filter(t => t.c === cid && num(t.max) > 0 && t.score !== '' && t.score != null);
+  if (!g.length) return null;
+  const pct = g.reduce((a, t) => a + num(t.score), 0) / g.reduce((a, t) => a + num(t.max), 0) * 100;
+  return {pct, letter:pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F', n:g.length};
+}
+function kRow(x) {
+  const c = kClass(x.c), k = kKind(x.kind), late = !x.done && x.due && x.due < today();
+  return `<div class="pk${x.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!x.done}" data-act="kToggle" data-id="${esc(x.id)}" aria-label="Done: ${esc(x.title)}">${ICON_CHECK}</button>
+    <span>${k[1]} <b>${esc(x.title)}</b><span class="small" style="display:block;${late ? 'color:var(--danger);font-weight:700' : 'color:var(--mute)'}">${c ? `<span class="cdot" style="background:${esc(c.color)}"></span>${esc(c.name)}, ` : ''}${x.due ? (late ? 'was due ' : 'due ') + esc(fmtDay(x.due)) + (x.time ? ' at ' + fmtTime(x.time) : '') : 'no due date'}</span></span>
+    <button class="link quiet" data-act="kDel" data-id="${esc(x.id)}" data-confirm aria-label="Delete ${esc(x.title)}">✕</button></div>`;
+}
+const kOpenSorted = () => S.sc.tasks.filter(x => !x.done).sort((a, b) => (a.due || '9').localeCompare(b.due || '9') || (a.time || '').localeCompare(b.time || ''));
+const kClassOpts = cur => opt('', 'No class', cur || '') + S.sc.classes.map(c => opt(c.id, c.name, cur || '')).join('');
+function viewKDue() {
+  const t = today(), wk = dk(new Date(Date.now() + 7 * 864e5)), open = kOpenSorted(), done = S.sc.tasks.filter(x => x.done).sort((a, b) => (b.due || '').localeCompare(a.due || ''));
+  const grp = [['Overdue', open.filter(x => x.due && x.due < t)], ['Today', open.filter(x => x.due === t)], ['This week', open.filter(x => x.due > t && x.due <= wk)], ['Later', open.filter(x => !x.due || x.due > wk)]];
+  return `${!S.sc.classes.length ? '<div class="card flat"><p class="small">Tip: add your classes in the Classes tab so you can tag work with them.</p></div>' : ''}
+    ${grp.filter(g => g[1].length).map(([h, L]) => `<section class="card"><h2${h === 'Overdue' ? ' style="color:var(--danger)"' : ''}>${h}</h2>${L.map(kRow).join('')}</section>`).join('') || (S.sc.tasks.length ? '<div class="empty"><h2>All caught up</h2><p>Nothing due right now.</p></div>' : '')}
+    <details class="card" ${det('kAdd', !S.sc.tasks.length)}><summary class="sum"><h2>Add homework, an exam or a project</h2></summary>
+      <form data-form="ktask" class="stack">
+        <input class="input" name="title" placeholder="What, like Lab 4 report" aria-label="What">
+        <div class="ff"><label>Class<select class="input" name="c">${kClassOpts('')}</select></label><label>Type<select class="input" name="kind">${K_KINDS.map(k => opt(k[0], k[1] + ' ' + k[2], 'hw')).join('')}</select></label>
+          <label>Due date<input class="input" type="date" name="due"></label><label>Time (optional)<input class="input" type="time" name="time"></label></div>
+        <button class="btn" type="submit">Add</button></form></details>
+    ${done.length ? `<details class="card" ${det('kDone')}><summary class="sum"><h2>Done</h2><span class="small muted">${done.length}</span></summary>${done.map(kRow).join('')}</details>` : ''}`;
+}
+function viewKClass() {
+  const ed = UI.edit && UI.edit.kind === 'kclass' ? kClass(UI.edit.id) : null, col = ed ? ed.color : K_COLORS[S.sc.classes.length % K_COLORS.length];
+  return `${S.sc.classes.map(c => { const g = kGrade(c.id), tasks = S.sc.tasks.filter(t => t.c === c.id), done = tasks.filter(t => t.done);
+      return `<details class="card" ${det('kc-' + c.id)}><summary class="sum"><div class="mhead"><span class="gem" style="background:${esc(c.color)};color:#fff;font-weight:900">${esc((c.code || c.name).slice(0, 3).toUpperCase())}</span>
+        <div><h3>${esc(c.name)}</h3><span class="small muted">${[c.days ? c.days.split('').map(d => (K_DAYS.find(x => x[0] === d) || ['', d])[1]).join(', ') : '', c.time ? fmtTime(c.time) : '', c.room].filter(Boolean).map(esc).join(', ') || 'No schedule set'}</span>
+        ${g ? `<span class="small"><b>${g.letter}</b>, ${Math.round(g.pct * 10) / 10}% from ${plural(g.n, 'grade')}</span>` : ''}</div></div></summary>
+        ${c.teacher ? `<p class="small">Teacher: <b>${esc(c.teacher)}</b></p>` : ''}
+        <p class="small mt">${tasks.filter(t => !t.done).length} open, ${done.length} done</p>
+        ${done.length ? `<span class="label">Grades</span>${done.map(t => `<div class="lrow" style="align-items:center"><span style="flex:1;text-align:left;color:var(--ink)">${kKind(t.kind)[1]} ${esc(t.title)}</span>
+          <span style="display:flex;gap:6px;align-items:center;flex:none"><input class="input" style="width:64px;min-height:38px;text-align:center" inputmode="decimal" placeholder="Score" aria-label="Score for ${esc(t.title)}" data-bind="kgrade" data-id="${esc(t.id)}" data-f="score" value="${esc(t.score ?? '')}">/
+          <input class="input" style="width:64px;min-height:38px;text-align:center" inputmode="decimal" placeholder="Out of" aria-label="Out of, for ${esc(t.title)}" data-bind="kgrade" data-id="${esc(t.id)}" data-f="max" value="${esc(t.max ?? '')}"></span></div>`).join('')}<p class="note">Check off work in Due, then add the score here. Your grade updates when you leave this screen.</p>` : ''}
+        <div class="row mt"><button class="link" data-act="kEditClass" data-id="${esc(c.id)}">Edit</button><button class="link danger" data-act="kDelClass" data-id="${esc(c.id)}" data-confirm>Delete class</button></div></details>`; }).join('')}
+    <details class="card" ${det('kClassForm', !S.sc.classes.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add a class'}</h2></summary>
+      <form data-form="kclass" class="stack">
+        <div class="ff"><label>Class name<input class="input" name="name" placeholder="DC Circuits" value="${fval(ed, 'name')}"></label><label>Code<input class="input" name="code" placeholder="EET 1015" value="${fval(ed, 'code')}"></label></div>
+        <span class="label">Days</span><div class="chips">${K_DAYS.map(([k, l]) => `<label class="emo"><input type="checkbox" name="d_${k}"${ed && (ed.days || '').includes(k) ? ' checked' : ''}><span style="width:auto;padding:0 12px;font-size:14px;font-weight:700">${l}</span></label>`).join('')}</div>
+        <div class="ff"><label>Start time<input class="input" type="time" name="time" value="${fval(ed, 'time')}"></label><label>Room<input class="input" name="room" placeholder="Room or online" value="${fval(ed, 'room')}"></label></div>
+        <input class="input" name="teacher" placeholder="Teacher (optional)" value="${fval(ed, 'teacher')}" aria-label="Teacher">
+        <span class="label">Color</span><div class="chips">${K_COLORS.map(cl => `<label class="emo"><input type="radio" name="color" value="${cl}"${cl === col ? ' checked' : ''}><span><i style="display:block;width:22px;height:22px;border-radius:50%;background:${cl}"></i></span></label>`).join('')}</div>
+        <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add class'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form></details>`;
+}
+let KQ = '';
+function knList() {
+  const q = norm(KQ), L = S.sc.notes.filter(n => !q || norm(n.title + ' ' + n.body).includes(q));
+  if (!L.length) return emptyCard(q ? 'No matches' : 'No notes yet', q ? 'Try another word.' : 'Add formulas, definitions or anything to look up fast.');
+  return L.map(n => { const c = kClass(n.c);
+    return `<details class="card" ${det('kn-' + n.id, n.id === 'kref')}><summary class="sum"><h3>${esc(n.title)}</h3><span class="small muted">${c ? esc(c.name) : 'General'}</span></summary>
+      <p style="white-space:pre-wrap;line-height:1.7">${esc(n.body)}</p>
+      <div class="row mt"><button class="link" data-act="kEditNote" data-id="${esc(n.id)}">Edit</button><button class="link danger" data-act="kDelNote" data-id="${esc(n.id)}" data-confirm>Delete</button></div></details>`; }).join('');
+}
+function viewKNotes() {
+  const ed = UI.edit && UI.edit.kind === 'knote' ? S.sc.notes.find(n => n.id === UI.edit.id) : null;
+  return `<input class="input mb" id="knSearch" type="search" placeholder="Search notes" value="${esc(KQ)}" autocomplete="off" aria-label="Search notes">
+    <div id="knList">${knList()}</div>
+    <details class="card" ${det('kNoteForm', !!ed)}><summary class="sum"><h2>${ed ? 'Edit note' : 'Add a note'}</h2></summary>
+      <form data-form="knote" class="stack"><input class="input" name="title" placeholder="Title, like Kirchhoff's laws" value="${fval(ed, 'title')}" aria-label="Title">
+        <select class="input" name="c" aria-label="Class">${kClassOpts(ed ? ed.c : '')}</select>
+        <textarea class="input" name="body" style="min-height:160px" placeholder="Your notes" aria-label="Note">${fval(ed, 'body')}</textarea>
+        <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add note'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form></details>`;
+}
+
+/* ----- Savings extras: payday split, dream amount, Japan link ----- */
+function svPer(g) {
+  const left = Math.max(0, num(g.target) - svSaved(g)); if (!left || !g.date) return 0;
+  const dd = (keyDate(g.date) - keyDate(today())) / 864e5; if (dd <= 0) return left;
+  return left / Math.max(1, Math.ceil(dd / SV_FREQ[S.sv.freq][0]));
+}
+function payAlloc(total) {
+  const act = S.sv.goals.filter(g => !svDone(g) || num(g.dream) > svSaved(g));
+  if (!act.length || !(total > 0)) return {out:[], rest:total || 0};
+  const cap = g => Math.max(0, (num(g.dream) > num(g.target) ? num(g.dream) : num(g.target) || Infinity) - svSaved(g));
+  const amt = new Map(act.map(g => [g, 0])), r2 = x => Math.floor(x * 100) / 100;
+  let rem = total;
+  if (act.some(g => num(g.pct) > 0)) {
+    const sum = act.reduce((a, g) => a + num(g.pct), 0);
+    act.forEach(g => { const x = Math.min(cap(g), r2(total * num(g.pct) / sum)); amt.set(g, x); rem -= x; });
+  } else {
+    act.filter(g => g.date).forEach(g => { const x = Math.min(cap(g), r2(svPer(g)), r2(rem)); amt.set(g, x); rem -= x; });
+    for (let pass = 0; pass < 3 && rem > 0.009; pass++) {
+      const open = act.filter(g => amt.get(g) < cap(g) - 0.009 && (pass > 0 || !g.date));
+      const pool = open.length ? open : act.filter(g => amt.get(g) < cap(g) - 0.009);
+      if (!pool.length) break;
+      const each = r2(rem / pool.length);
+      if (each <= 0) break;
+      pool.forEach(g => { const x = Math.min(cap(g) - amt.get(g), each); amt.set(g, r2(amt.get(g) + x)); rem -= x; });
+    }
+  }
+  const out = act.map(g => ({g, amt:amt.get(g)})).filter(o => o.amt > 0);
+  return {out, rest:Math.round((total - out.reduce((a, o) => a + o.amt, 0)) * 100) / 100};
+}
+function payPreview(a) {
+  if (!(a > 0)) return '';
+  const {out, rest} = payAlloc(a);
+  if (!out.length) return '<p class="note">No active goals to put it in.</p>';
+  return out.map(o => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(o.g.em || '💰')} ${esc(o.g.name)}</span><b>${usd(o.amt)}</b></div>`).join('') + (rest > 0.009 ? `<p class="note">${usd(rest)} won't fit, because those goals would be full.</p>` : '');
+}
+function jpSaved() {
+  const gs = S.sv.goals.filter(g => g.jp); if (!gs.length) return '';
+  const s = gs.reduce((a, g) => a + svSaved(g), 0), B = num(S.jp.budget);
+  return `<p class="note">💰 You've saved <b>${usd(s)}</b> for this trip in Savings${B ? `, ${Math.round(s / B * 100)}% of your budget` : ''}.</p>`;
+}
+
+/* ----- Home ----- */
+function viewHome() {
+  const h = new Date().getHours(), cards = [];
+  if (modeVisible('gym')) {
+    const t = nextTpl(), n = S.history.filter(w => w.end >= weekStart(Date.now())).length, last = S.history[S.history.length - 1];
+    cards.push(`<section class="card"><div class="row"><h2>🏋️ Gym</h2><button class="link" data-act="mode" data-k="gym">Open</button></div>
+      <p class="note">${plural(n, 'workout')} this week${last ? `. Last one ${esc(fmtLong(last.end))}` : ''}.</p>
+      ${S.active ? '<button class="btn block mt" data-act="homeGym">Continue your workout</button>' : t ? `<button class="btn block mt" data-act="homeTpl" data-id="${esc(t.id)}">Start ${esc(t.name)}</button>` : ''}</section>`);
+  }
+  if (modeVisible('school')) {
+    const due = kOpenSorted().slice(0, 3), todays = S.sc.classes.filter(c => (c.days || '').includes(dayLetter(new Date()))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    cards.push(`<section class="card"><div class="row"><h2>🎓 School</h2><button class="link" data-act="mode" data-k="school">Open</button></div>
+      ${todays.length ? `<p class="note">Classes today: ${todays.map(c => `<b>${esc(c.name)}</b>${c.time ? ' at ' + fmtTime(c.time) : ''}`).join(', ')}</p>` : ''}
+      ${due.length ? due.map(kRow).join('') : '<p class="note">Nothing due. Nice.</p>'}</section>`);
+  }
+  if (modeVisible('japan')) {
+    const days = tripDays(), t = today(), J = S.jp;
+    const line = !days.length ? 'Set your trip dates.' : t < J.start ? `<b>${Math.round((keyDate(J.start) - keyDate(t)) / 864e5)} days</b> until Japan` : t > J.end ? 'Trip complete. Welcome back!' : `<b>Day ${days.indexOf(t) + 1}</b> of ${days.length} in Japan`;
+    const next = t < J.start ? prepSorted().filter(p => !p.done).slice(0, 2) : [];
+    cards.push(`<section class="card"><div class="row"><h2>🗾 Japan</h2><button class="link" data-act="mode" data-k="japan">Open</button></div><p class="note">${line}</p>${next.map(prepRow).join('')}</section>`);
+  }
+  if (modeVisible('media')) {
+    const now = S.md.items.filter(m => m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
+    cards.push(`<section class="card"><div class="row"><h2>📚 Watching and reading</h2><button class="link" data-act="mode" data-k="media">Open</button></div>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
+  }
+  if (modeVisible('save')) {
+    const gs = S.sv.goals.filter(g => !svDone(g) && num(g.target)).sort((a, b) => svSaved(b) / num(b.target) - svSaved(a) / num(a.target)).slice(0, 2);
+    cards.push(`<section class="card"><div class="row"><h2>💰 Savings</h2><button class="link" data-act="mode" data-k="save">Open</button></div>
+      ${gs.length ? gs.map(g => `<div class="crow"><div class="row"><b>${esc(g.em || '💰')} ${esc(g.name)}</b><span>${usd(svSaved(g))} of ${usd(num(g.target))}</span></div><div class="cbar"><i style="width:${Math.min(100, svSaved(g) / num(g.target) * 100)}%"></i></div></div>`).join('') : '<p class="note">No goals in progress.</p>'}</section>`);
+  }
+  const pos = c => { const m = /data-act="mode" data-k="(\w+)"/.exec(c); return m ? S.order.indexOf(m[1]) : 99; };
+  cards.sort((a, b) => pos(a) - pos(b));
+  return `<p class="lead">${h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}, Cynn.</p>${cards.join('')}`;
+}
+
+/* ----- Passcode ----- */
+let locked = false, hiddenAt = 0, pinBuf = '', PINF = null;
+async function hashPin(p) {
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('liftlog:' + p));
+  return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function lockHtml() {
+  if (!locked && !PINF) return '';
+  const title = locked ? 'Enter your passcode' : PINF.step === 'current' ? 'Enter your current passcode' : PINF.step === 'new' ? 'Choose a 4-digit passcode' : 'Enter it again to confirm';
+  return `<div id="lock" role="dialog" aria-modal="true" aria-label="${title}"><div class="lk"><div class="lk-em" aria-hidden="true">🔒</div><h2>${title}</h2>
+    <div class="dots4" aria-hidden="true">${[0, 1, 2, 3].map(i => `<i class="${i < pinBuf.length ? 'on' : ''}"></i>`).join('')}</div>
+    <p class="small" id="lockMsg" role="alert" style="min-height:22px;color:var(--danger);font-weight:700"></p>
+    <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => k === '' ? '<span></span>' : `<button data-pin="${k}" aria-label="${k === '⌫' ? 'Delete' : k}">${k}</button>`).join('')}</div>
+    ${PINF ? '<button class="link" data-pin="cancel">Cancel</button>' : ''}</div></div>`;
+}
+function drawLock(msg) { $('#lockRoot').innerHTML = lockHtml(); if (msg && $('#lockMsg')) $('#lockMsg').textContent = msg; }
+async function pinKey(k) {
+  if (k === 'cancel') { PINF = null; pinBuf = ''; drawLock(); return; }
+  if (k === '⌫') { pinBuf = pinBuf.slice(0, -1); drawLock(); return; }
+  if (pinBuf.length >= 4) return;
+  pinBuf += k; drawLock(); if (pinBuf.length < 4) return;
+  const entered = pinBuf; pinBuf = '';
+  const bad = m => { drawLock(m); try { navigator.vibrate && navigator.vibrate(150); } catch (e) {} };
+  if (locked) { if (await hashPin(entered) === S.pin) { locked = false; drawLock(); } else bad('Wrong passcode. Try again.'); return; }
+  if (PINF.step === 'current') {
+    if (await hashPin(entered) !== S.pin) return bad("That isn't your current passcode.");
+    if (PINF.then === 'off') { S.pin = ''; PINF = null; save(); drawLock(); render(); toast('Passcode turned off.'); return; }
+    PINF = {step:'new'}; drawLock(); return;
+  }
+  if (PINF.step === 'new') { PINF = {step:'confirm', first:entered}; drawLock(); return; }
+  if (entered !== PINF.first) { PINF = {step:'new'}; return bad("Those didn't match. Choose one again."); }
+  S.pin = await hashPin(entered); PINF = null; save(); drawLock(); render(); toast('Passcode set.');
+}
+document.addEventListener('click', e => { const k = e.target.closest('[data-pin]'); if (k) { e.stopPropagation(); e.preventDefault(); pinKey(k.dataset.pin); } }, true);
+document.addEventListener('keydown', e => {
+  if (!locked && !PINF) return;
+  if (/^\d$/.test(e.key)) { e.preventDefault(); pinKey(e.key); } else if (e.key === 'Backspace') { e.preventDefault(); pinKey('⌫'); }
+}, true);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') hiddenAt = Date.now();
+  else if (S.pin && hiddenAt && Date.now() - hiddenAt > 60000) { locked = true; pinBuf = ''; drawLock(); }
+});
+const pinSupported = () => !!(window.crypto && crypto.subtle);
+function settingsCommon() {
+  return `    <section class="card"><h2>Modes</h2><p class="note">Tick the modes you want to see, and use the arrows to put them in order. Hidden modes keep their data.</p>
+      ${S.order.map((k, i) => { const m = MODES[k]; return `<div class="setrow"><label style="display:flex;align-items:center;gap:10px;flex:1"><input type="checkbox" data-bind="modevis" data-k="${k}"${modeVisible(k) ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"><span>${m.em} ${m.label}</span></label>
+        <span style="display:flex;gap:6px"><button class="btn sm ghost" data-act="modeMove" data-k="${k}" data-n="-1"${i ? '' : ' disabled style="opacity:.35"'} aria-label="Move ${m.label} up">↑</button><button class="btn sm ghost" data-act="modeMove" data-k="${k}" data-n="1"${i < S.order.length - 1 ? '' : ' disabled style="opacity:.35"'} aria-label="Move ${m.label} down">↓</button></span></div>`; }).join('')}
+      <p class="note">The order here is the order in the mode switcher and on Home. Home always stays first.</p></section>
+    <section class="card"><h2>Passcode</h2>
+      <p class="note">${S.pin ? 'The app asks for your passcode when it opens and after a minute in the background.' : 'Ask for a 4-digit passcode when the app opens.'} It stops people from casually looking, but it isn't as strong as Face ID. If you forget it, you'd have to erase the app's data, so keep a backup.</p>
+      <div class="btns mt">${S.pin ? '<button class="btn ghost" data-act="pinChange">Change passcode</button><button class="btn ghost" data-act="pinOff">Turn off</button>' : '<button class="btn" data-act="pinSet">Set a passcode</button>'}</div></section>
+`;
+}
+
+/* ----- Actions and forms ----- */
+const XVIEWS = {hhome:viewHome, kdue:viewKDue, kclass:viewKClass, knotes:viewKNotes};
+const XACT = {
+  homeTpl: d => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; ACT.startTpl(d); go('workout'); },
+  modeMove: d => { const o = S.order, i = o.indexOf(d.k), j = i + (+d.n); if (i < 0 || j < 0 || j >= o.length) return false; [o[i], o[j]] = [o[j], o[i]]; },
+  homeGym: () => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; go('workout'); },
+  kToggle: d => { const x = S.sc.tasks.find(t => t.id === d.id); if (!x) return false; x.done = !x.done; if (x.done) toast(`Done: ${x.title}`); },
+  kDel: d => { S.sc.tasks = S.sc.tasks.filter(t => t.id !== d.id); },
+  kEditClass: d => { UI.edit = {kind:'kclass', id:d.id}; UI.open.kClassForm = true; },
+  kDelClass: d => { S.sc.classes = S.sc.classes.filter(c => c.id !== d.id); S.sc.tasks.forEach(t => { if (t.c === d.id) t.c = ''; }); S.sc.notes.forEach(n => { if (n.c === d.id) n.c = ''; }); },
+  kEditNote: d => { UI.edit = {kind:'knote', id:d.id}; UI.open.kNoteForm = true; },
+  kDelNote: d => { S.sc.notes = S.sc.notes.filter(n => n.id !== d.id); },
+  pinSet: () => { if (!pinSupported()) { toast('Passcodes work when you open the app from your Home Screen.'); return false; } PINF = {step:'new'}; pinBuf = ''; drawLock(); return false; },
+  pinChange: () => { PINF = {step:'current', then:'set'}; pinBuf = ''; drawLock(); return false; },
+  pinOff: () => { PINF = {step:'current', then:'off'}; pinBuf = ''; drawLock(); return false; },
+};
+Object.assign(SAVE, {
+  ktask: o => {
+    if (!o.title) { toast('Add what it is first.'); return false; }
+    S.sc.tasks.push({id:'k' + Date.now(), title:o.title, c:o.c || '', kind:o.kind || 'hw', due:o.due || '', time:o.time || '', done:false, score:'', max:''});
+    toast('Added.'); UI.open.kAdd = false;
+  },
+  kclass: o => {
+    if (!o.name) { toast('Add the class name.'); return false; }
+    const rec = {name:o.name, code:o.code || '', days:K_DAYS.map(d => d[0]).filter(k => o['d_' + k]).join(''), time:o.time || '', room:o.room || '', teacher:o.teacher || '', color:o.color || K_COLORS[0]};
+    const ed = UI.edit && UI.edit.kind === 'kclass' ? kClass(UI.edit.id) : null;
+    if (ed) { Object.assign(ed, rec); toast('Class updated.'); } else { S.sc.classes.push(Object.assign(rec, {id:'c' + Date.now()})); toast(`Added ${rec.name}.`); }
+    UI.open.kClassForm = false;
+  },
+  knote: o => {
+    if (!o.title && !o.body) { toast('Write something first.'); return false; }
+    const rec = {title:o.title || 'Untitled', c:o.c || '', body:o.body || ''};
+    const ed = UI.edit && UI.edit.kind === 'knote' ? S.sc.notes.find(n => n.id === UI.edit.id) : null;
+    if (ed) Object.assign(ed, rec); else S.sc.notes.unshift(Object.assign(rec, {id:'n' + Date.now()}));
+    toast(ed ? 'Note updated.' : 'Note added.'); UI.open.kNoteForm = false;
+  },
+  payday: o => {
+    const {out} = payAlloc(num(o.amt)); if (!out.length) { toast('Enter an amount to split.'); return false; }
+    const reached = [];
+    out.forEach((x, i) => {
+      const before = svSaved(x.g); S.sv.tx.push({id:'t' + Date.now() + '-' + i, g:x.g.id, amt:x.amt, d:today(), note:'Payday'});
+      if (num(x.g.target) && before < num(x.g.target) && before + x.amt >= num(x.g.target)) { x.g.done = Date.now(); reached.push(x.g.name); }
+    });
+    toast(reached.length ? `🎉 Goal reached: ${reached.join(', ')}!` : `Saved ${usd(out.reduce((a, x) => a + x.amt, 0))} across ${plural(out.length, 'goal')}.`);
+    UI.open.payday = false;
+  }});
 
 let S = load();
 const UI = {open:{}};           // which <details> are open, survives re-renders
@@ -672,6 +1956,11 @@ const isOpen = (key, dflt) => key in UI.open ? UI.open[key] : !!dflt;
 const det = (key, dflt) => `data-keep="${esc(key)}"${isOpen(key, dflt) ? ' open' : ''}`;
 
 function subtitle() {
+  if (TAB_INFO[S.tab].g[0] === 'j') return jpSubtitle();
+  if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+  if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
+  if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
+  if (TAB_INFO[S.tab].g[0] === 'm') { const n = S.md.items.filter(m => m.status === 'now').length; return `${n} in progress, ${plural(S.md.items.length, 'title')} in total`; }
   const nowStr = new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   switch (S.tab) {
     case 'workout': return S.active ? 'Workout in progress' : nowStr;
@@ -872,7 +2161,7 @@ function viewSettings() {
   return `<section class="card"><h2>Theme</h2>
       <div class="swatches">${THEMES.map(([id, n, a, b]) => `<button class="swatch" aria-pressed="${S.theme === id}" data-act="theme" data-k="${id}"><i style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></i>${n}</button>`).join('')}</div>
       <p class="note">Sakura follows your phone's light or dark mode. The others stay fixed.</p></section>
-    <section class="card"><h2>Training</h2>
+${S.mode === 'home' || S.mode === 'school' ? '' : S.mode === 'gym' ? `    <section class="card"><h2>Training</h2>
       <label class="setrow"><span>Weight unit</span><select class="input" data-bind="setting" data-k="unit">${['lb', 'kg'].map(u => `<option${S.unit === u ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rest timer</span><select class="input" data-bind="setting" data-k="rest">${[45, 60, 90, 120, 150, 180, 240].map(n => `<option value="${n}"${S.rest === n ? ' selected' : ''}>${clock(n * 1000)}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rep range for hints</span><select class="input" data-bind="setting" data-k="rr">${['5-8', '6-10', '8-12', '10-15', '12-20'].map(r => `<option value="${r}"${S.rr === r ? ' selected' : ''}>${r.replace('-', ' to ')} reps</option>`).join('')}</select></label>
@@ -880,15 +2169,25 @@ function viewSettings() {
       <label class="setrow"><span>Bar weight</span><select class="input" data-bind="setting" data-k="bar">${barOpts().map(n => `<option value="${n}"${barW() === n ? ' selected' : ''}>${n} ${S.unit}</option>`).join('')}</select></label>
       <p class="note">Hints tell you to add weight once you hit the top of your rep range on every set.</p>
       <p class="note">Changing the unit only changes labels. Numbers you already logged stay as entered.</p></section>
-    <section class="card"><h2>Backup</h2>
+` : S.mode === 'save' ? svSettings() : S.mode === 'japan' ? `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
+      <div class="ff"><label>First day<input class="input" type="date" name="start" value="${esc(S.jp.start)}"></label><label>Last day<input class="input" type="date" name="end" value="${esc(S.jp.end)}"></label></div>
+      <button class="btn" type="submit">Save dates</button></form>
+      <p class="note">Exchange rate: ¥${fmtN(R())} per dollar. Change it in Money, then Converter.</p></section>
+` : `    <section class="card"><h2>Import from AniList</h2>
+      <p class="note">Bring in your anime and manga lists with your AniList username. Your profile needs to be public. Run it again any time to update progress.</p>
+      <form data-form="alimport" class="field mt"><input class="input" name="user" placeholder="AniList username" value="${esc(S.md.al || '')}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="AniList username"><button class="btn" type="submit">Import</button></form>
+      <p class="note" id="alStatus" role="status"></p></section>
+`}${settingsCommon()}    <section class="card"><h2>Backup</h2>
       <p class="note">Everything lives on this phone, in this browser. Save a backup file to your Files app or iCloud Drive now and then. Last backup: <b>${S.lb ? fmtMD(new Date(S.lb)) : 'never'}</b>.</p>
       <div class="btns mt"><button class="btn" data-act="shareBackup">Save backup file</button><label class="btn ghost file-btn">Restore from file<input type="file" accept=".json,application/json,text/plain" data-file="restore" aria-label="Restore from a backup file"></label></div>
       <details class="mt" ${det('textBackup')}><summary class="link">Copy or paste backup as text</summary>
         <textarea class="input" id="bk" style="min-height:100px;font-size:13px" placeholder="Backup text appears here. Paste a backup here to restore." aria-label="Backup text"></textarea>
         <div class="btns mt"><button class="btn sm ghost" data-act="copyBackup">Show and copy</button><button class="btn sm ghost" data-act="restoreText">Restore from text</button></div></details></section>
-    <section class="card"><h2>Import from Hevy</h2>
+${S.mode === 'gym' ? `    <section class="card"><h2>Import from Hevy</h2>
       <p class="note">In Hevy, go to Settings, then Export &amp; Import Data, then Export Workouts. Pick that CSV file here. Warm-up sets are skipped and workouts you already have are ignored.</p>
-      <label class="btn ghost file-btn mt">Choose Hevy CSV<input type="file" accept=".csv,text/csv,text/plain" data-file="hevy" aria-label="Import Hevy CSV"></label></section>`;
+      <label class="btn ghost file-btn mt">Choose Hevy CSV<input type="file" accept=".csv,text/csv,text/plain" data-file="hevy" aria-label="Import Hevy CSV"></label></section>` : ''}
+    <section class="card"><h2>About</h2><div class="lrow"><span>Version</span><b>${APP_VERSION}</b></div>
+      <p class="note">When you upload a new version to GitHub, the app gets it the next time it opens with internet and shows a Reload button.</p></section>`;
 }
 
 /* =========================================================
@@ -898,9 +2197,10 @@ const VIEWS = {workout:viewWorkout, catalog:viewCatalog, care:viewCare, history:
 function render() {
   const g = TAB_INFO[S.tab].g, tabs = GROUPS[g];
   const seg = tabs.length > 1 ? `<div class="seg" role="tablist">${tabs.map(t => `<button role="tab" aria-selected="${t === S.tab}" data-act="go" data-to="${t}">${TAB_INFO[t].t}</button>`).join('')}</div>` : '';
-  $('#app').innerHTML = `<header class="top"><h1>${TAB_INFO[S.tab].t}</h1><p>${esc(subtitle())}</p></header>${seg}${VIEWS[S.tab]()}`;
+  $('#app').innerHTML = `${updateBanner()}${modeBar()}<header class="top"><h1>${TAB_INFO[S.tab].t}</h1><p>${esc(subtitle())}</p></header>${seg}${(VIEWS[S.tab] || JVIEWS[S.tab] || MVIEWS[S.tab] || SVIEWS[S.tab] || XVIEWS[S.tab])()}`;
   $('#sheetRoot').innerHTML = sheetHtml();
-  $$('nav.tabs button').forEach(b => b.dataset.nav === g ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  { const mb = $('.modes'), sel = mb && mb.querySelector('[aria-selected="true"]'); if (sel && (sel.offsetLeft + sel.offsetWidth > mb.clientWidth + mb.scrollLeft || sel.offsetLeft < mb.scrollLeft)) mb.scrollLeft = Math.max(0, sel.offsetLeft - 16); }
+  $('#nav').innerHTML = MODES[S.mode].nav.map(([ng, label, ic]) => `<button data-nav="${ng}"${ng === g ? ' aria-current="page"' : ''}><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg></span>${label}</button>`).join('');
   tick();
 }
 function go(tab) {
@@ -935,6 +2235,7 @@ function beep() {
    ========================================================= */
 function startRest() { S.timer = {end:Date.now() + S.rest * 1000, total:S.rest}; }
 function tick() {
+  const jc = $('#jpClock'); if (jc) jc.textContent = tokyoNow();
   const el = $('#elapsed'); if (el && S.active) el.textContent = clock(Date.now() - S.active.start);
   const r = $('#rest');
   if (!S.timer) { r.hidden = true; return; }
@@ -1099,7 +2400,7 @@ function downloadBackup(file) {
 /* =========================================================
    Backup, restore and Hevy import
    ========================================================= */
-const BACKUP_KEYS = ['unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next'];
+const BACKUP_KEYS = ['unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','hidden','order'];
 function backup() { const o = {app:'lift-log', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
 function restoreFrom(text) {
   let d;
@@ -1218,7 +2519,7 @@ document.addEventListener('click', e => {
     armTimer = setTimeout(disarm, 3000); return;
   }
   armed = null; clearTimeout(armTimer);
-  const fn = ACT[b.dataset.act]; if (!fn) return;
+  const fn = ACT[b.dataset.act] || JACT[b.dataset.act] || MACT[b.dataset.act] || SACT[b.dataset.act] || XACT[b.dataset.act]; if (!fn) return;
   unlockAudio();
   const wasTab = S.tab;
   if (fn(b.dataset, b) === false) return;
@@ -1227,6 +2528,13 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.id === 'cvJ' || t.id === 'cvU') { const r = R(), v = num(t.value), o = $(t.id === 'cvJ' ? '#cvU' : '#cvJ'); o.value = t.value.trim() === '' ? '' : t.id === 'cvJ' ? (v / r).toFixed(2) : String(Math.round(v * r)); return; }
+  if (t.id === 'knSearch') { KQ = t.value; $('#knList').innerHTML = knList(); return; }
+  if (t.id === 'payAmt') { $('#payPrev').innerHTML = payPreview(num(t.value)); return; }
+  if (t.dataset.bind === 'kgrade') { const x = S.sc.tasks.find(q => q.id === t.dataset.id); if (x) { x[t.dataset.f] = t.value; save(); } return; }
+  if (t.id === 'mdSearch') { MQ = t.value; $('#mdList').innerHTML = mdList(); return; }
+  if (t.dataset.bind === 'jj') { const k = t.dataset.k; S.jp.journal[k] = S.jp.journal[k] || {}; S.jp.journal[k][t.dataset.f] = t.value; save(); return; }
+  if (t.dataset.bind === 'jnotes') { S.jp.notes = t.value; save(); return; }
   if (t.id === 'plateW') { UI.plates.w = t.value; $('#plateOut').innerHTML = plateResult(); return; }
   if (t.dataset.bind === 'tplname') { const x = S.tpl.find(q => q.id === t.dataset.id); if (x && t.value.trim()) { x.name = t.value.trim(); save(); } return; }
   if (t.id === 'exSearch') { Q = t.value; $('#exList').innerHTML = exList(); return; }
@@ -1240,6 +2548,14 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.dataset.bind === 'modevis') {
+    const k = t.dataset.k; S.hidden = S.hidden.filter(x => x !== k); if (!t.checked) S.hidden.push(k);
+    toast(t.checked ? `${MODES[k].label} is showing.` : `${MODES[k].label} is hidden.`); save(); render(); return;
+  }
+  if (t.dataset.bind === 'svfreq') { S.sv.freq = t.value; save(); render(); return; }
+  if (t.dataset.bind === 'mstatus') { const m = mFind(t.dataset.id); if (m) { const was = m.status; m.status = t.value; m.updated = Date.now(); if (t.value === 'done' && was !== 'done') { m.finished = Date.now(); if (m.total) m.prog = Math.max(m.prog || 0, m.total); } afterChange(); } return; }
+  if (t.dataset.bind === 'msort') { S.md.sort = t.value; save(); render(); return; }
+  if (t.dataset.bind === 'jjday') { S.jp.jsel = t.value; save(); render(); return; }
   if (t.type === 'file') {
     const f = t.files && t.files[0]; const kind = t.dataset.file; t.value = ''; if (!f) return;
     if (kind === 'photo') addPhoto(f);
@@ -1257,7 +2573,8 @@ document.addEventListener('change', e => {
 document.addEventListener('keydown', e => {
   const t = e.target;
   if (e.key === 'Escape' && UI.plates) { UI.plates = null; render(); return; }
-  if (e.key === 'Enter' && t.dataset && t.dataset.enter && ACT[t.dataset.enter]) { e.preventDefault(); if (ACT[t.dataset.enter](t.dataset, t) !== false) afterChange(); }
+  const ef = t.dataset && t.dataset.enter && (ACT[t.dataset.enter] || JACT[t.dataset.enter] || MACT[t.dataset.enter] || SACT[t.dataset.enter] || XACT[t.dataset.enter]);
+  if (e.key === 'Enter' && ef) { e.preventDefault(); if (ef(t.dataset, t) !== false) afterChange(); }
 });
 document.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.keep) UI.open[d.dataset.keep] = d.open; }, true);
 document.addEventListener('visibilitychange', tick);
@@ -1268,9 +2585,10 @@ document.addEventListener('visibilitychange', tick);
    ========================================================= */
 applyTheme();
 render();
+locked = !!S.pin; drawLock();
 setInterval(tick, 250);
 loadPhotos();
-try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(reg => { document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); }); }).catch(() => {}); } catch (e) {}
 </script>
 </body>
 </html>
