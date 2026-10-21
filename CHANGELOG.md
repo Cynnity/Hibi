@@ -4,6 +4,15 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.5 — "Cloud save" (Oct 21)
+- **Dropbox auto backup.** Connect once in Settings and Hibi backs up on its own a few seconds after every change and when you open the app.
+- **Progress photos back up too.** Before this they only lived on your phone.
+- **A copy for each day** goes in a daily folder, in case you ever need to go back.
+- **Restore from Dropbox** brings everything back, photos included. Handy for a new phone or your iPad.
+- Hibi only sees its own folder in Dropbox › Apps, and your Dropbox sign-in never goes into backup files.
+- No internet? It backs up when you're back online.
+- The "over a week since your last backup" reminder goes away once Dropbox is on.
+
 ## 1.4 — "Side quest" (Oct 21)
 - **Cardio has its own section** on the Workout tab, separate from your lifting routines. Tap Treadmill or StairMaster to log it on its own.
 - **Log it or time it:** type in your numbers and Save, or tap **Start a timer instead**. A live clock runs on the Workout tab, and when you tap Done your minutes are already filled in.
