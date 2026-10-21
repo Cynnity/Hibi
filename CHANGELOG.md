@@ -1,6 +1,19 @@
 # Hibi patch notes
 
-Everything that happened on the road to 1.0, all in one late night (October 20–21, 2026).
+Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happened in one late night (October 20–21, 2026).
+
+---
+
+## 1.1 — "Wardrobe change" (Oct 21)
+- **Patch notes in the app:** go to Settings, then About, then What's new. They work offline too.
+- **"Hibi was updated" card** on Home after each update, with a button to see what changed.
+- **5 new themes:**
+  - **Ink:** black background with white everything else, like Mono flipped.
+  - **Matcha:** soft green tea with a peach accent.
+  - **Aqua:** teal and pink.
+  - **Neon:** Tokyo-at-night pink and cyan.
+  - **Royal:** navy and gold.
+- That's 11 themes in total.
 
 ---
 
