@@ -15,6 +15,7 @@ if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);
   if (n.getHours() === 3) sxBump('am3'); if (n.getHours() === 11 && n.getMinutes() === 11) sxBump('wish'); if (n.getMonth() === 0 && n.getDate() === 1) sxBump('newyear');
   checkBadges(); saveRaw(); }
 Crash.booted = true;
+splashRun();
 setTimeout(wrapCheck, 900);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(wrapCheck, 600); });
 try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(reg => { document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); }); }).catch(() => {}); } catch (e) {}

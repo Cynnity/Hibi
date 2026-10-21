@@ -46,7 +46,7 @@ function svAdd(gid, amt, note) {
   if (amt < 0 && before + amt < -0.001) { toast(`Only ${usd(before)} is saved in ${g.name}.`); return false; }
   S.sv.tx.push({id:'t' + Date.now(), g:gid, amt, d:today(), note:note || ''});
   const after = before + amt, target = num(g.target);
-  if (target && before < target && after >= target) { g.done = Date.now(); toast(`🎉 Goal reached: ${g.name}!`); }
+  if (target && before < target && after >= target) { g.done = Date.now(); toast(`🎉 Goal reached: ${g.name}!`); setTimeout(() => confetti(60), 100); }
   else { if (target && after < target) g.done = null; toast(`${amt > 0 ? 'Added' : 'Took out'} ${usd(Math.abs(amt))} ${amt > 0 ? 'to' : 'from'} ${g.name}.`); }
 }
 function goalCard(g) {

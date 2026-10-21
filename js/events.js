@@ -73,7 +73,7 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'pomo') { S.pomo[t.dataset.k] = +t.value; save(); render(); return; }
   if (t.dataset.bind === 'pomoClass') { S.pomo.c = t.value; save(); return; }
   if (t.dataset.bind === 'gsort') { S.gm.sort = t.value; save(); render(); return; }
-  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); if (t.value === 'now') g.started = Date.now(); gUnqueue(g); if (gDone(g) && !was) { g.finished = Date.now(); const nx = gUpNext()[0]; toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.${nx ? ` Up next: ${nx.title}.` : ''}`); } afterChange(); } return; }
+  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); if (t.value === 'now') g.started = Date.now(); gUnqueue(g); if (gDone(g) && !was) { g.finished = Date.now(); setTimeout(() => confetti(40), 100); const nx = gUpNext()[0]; toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.${nx ? ` Up next: ${nx.title}.` : ''}`); } afterChange(); } return; }
   if (t.dataset.bind === 'jjday') { S.jp.jsel = t.value; save(); render(); return; }
   if (t.type === 'file') {
     const f = t.files && t.files[0]; const kind = t.dataset.file; t.value = ''; if (!f) return;

@@ -10,6 +10,7 @@ function render() {
   catch (e) { const r = Crash.record(e, 'drawing ' + (S && S.tab || 'screen')); Crash.screen(r); }
 }
 function drawApp() {
+  try { fxEnter(); } catch (e) {}
   const g = TAB_INFO[S.tab].g, tabs = GROUPS[g];
   const seg = tabs.length > 1 ? `<div class="seg" role="tablist">${tabs.map(t => `<button role="tab" aria-selected="${t === S.tab}" data-act="go" data-to="${t}">${TAB_INFO[t].t}</button>`).join('')}</div>` : '';
   $('#app').innerHTML = `${updateBanner()}${modeBar()}<header class="top"><h1>${TAB_INFO[S.tab].t}</h1><p>${esc(subtitle())}</p></header>${seg}${S.mode === 'school' ? pomoBanner() : ''}${(VIEWS[S.tab] || JVIEWS[S.tab] || MVIEWS[S.tab] || SVIEWS[S.tab] || XVIEWS[S.tab])()}`;
@@ -115,6 +116,7 @@ const ACT = {
     { const mins = runMs(a) / 6e4, sets = ex.reduce((t, e) => t + (e.k ? 0 : e.sets.length), 0), vol = volOf({exercises:ex.filter(e => !e.k)});
       if (mins < 10 && sets >= 3) sxBump('speed'); if (sets && vol < 100 && !ex.some(e => e.k)) sxBump('tiny'); }
     S.active = null; S.timer = null;
+    confetti(prs.length ? 48 : 28);
     toast(prs.length ? `🏆 New PR: ${prs.join(', ')}!` : `Workout saved. ${ex.every(e => e.k) ? 'Cardio logged.' : plural(ex.reduce((t, e) => t + e.sets.length, 0), 'set') + ' logged.'}`);
   },
   discard: () => { S.active = null; S.timer = null; },

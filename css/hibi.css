@@ -440,4 +440,54 @@ span.star{font-size:14px;padding:0}
 .notes hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 .notes code{background:var(--surface-2);padding:1px 6px;border-radius:6px;font-size:.9em}
 @media (min-width:700px){main{max-width:720px}.figure{max-width:340px}.badges{grid-template-columns:repeat(3,1fr)}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* ---------- Motion ---------- */
+#splash{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:radial-gradient(80% 60% at 50% 40%,var(--surface),var(--bg));transition:opacity .5s ease,transform .5s ease}
+#splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
+.sp-in{display:flex;flex-direction:column;align-items:center;gap:10px}
+.sp-logo{position:relative;width:118px;height:118px}
+.sp-logo img{width:100%;height:100%;border-radius:28px;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--panel);position:relative;z-index:1}
+.sp-logo i{position:absolute;left:50%;top:50%;width:16px;height:22px;margin:-11px 0 0 -8px;border-radius:50% 50% 50% 0;background:#FF8FB8;opacity:0}
+.sp-name{font:400 40px/1 "Dela Gothic One",sans-serif;color:var(--ink);margin-top:10px;opacity:0}
+.sp-hi{font-weight:800;color:var(--mute);opacity:0;min-height:1.4em}
+#splash.go .sp-logo img{animation:spPop .7s cubic-bezier(.2,1.4,.4,1) both}
+#splash.go .sp-name{animation:spUp .5s .35s ease both}
+#splash.go .sp-hi{animation:spUp .5s .55s ease both}
+#splash.go .sp-logo i{animation:spPetal 1.1s .25s ease-out both}
+.sp-logo i:nth-child(2){--a:-150deg}.sp-logo i:nth-child(3){--a:-90deg}.sp-logo i:nth-child(4){--a:-30deg}.sp-logo i:nth-child(5){--a:30deg;background:#5CE1F5}.sp-logo i:nth-child(6){--a:150deg}.sp-logo i:nth-child(7){--a:90deg;background:#FFD166}
+@keyframes spPop{0%{transform:scale(.3) rotate(-25deg);opacity:0}60%{opacity:1}100%{transform:none;opacity:1}}
+@keyframes spUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes spPetal{0%{opacity:0;transform:rotate(var(--a)) translateY(0) scale(.4)}25%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(-110px) rotate(200deg) scale(1)}}
+/* Screen transitions: the new screen slides in and its cards ease in one by one */
+#app.enter>*{animation:fxIn .38s cubic-bezier(.2,.8,.3,1) both}
+#app.enter>*:nth-child(2){animation-delay:.03s}#app.enter>*:nth-child(3){animation-delay:.06s}#app.enter>*:nth-child(4){animation-delay:.09s}#app.enter>*:nth-child(5){animation-delay:.12s}#app.enter>*:nth-child(6){animation-delay:.15s}#app.enter>*:nth-child(n+7){animation-delay:.18s}
+#app.enter .wgrid>*{animation:fxIn .4s cubic-bezier(.2,.8,.3,1) both}
+#app.enter .wgrid>*:nth-child(2){animation-delay:.05s}#app.enter .wgrid>*:nth-child(3){animation-delay:.1s}#app.enter .wgrid>*:nth-child(4){animation-delay:.15s}#app.enter .wgrid>*:nth-child(n+5){animation-delay:.2s}
+#app.enter .cbar i,#app.enter .meter i{animation:fxGrow .8s .15s cubic-bezier(.2,.8,.3,1) both;transform-origin:left}
+#app.enter .ring circle+circle{animation:fxRing .9s .15s ease-out both}
+@keyframes fxIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fxGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fxRing{from{stroke-dasharray:0 200}}
+/* Sheets glide up, toasts bounce, buttons squish, checks pop */
+#sheet{animation:fxFade .2s ease both}
+#sheet .panel{animation:fxSheet .32s cubic-bezier(.2,.9,.3,1) both}
+@keyframes fxFade{from{opacity:0}}
+@keyframes fxSheet{from{transform:translateY(40%);opacity:.4}}
+#toast{transition:transform .38s cubic-bezier(.2,1.3,.4,1)}
+.btn,.chip,.tile,.check,.swatch,.wd,nav.tabs button,.modes button{transition:transform .12s ease,box-shadow .12s ease,background-color .2s}
+.btn:active,.chip:active,.swatch:active,nav.tabs button:active,.modes button:active{transform:scale(.96)}
+.check[aria-pressed="true"]{animation:fxPop .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes fxPop{0%{transform:scale(.7)}100%{transform:none}}
+details[open]>*:not(summary){animation:fxIn .28s ease both}
+/* Confetti */
+.confetti{position:fixed;left:0;right:0;bottom:30%;height:0;z-index:150;pointer-events:none}
+.confetti i{position:absolute;bottom:0;width:9px;height:13px;border-radius:2px;animation:fxConf 1.5s cubic-bezier(.15,.7,.4,1) forwards}
+@keyframes fxConf{0%{transform:translate(0,0) rotate(0);opacity:1}40%{transform:translate(calc(var(--dx) * .6),var(--dy)) rotate(calc(var(--r) * .4));opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 460px)) rotate(var(--r));opacity:0}}
+/* On/off switch */
+.switch{appearance:none;flex:none;width:52px;height:32px;border-radius:99px;border:2px solid var(--ink);background:var(--surface-2);position:relative;padding:0;transition:background .2s}
+.switch i{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);transition:transform .22s cubic-bezier(.2,1.3,.4,1)}
+.switch.on{background:var(--accent)}
+.switch.on i{transform:translateX(20px)}
+/* Turned off in Settings */
+.no-anim #app.enter>*,.no-anim #app.enter *,.no-anim #sheet,.no-anim #sheet .panel,.no-anim details[open]>*,.no-anim .check{animation:none!important}
+.no-anim .btn:active,.no-anim .chip:active{transform:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

@@ -4,6 +4,16 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.1 — "Opening sequence" (Oct 21)
+- **Welcome animation.** When you open Hibi, the sakura pops in with a burst of petals, then "Hibi" and your greeting appear before it fades into the app. Tap to skip.
+- **Smooth animations everywhere:**
+  - Screens slide in when you switch tabs or modes, with their cards easing in one after another.
+  - Progress bars and rating rings fill up.
+  - Sheets glide up from the bottom, pop-up messages bounce in, buttons squish when you tap them and checkmarks pop.
+- **Confetti 🎉** for new badges, finished workouts and PRs, beaten games and reached savings goals.
+- **Switches to turn them off** in Home → Settings → Animations: one for the welcome animation and one for everything else. There's also a button to replay the welcome animation.
+- If your iPhone has Reduce Motion turned on, Hibi keeps animations off automatically.
+
 ## 2.0 — "Customization arc" (Oct 21)
 - **Home is now made of widgets.** Tap **✏️ Customize Home** at the bottom to add, remove, move and resize them, like iPhone widgets. Small ones sit two to a row, and wide ones take the full width.
   - **23 widgets** to pick from, including:

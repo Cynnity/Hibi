@@ -24,6 +24,7 @@ const Crash = {
   // Shown instead of a blank screen when the app can't draw itself. Uses no other Hibi code.
   screen(r) {
     if (Crash.shown) return; Crash.shown = true;
+    const sp = document.getElementById('splash'); if (sp) sp.remove();
     const app = document.getElementById('app'); if (!app) return;
     const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
     app.innerHTML = `<section class="card" style="margin-top:40px"><h2>Something went wrong</h2>

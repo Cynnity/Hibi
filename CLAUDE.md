@@ -26,6 +26,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/badges.js` | Badges for every mode, grouped by category, and the Badges screen. Loads before views.js. |
 | `js/views.js` | Gym screens and the Settings screen |
 | `js/widgets.js` | Home screen widgets (`WIDGETS` registry, `S.home.w` layout), customize mode and the Add widget sheet |
+| `js/motion.js` | Welcome animation (`#splash` markup lives in index.html), screen transitions, `confetti()`, and the animation switches (`S.fx`) |
 | `js/recap.js` | Weekly recap on Home and Monthly/Yearly Wrapped slides. Uses `S.alog` (activity log of episodes, chapters and game hours) and `S.wrapSeen`. |
 | `js/app.js` | `render()`, toasts, timers, Gym actions |
 | `js/data.js` | Backup files, restore, Hevy import, photos (IndexedDB), themes |
@@ -40,7 +41,7 @@ Cynn wants a record of everything that changes. For every change you ship, in th
 
 1. **Add an entry to the top of `CHANGELOG.md`.** Include the version, a short fun episode-style title in quotes, the date, and plain-language bullets about what changed for him. Follow the style of the entries already there.
 2. **Bump `APP_VERSION`** at the top of `js/core.js`. Use 1.1 → 1.2 for features and 1.1 → 1.1.1 for small fixes. The version must match the new CHANGELOG entry.
-3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.0`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
+3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.1`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
 
 The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also shows a "Hibi was updated" card on Home whenever `APP_VERSION` changes.
 

@@ -164,7 +164,7 @@ const gFormGenres = () => { const f = $('form[data-form="game"]'); const v = f ?
 /* ----- Actions ----- */
 function gTouch(g) { g.updated = Date.now(); }
 Object.assign(MACT, {
-  gBeat: d => { const g = gFind(d.id); if (!g) return false; g.status = 'done'; g.finished = Date.now(); gTouch(g); gUnqueue(g); UI.open['g-' + g.id] = true; const nx = gUpNext()[0]; toast(`Beaten: ${g.title}! Rate it in Library.${nx ? ` Up next: ${nx.title}.` : ''}`); },
+  gBeat: d => { const g = gFind(d.id); if (!g) return false; setTimeout(() => confetti(40), 100); g.status = 'done'; g.finished = Date.now(); gTouch(g); gUnqueue(g); UI.open['g-' + g.id] = true; const nx = gUpNext()[0]; toast(`Beaten: ${g.title}! Rate it in Library.${nx ? ` Up next: ${nx.title}.` : ''}`); },
   gRate: d => { const g = gFind(d.id); if (!g) return false; g.rating = g.rating === +d.v ? 0 : +d.v; },
   gStart: d => { const g = gFind(d.id); if (!g) return false; g.status = 'now'; g.started = Date.now(); gTouch(g); gUnqueue(g); toast(`Started ${g.title}. Have fun!`); },
   gQ: d => { const g = gFind(d.id); if (!g) return false;

@@ -287,7 +287,7 @@ function viewSettings() {
   return `<section class="card"><h2>Theme</h2>
       <div class="swatches">${THEMES.map(([id, n, a, b]) => `<button class="swatch" aria-pressed="${S.theme === id}" data-act="theme" data-k="${id}"><i style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></i>${n}</button>`).join('')}</div>
       <p class="note">Sakura follows your phone's light or dark mode. The others stay fixed.</p></section>
-${S.mode === 'home' ? musicSettings() : S.mode === 'school' ? '' : S.mode === 'gym' ? `    <section class="card"><h2>Training</h2>
+${S.mode === 'home' ? fxSettings() + musicSettings() : S.mode === 'school' ? '' : S.mode === 'gym' ? `    <section class="card"><h2>Training</h2>
       <label class="setrow"><span>Weight unit</span><select class="input" data-bind="setting" data-k="unit">${['lb', 'kg'].map(u => `<option${S.unit === u ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rest timer</span><select class="input" data-bind="setting" data-k="rest">${[45, 60, 90, 120, 150, 180, 240].map(n => `<option value="${n}"${S.rest === n ? ' selected' : ''}>${clock(n * 1000)}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rep range for hints</span><select class="input" data-bind="setting" data-k="rr">${['5-8', '6-10', '8-12', '10-15', '12-20'].map(r => `<option value="${r}"${S.rr === r ? ' selected' : ''}>${r.replace('-', ' to ')} reps</option>`).join('')}</select></label>
