@@ -4,6 +4,15 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.4 — "Side quest" (Oct 21)
+- **Cardio has its own section** on the Workout tab, separate from your lifting routines. Tap Treadmill or StairMaster to log it on its own.
+- **Log it or time it:** type in your numbers and Save, or tap **Start a timer instead**. A live clock runs on the Workout tab, and when you tap Done your minutes are already filled in.
+- Blank boxes reuse last time's numbers, so a repeat session takes one tap.
+- Cardio no longer counts as a workout and doesn't move your rotation along.
+- During a lifting workout there's a Cardio card at the bottom for a warm-up or finisher. It saves separately.
+- Cardio machines are no longer in the lifting exercise picker, and the Cardio category is off the Start by category list.
+- **Cardio log** on the Progress tab, under the Cardio card, with every session and a Delete button. Cardio you logged inside workouts in 1.3 still counts there.
+
 ## 1.3 — "Cardio arc" (Oct 21)
 - **Treadmill tracking:** log minutes, speed, incline and distance. Leave distance blank and Hibi works it out from your speed and time.
 - **StairMaster tracking:** log minutes, level and floors.
