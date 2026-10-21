@@ -88,12 +88,31 @@ function countdownCard() {
   else main = `<span class="big">Day ${days.indexOf(t) + 1}</span><span class="small muted">of ${days.length} in Japan</span>`;
   return `<section class="card"><div class="row"><div>${main}</div><div style="text-align:right"><span class="small muted">Tokyo now</span><b style="display:block;font-size:20px" id="jpClock">${tokyoNow()}</b></div></div></section>`;
 }
+/* ----- Flights grouped into journeys, with layovers between connecting flights ----- */
+const JP_AIRPORTS = ['HND','NRT','KIX','ITM','NGO','CTS','FUK','OKA','KOJ','HIJ','SDJ'];
+const dtMs = v => { if (!v) return NaN; const [d, t] = v.split('T'), [y, m, dd] = d.split('-').map(Number), [h, mi] = (t || '0:0').split(':').map(Number); return new Date(y, m - 1, dd, h, mi).getTime(); };
+const durTxt = ms => { const m = Math.round(ms / 6e4), h = Math.floor(m / 60); return h ? `${h} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`; };
+function journeys() {
+  const F = S.jp.flights.slice().sort((a, b) => (a.dep || '').localeCompare(b.dep || '')), out = [];
+  F.forEach(f => {
+    const j = out[out.length - 1], prev = j && j.legs[j.legs.length - 1];
+    // Same airport, and the next flight leaves within a day of landing (both times are local to that airport)
+    const gap = prev ? dtMs(f.dep) - dtMs(prev.arr) : NaN;
+    if (prev && prev.to === f.from && gap >= 0 && gap <= 24 * 36e5) { j.lays.push({at:f.from, ms:gap, from:prev, to:f}); j.legs.push(f); }
+    else out.push({legs:[f], lays:[]});
+  });
+  out.forEach(j => { const a = j.legs[0].from, b = j.legs[j.legs.length - 1].to;
+    j.title = JP_AIRPORTS.includes(b) && !JP_AIRPORTS.includes(a) ? 'Flying to Japan' : JP_AIRPORTS.includes(a) && !JP_AIRPORTS.includes(b) ? 'Flying home' : 'Flight';
+    j.route = [a, ...j.legs.map(l => l.to)].join(' → '); });
+  return out;
+}
 function dayEvents(k) {
   const ev = S.jp.items.filter(i => i.d === k).map(i => Object.assign({}, i, {kind:'item'}));
   S.jp.flights.forEach(f => {
     if (f.dep && f.dep.slice(0, 10) === k) ev.push({auto:true, time:f.dep.slice(11, 16), title:`✈️ Flight ${f.from} → ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
     if (f.arr && f.arr.slice(0, 10) === k) ev.push({auto:true, time:f.arr.slice(11, 16), title:`🛬 Land in ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
   });
+  journeys().forEach(j => j.lays.forEach(l => { if (l.from.arr && l.from.arr.slice(0, 10) === k) ev.push({auto:true, time:l.from.arr.slice(11, 16) + ':01', title:`⏳ Layover in ${l.at}: ${durTxt(l.ms)}`, note:`Next: ${l.to.from} → ${l.to.to}${l.to.dep ? ' at ' + fmtTime(l.to.dep.slice(11, 16)) : ''}`}); }));
   S.jp.stays.forEach(s => {
     if (s.ci === k) ev.push({auto:true, time:s.cit, title:`🏠 Check in: ${s.name}`, place:s.address});
     if (s.co === k) ev.push({auto:true, time:s.cot, title:`🧳 Check out: ${s.name}`, place:s.address});
@@ -197,23 +216,27 @@ function viewJConv() {
       <div class="lrow"><span>Tipping isn't expected in Japan.</span></div></section>`;
 }
 function viewJFlights() {
-  const ed = editing('flight'), F = S.jp.flights.slice().sort((a, b) => (a.dep || '').localeCompare(b.dep || ''));
+  const ed = editing('flight'), F = S.jp.flights, JN = journeys(), pre = !ed && UI.fpre ? UI.fpre : null;
   const row = (l, v) => v ? `<div class="lrow"><span class="muted">${l}</span><span>${v}</span></div>` : '';
-  return `${F.map(f => `<section class="card"><span class="small muted">${esc([f.airline, f.num].filter(Boolean).join(' ') || 'Flight')}</span>
+  const leg = f => `<section class="card"><span class="small muted">${esc([f.airline, f.num].filter(Boolean).join(' ') || 'Flight')}</span>
       <h2 style="font-size:24px;margin-top:2px">${esc(f.from)} → ${esc(f.to)}</h2>
       <div class="pair"><div><span>Departs</span><b>${esc(fmtDT(f.dep))}</b></div><div><span>Arrives</span><b>${esc(fmtDT(f.arr))}</b></div></div>
       <div class="mt">${f.conf ? `<div class="lrow"><span class="muted">Confirmation</span><span><b>${esc(f.conf)}</b> <button class="link" data-act="copy" data-v="${esc(f.conf)}">Copy</button></span></div>` : ''}
       ${row('Seat', esc(f.seat))}${row('Cost', f.cost ? both(f.cost, f.cur) : '')}${row('Notes', esc(f.notes))}</div>
-      <div class="row mt"><button class="link" data-act="jEdit" data-kind="flight" data-id="${esc(f.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="flight" data-id="${esc(f.id)}" data-confirm>Delete</button></div></section>`).join('')}
-    <details class="card" ${det('jFlightForm', !F.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit flight' : 'Add a flight'}</h2><span class="small muted">Shows up on your itinerary automatically</span></summary>
+      <div class="row mt"><button class="link" data-act="jEdit" data-kind="flight" data-id="${esc(f.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="flight" data-id="${esc(f.id)}" data-confirm>Delete</button></div></section>`;
+  return `${JN.map(j => `<h2 class="gsec">${j.title === 'Flying to Japan' ? '🛫' : j.title === 'Flying home' ? '🏠' : '✈️'} ${esc(j.title)} <span class="small muted">${esc(j.route)}${j.legs.length > 1 ? `, ${j.legs.length} flights` : ''}</span></h2>
+      ${j.legs.map((f, i) => (i ? `<div class="layover">⏳ Layover in <b>${esc(j.lays[i - 1].at)}</b>: ${esc(durTxt(j.lays[i - 1].ms))}${j.lays[i - 1].ms < 60 * 6e4 ? ' <b style="color:var(--danger)">(tight)</b>' : ''}</div>` : '') + leg(f)).join('')}
+      ${j.title !== 'Flight' ? '' : `<button class="btn ghost block" style="margin:-4px 0 14px" data-act="jConnect" data-to="${esc(j.legs[j.legs.length - 1].to)}" data-dep="${esc((j.legs[j.legs.length - 1].arr || '').slice(0, 10))}">+ Add a connecting flight from ${esc(j.legs[j.legs.length - 1].to)}</button>`}`).join('')}
+    <details class="card" ${det('jFlightForm', !F.length || !!ed || !!pre)}><summary class="sum"><h2>${ed ? 'Edit flight' : 'Add a flight'}</h2><span class="small muted">Shows up on your itinerary automatically</span></summary>
       <form data-form="flight" class="stack">
-        <div class="ff"><label>From<input class="input" name="from" placeholder="MCO" value="${fval(ed, 'from')}"></label><label>To<input class="input" name="to" placeholder="HND" value="${fval(ed, 'to')}"></label>
+        <div class="ff"><label>From<input class="input" name="from" placeholder="MCO" value="${pre ? esc(pre.from) : fval(ed, 'from')}"></label><label>To<input class="input" name="to" placeholder="HND" value="${fval(ed, 'to')}"></label>
           <label>Airline<input class="input" name="airline" placeholder="Airline" value="${fval(ed, 'airline')}"></label><label>Flight number<input class="input" name="num" placeholder="NH 113" value="${fval(ed, 'num')}"></label></div>
-        <div class="ff one"><label>Departs (local time)<input class="input" type="datetime-local" name="dep" value="${fval(ed, 'dep')}"></label><label>Arrives (local time)<input class="input" type="datetime-local" name="arr" value="${fval(ed, 'arr')}"></label></div>
+        <div class="ff one"><label>Departs (local time)<input class="input" type="datetime-local" name="dep" value="${pre && pre.dep ? esc(pre.dep + 'T') : fval(ed, 'dep')}"></label><label>Arrives (local time)<input class="input" type="datetime-local" name="arr" value="${fval(ed, 'arr')}"></label></div>
         <div class="ff"><label>Confirmation<input class="input" name="conf" value="${fval(ed, 'conf')}"></label><label>Seat<input class="input" name="seat" value="${fval(ed, 'seat')}"></label></div>
         <div class="field"><input class="input" name="cost" inputmode="decimal" placeholder="Cost" value="${ed && ed.cost ? ed.cost : ''}" aria-label="Cost">${curSel(ed && ed.cur, 'USD')}</div>
         <textarea class="input" name="notes" style="min-height:70px" placeholder="Notes, like baggage allowance" aria-label="Notes">${fval(ed, 'notes')}</textarea>
         ${formActions('flight')}</form></details>
+    <p class="note">Add each flight separately, including connections. Flights that leave from the airport you just landed at within a day are grouped together, with the layover time worked out for you. Use each airport's local time.</p>
     <p class="note">Tokyo is 14 hours ahead of Florida in winter, so you'll land on a later date than it feels like.</p>`;
 }
 function viewJStays() {
@@ -383,6 +406,12 @@ function icsFile() {
     lines.push('END:VEVENT'); ev.push(lines.join('\r\n'));
   };
   J.items.forEach(i => add(i.id, i.d, i.time, i.title, i.place, i.note));
+  // Flights use "floating" local times, so they show at the airport's clock time
+  const fl = v => v ? v.replace(/[-:]/g, '').slice(0, 13) + '00' : '';
+  journeys().forEach(j => { j.legs.forEach(f => { if (!f.dep) return; const lines = ['BEGIN:VEVENT', `UID:${f.id}-flight@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${fl(f.dep)}`, `DTEND:${fl(f.arr && dtMs(f.arr) > dtMs(f.dep) ? f.arr : f.dep)}`,
+      `SUMMARY:${escI(`✈️ ${f.from} → ${f.to}${f.num ? ' (' + f.num + ')' : ''}`)}`, `DESCRIPTION:${escI([f.airline, f.conf ? 'Confirmation ' + f.conf : '', f.seat ? 'Seat ' + f.seat : '', 'Times are local to each airport.'].filter(Boolean).join('\n'))}`,
+      'BEGIN:VALARM', 'TRIGGER:-PT3H', 'ACTION:DISPLAY', `DESCRIPTION:${escI(`Flight ${f.from} → ${f.to} in 3 hours`)}`, 'END:VALARM', 'END:VEVENT']; ev.push(lines.join('\r\n')); });
+    j.lays.forEach(l => { if (!l.from.arr || !l.to.dep) return; ev.push(['BEGIN:VEVENT', `UID:${l.to.id}-layover@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${fl(l.from.arr)}`, `DTEND:${fl(l.to.dep)}`, `SUMMARY:${escI(`⏳ Layover in ${l.at} (${durTxt(l.ms)})`)}`, 'TRANSP:TRANSPARENT', 'END:VEVENT'].join('\r\n')); }); });
   J.stays.forEach(s => { if (s.ci) add(s.id + '-in', s.ci, s.cit, `Check in: ${s.name}`, s.address, s.entry); if (s.co) add(s.id + '-out', s.co, s.cot, `Check out: ${s.name}`, s.address, ''); });
   const tz = ['BEGIN:VTIMEZONE', 'TZID:Asia/Tokyo', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900', 'TZNAME:JST', 'END:STANDARD', 'END:VTIMEZONE'].join('\r\n');
   return {count:ev.length, text:['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Hibi//Japan trip//EN', 'CALSCALE:GREGORIAN', tz, ...ev, 'END:VCALENDAR'].join('\r\n')};
@@ -409,13 +438,10 @@ const JACT = {
   jPackReset: () => { S.jp.pack.forEach(p => { p.done = false; }); },
   jRate: () => { fetchRate(false); return false; },
   jIcs: () => {
-    const f = icsFile(); if (!f.count) { toast('Add some plans or stays first.'); return false; }
-    let framed = true; try { framed = window.top !== window; } catch (e) {}
-    if (framed) { toast('This works from your Home Screen app.'); return false; }
-    const url = URL.createObjectURL(new Blob([f.text], {type:'text/calendar'})), a = document.createElement('a');
-    a.href = url; a.download = 'japan-trip.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
-    toast(`Calendar file with ${plural(f.count, 'event')} is ready. Open it to add them.`); return false;
+    const f = icsFile(); if (!f.count) { toast('Add some plans, flights or stays first.'); return false; }
+    saveCalendar(f.text, 'japan-trip.ics', f.count); return false;
   },
+  jConnect: d => { UI.edit = null; UI.fpre = {from:d.to, dep:d.dep}; UI.open.jFlightForm = true; setTimeout(() => { const f = $('form[data-form="flight"]'); if (f) { f.scrollIntoView({behavior:'smooth', block:'start'}); const t = f.elements.namedItem('to'); if (t) t.focus(); } }, 50); },
   copy: d => {
     try { navigator.clipboard.writeText(d.v).then(() => toast('Copied.'), () => toast("Couldn't copy here.")); } catch (e) { toast("Couldn't copy here."); }
     return false;
@@ -433,7 +459,7 @@ const SAVE = {
   },
   item: o => { if (!o.title) { toast('Add what the plan is first.'); return false; } o.cost = num(o.cost); toast(upsert('item', o)); UI.open.jAdd = false; },
   exp: o => { o.amount = num(o.amount); if (!o.title || !(o.amount > 0)) { toast('Add what it was and how much.'); return false; } toast(upsert('exp', o)); UI.open.jExpForm = false; },
-  flight: o => { if (!o.from || !o.to) { toast('Add where you fly from and to.'); return false; } o.from = o.from.toUpperCase(); o.to = o.to.toUpperCase(); o.cost = num(o.cost); toast(upsert('flight', o)); UI.open.jFlightForm = false; },
+  flight: o => { if (!o.from || !o.to) { toast('Add where you fly from and to.'); return false; } o.from = o.from.toUpperCase(); o.to = o.to.toUpperCase(); o.cost = num(o.cost); toast(upsert('flight', o)); UI.fpre = null; UI.open.jFlightForm = false; },
   stay: o => { if (!o.name) { toast('Add the name of the place.'); return false; } if (o.ci && o.co && o.co < o.ci) { toast('Check-out is before check-in.'); return false; } o.cost = num(o.cost); toast(upsert('stay', o)); UI.open.jStayForm = false; },
   place: o => { if (!o.name) { toast('Add a place name.'); return false; } o.done = false; S.jp.places.push(Object.assign(o, {id:'j' + Date.now()})); toast('Added.'); },
   pack: o => { if (!o.t) { toast('Type an item first.'); return false; } S.jp.pack.push({id:'k' + Date.now(), t:o.t, cat:o.cat || 'Other', done:false}); },

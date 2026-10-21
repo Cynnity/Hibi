@@ -4,6 +4,26 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.9 — "Grind season" (Oct 21)
+- **New Work mode 💼.** Track your hours and estimate your pay:
+  - **Clock in and out** with one tap, with a live timer and a Break button. Or log shifts by hand.
+  - **Pay estimate** for each pay period from your hourly rate, overtime (1.5× after 40 hours a week), bonuses and your tax rate.
+  - **Biweekly paydays** (or weekly, or twice a month), with a countdown to the next one.
+  - A **Pay** tab with every paycheck, plus your hours, pay before taxes and take-home for the year.
+  - Shows on Home and in your weekly recap and Wrapped. Savings' payday split can fill in your estimated paycheck.
+- **School:**
+  - **Semesters.** Classes are now split by semester, like Fall 2026 and Spring 2027, so you can add your spring classes now. Today's classes on Home only shows this semester.
+  - **End times** for classes, shown as 10:00 AM–11:15 AM.
+  - **New Focus tab** with a Pomodoro timer: 25-minute focus rounds, short breaks and a long break every 4 rounds. All the lengths can be changed. Tag rounds with a class and see your focus time for today and this week.
+- **Workout timer pause.** Pause and resume your workout clock, the rest timer (⏸ on the rest bar) and cardio timers. Paused time doesn't count toward your workout length.
+- **Number boxes select themselves.** Tap a weight or reps box and just type. The old number gets replaced, so 15 becomes 10, not 1510.
+- **Japan flights with layovers.** Connecting flights are grouped into one trip, like "Flying to Japan: MCO → DFW → HND", with the layover time between them (and a warning if it's under an hour). Layovers show on the itinerary, and **flights and layovers now go into the iPhone Calendar export** with a 3-hour heads-up alert.
+- **Supplement reminders.** Set a time for each supplement and tap "Add reminders to Calendar". Your iPhone gets a daily repeating event with an alert.
+- **Face ID unlock.** Once you have a passcode, turn on Face ID in Home Settings. The passcode still works as a backup.
+- **Music from stats.fm.** Add your stats.fm username in Home Settings to see your top artists and songs from the last 4 weeks on Home, plus a music slide in your monthly Wrapped.
+- **Badges for everything.** 56 new badges across Cardio, Daily, School, Work, Japan, Shows & Books, Games, Savings and Hibi itself. That's 94 in total. They have their own **Badges tab on Home**, grouped by category with filters, and fun badges have a dashed border.
+- **Games no longer track hours.** It's just Playing, Want to play, Beaten and the rest. There's a quick 🏁 Beat button on games you're playing, and recaps now count games started and beaten.
+
 ## 1.8 — "Season finale" (Oct 21)
 - **Hibi Wrapped.** When a month ends, the next time you open Hibi your month in review pops up as tap-through slides, Spotify Wrapped style. In January you get your whole year too.
   - Slides cover workouts, your heaviest lift and favorite exercise, cardio, hours played and your most-played game, episodes and chapters, money saved, school, journal moods and badges.

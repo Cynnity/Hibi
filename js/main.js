@@ -6,6 +6,7 @@
 applyTheme();
 render();
 locked = !!S.pin; drawLock();
+if (locked && S.faceId) setTimeout(() => { if (locked && FID_OK) faceUnlock(true); }, 400);
 setInterval(tick, 250);
 loadPhotos();
 if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);

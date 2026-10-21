@@ -42,6 +42,8 @@ function normalizeExtra(s) {
   if (!s.sc || typeof s.sc !== 'object') s.sc = {};
   for (const k of ['classes', 'tasks']) if (!Array.isArray(s.sc[k])) s.sc[k] = [];
   if (!Array.isArray(s.sc.notes)) s.sc.notes = [{id:'kref', c:'', title:'Quick reference', body:K_REF}];
+  s.sc.classes.forEach(c => { if (!c.term) c.term = termOf(new Date()); if (typeof c.end !== 'string') c.end = ''; });
+  if (!s.sc.term) s.sc.term = termOf(new Date());
   if (!Array.isArray(s.hidden)) s.hidden = [];
   s.hidden = s.hidden.filter(k => MODES[k] && k !== 'home');
   if (typeof s.pin !== 'string') s.pin = '';
@@ -52,6 +54,18 @@ function normalizeExtra(s) {
   if (!MODES[s.mode] || s.hidden.includes(s.mode)) { s.mode = 'home'; s.tab = 'hhome'; }
 }
 const kClass = id => S.sc.classes.find(c => c.id === id);
+/* ----- Terms (semesters): Spring is January to May, Summer June and July, Fall August to December ----- */
+const termOf = d => { const m = d.getMonth(), y = d.getFullYear(); return (m <= 4 ? 'Spring ' : m <= 6 ? 'Summer ' : 'Fall ') + y; };
+const termKey = t => { const [n, y] = String(t).split(' '); return (+y || 0) * 10 + ({Spring:1, Summer:2, Fall:3}[n] || 0); };
+const termNext = t => { const [n, y] = String(t).split(' '); return n === 'Spring' ? 'Summer ' + y : n === 'Summer' ? 'Fall ' + y : 'Spring ' + (+y + 1); };
+function termList() {
+  const cur = termOf(new Date()), set = new Set([cur, termNext(cur), ...S.sc.classes.map(c => c.term).filter(Boolean)]);
+  if (cur.startsWith('Fall')) set.add('Spring ' + (new Date().getFullYear() + 1));
+  return [...set].sort((a, b) => termKey(a) - termKey(b));
+}
+const termLabel = t => { const cur = termOf(new Date()); return t + (t === cur ? ' (now)' : termKey(t) > termKey(cur) ? ' (next)' : ''); };
+const classTime = c => c.time ? fmtTime(c.time) + (c.end ? '–' + fmtTime(c.end) : '') : '';
+const nowTermClasses = () => S.sc.classes.filter(c => live(c) && c.term === termOf(new Date()));
 const kKind = k => K_KINDS.find(x => x[0] === k) || K_KINDS[5];
 const dayLetter = d => 'UMTWRFS'[d.getDay()];
 function kGrade(cid) {
@@ -67,7 +81,7 @@ function kRow(x) {
     <button class="link quiet" data-act="kDel" data-id="${esc(x.id)}" data-confirm aria-label="Delete ${esc(x.title)}">✕</button></div>`;
 }
 const kOpenSorted = () => S.sc.tasks.filter(x => !x.done && !(kClass(x.c) || {}).archived).sort((a, b) => (a.due || '9').localeCompare(b.due || '9') || (a.time || '').localeCompare(b.time || ''));
-const kClassOpts = cur => opt('', 'No class', cur || '') + S.sc.classes.filter(c => live(c) || c.id === cur).map(c => opt(c.id, c.name, cur || '')).join('');
+const kClassOpts = cur => { const now = termOf(new Date()); return opt('', 'No class', cur || '') + S.sc.classes.filter(c => live(c) || c.id === cur).sort((a, b) => (a.term === now ? 0 : 1) - (b.term === now ? 0 : 1) || termKey(a.term) - termKey(b.term)).map(c => opt(c.id, c.name + (c.term && c.term !== now ? ` (${c.term})` : ''), cur || '')).join(''); };
 function viewKDue() {
   const t = today(), wk = dk(new Date(Date.now() + 7 * 864e5)), open = kOpenSorted(), done = S.sc.tasks.filter(x => x.done).sort((a, b) => (b.due || '').localeCompare(a.due || ''));
   const grp = [['Overdue', open.filter(x => x.due && x.due < t)], ['Today', open.filter(x => x.due === t)], ['This week', open.filter(x => x.due > t && x.due <= wk)], ['Later', open.filter(x => !x.due || x.due > wk)]];
@@ -83,9 +97,12 @@ function viewKDue() {
 }
 function viewKClass() {
   const ed = UI.edit && UI.edit.kind === 'kclass' ? kClass(UI.edit.id) : null, col = ed ? ed.color : K_COLORS[S.sc.classes.length % K_COLORS.length];
-  return `${S.sc.classes.filter(live).map(c => { const g = kGrade(c.id), tasks = S.sc.tasks.filter(t => t.c === c.id), done = tasks.filter(t => t.done);
+  const T = termList(), sel = T.includes(S.sc.term) ? S.sc.term : termOf(new Date()), mine = S.sc.classes.filter(c => live(c) && c.term === sel);
+  return `<div class="chips mb">${T.map(t => chip(`${termLabel(t)} ${S.sc.classes.filter(c => live(c) && c.term === t).length}`, t === sel, `data-act="kTerm" data-t="${esc(t)}"`)).join('')}</div>
+    ${mine.length ? '' : `<div class="card flat"><p class="small">No classes in ${esc(sel)} yet. ${termKey(sel) > termKey(termOf(new Date())) ? 'Registration open? Add them below.' : 'Add them below.'}</p></div>`}
+    ${mine.map(c => { const g = kGrade(c.id), tasks = S.sc.tasks.filter(t => t.c === c.id), done = tasks.filter(t => t.done);
       return `<details class="card" ${det('kc-' + c.id)}><summary class="sum"><div class="mhead"><span class="gem" style="background:${esc(c.color)};color:#fff;font-weight:900">${esc((c.code || c.name).slice(0, 3).toUpperCase())}</span>
-        <div><h3>${esc(c.name)}</h3><span class="small muted">${[c.days ? c.days.split('').map(d => (K_DAYS.find(x => x[0] === d) || ['', d])[1]).join(', ') : '', c.time ? fmtTime(c.time) : '', c.room].filter(Boolean).map(esc).join(', ') || 'No schedule set'}</span>
+        <div><h3>${esc(c.name)}</h3><span class="small muted">${[c.days ? c.days.split('').map(d => (K_DAYS.find(x => x[0] === d) || ['', d])[1]).join(', ') : '', classTime(c), c.room].filter(Boolean).map(esc).join(', ') || 'No schedule set'}</span>
         ${g ? `<span class="small"><b>${g.letter}</b>, ${Math.round(g.pct * 10) / 10}% from ${plural(g.n, 'grade')}</span>` : ''}</div></div></summary>
         ${c.teacher ? `<p class="small">Teacher: <b>${esc(c.teacher)}</b></p>` : ''}
         <p class="small mt">${tasks.filter(t => !t.done).length} open, ${done.length} done</p>
@@ -94,11 +111,12 @@ function viewKClass() {
           <input class="input" style="width:64px;min-height:38px;text-align:center" inputmode="decimal" placeholder="Out of" aria-label="Out of, for ${esc(t.title)}" data-bind="kgrade" data-id="${esc(t.id)}" data-f="max" value="${esc(t.max ?? '')}"></span></div>`).join('')}<p class="note">Check off work in Due, then add the score here. Your grade updates when you leave this screen.</p>` : ''}
         <div class="row mt"><button class="link" data-act="kEditClass" data-id="${esc(c.id)}">Edit</button>${archBtn('class', c)}<button class="link danger" data-act="kDelClass" data-id="${esc(c.id)}" data-confirm>Delete class</button></div></details>`; }).join('')}
     ${archSection('class', 'classes', c => c.name + (c.code ? ', ' + c.code : ''))}
-    <details class="card" ${det('kClassForm', !S.sc.classes.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add a class'}</h2></summary>
+    <details class="card" ${det('kClassForm', !mine.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add a class'}</h2></summary>
       <form data-form="kclass" class="stack">
         <div class="ff"><label>Class name<input class="input" name="name" placeholder="DC Circuits" value="${fval(ed, 'name')}"></label><label>Code<input class="input" name="code" placeholder="EET 1015" value="${fval(ed, 'code')}"></label></div>
         <span class="label">Days</span><div class="chips">${K_DAYS.map(([k, l]) => `<label class="emo"><input type="checkbox" name="d_${k}"${ed && (ed.days || '').includes(k) ? ' checked' : ''}><span style="width:auto;padding:0 12px;font-size:14px;font-weight:700">${l}</span></label>`).join('')}</div>
-        <div class="ff"><label>Start time<input class="input" type="time" name="time" value="${fval(ed, 'time')}"></label><label>Room<input class="input" name="room" placeholder="Room or online" value="${fval(ed, 'room')}"></label></div>
+        <div class="ff"><label>Start time<input class="input" type="time" name="time" value="${fval(ed, 'time')}"></label><label>End time<input class="input" type="time" name="end" value="${fval(ed, 'end')}"></label>
+          <label>Room<input class="input" name="room" placeholder="Room or online" value="${fval(ed, 'room')}"></label><label>Semester<select class="input" name="term">${termList().map(t => opt(t, t, ed ? ed.term : sel)).join('')}</select></label></div>
         <input class="input" name="teacher" placeholder="Teacher (optional)" value="${fval(ed, 'teacher')}" aria-label="Teacher">
         <span class="label">Color</span><div class="chips">${K_COLORS.map(cl => `<label class="emo"><input type="radio" name="color" value="${cl}"${cl === col ? ' checked' : ''}><span><i style="display:block;width:22px;height:22px;border-radius:50%;background:${cl}"></i></span></label>`).join('')}</div>
         <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add class'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form></details>`;
@@ -174,9 +192,9 @@ function viewHome() {
       ${S.active ? '<button class="btn block mt" data-act="homeGym">Continue your workout</button>' : t ? `<button class="btn block mt" data-act="homeTpl" data-id="${esc(t.id)}">Start ${esc(t.name)}</button>` : ''}</section>`);
   }
   if (modeVisible('school')) {
-    const due = kOpenSorted().slice(0, 3), todays = S.sc.classes.filter(c => live(c) && (c.days || '').includes(dayLetter(new Date()))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    const due = kOpenSorted().slice(0, 3), todays = nowTermClasses().filter(c => (c.days || '').includes(dayLetter(new Date()))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     cards.push(`<section class="card"><div class="row"><h2>🎓 School</h2><button class="link" data-act="mode" data-k="school">Open</button></div>
-      ${todays.length ? `<p class="note">Classes today: ${todays.map(c => `<b>${esc(c.name)}</b>${c.time ? ' at ' + fmtTime(c.time) : ''}`).join(', ')}</p>` : ''}
+      ${todays.length ? `<p class="note">Classes today: ${todays.map(c => `<b>${esc(c.name)}</b>${c.time ? ' ' + classTime(c) : ''}`).join(', ')}</p>` : ''}
       ${due.length ? due.map(kRow).join('') : '<p class="note">Nothing due. Nice.</p>'}</section>`);
   }
   if (modeVisible('japan')) {
@@ -189,6 +207,7 @@ function viewHome() {
     const now = S.md.items.filter(m => live(m) && m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
     cards.push(`<section class="card"><div class="row"><h2>📚 Watching and reading</h2><button class="link" data-act="mode" data-k="media">Open</button></div>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
   }
+  if (modeVisible('work')) { const c = workHome(); if (c) cards.push(c); }
   if (modeVisible('games')) {
     const now = S.gm.items.filter(g => live(g) && g.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
     cards.push(`<section class="card"><div class="row"><h2>🎮 Playing</h2><button class="link" data-act="mode" data-k="games">Open</button></div>${now.length ? now.map(gNowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
@@ -201,7 +220,7 @@ function viewHome() {
   const pos = c => { const m = /data-act="mode" data-k="(\w+)"/.exec(c); return m ? S.order.indexOf(m[1]) : 99; };
   cards.sort((a, b) => pos(a) - pos(b));
   const upd = S.seenVer !== APP_VERSION ? `<section class="card" style="border-color:var(--accent)"><h2>Hibi was updated to ${APP_VERSION}</h2><div class="btns mt"><button class="btn sm" data-act="openNotes">See what's new</button><button class="btn sm ghost" data-act="seenUpdate">Dismiss</button></div></section>` : '';
-  return `${upd}<p class="lead">${h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}, Cynn.</p>${weekCard()}${cards.join('')}${wrapCard()}`;
+  return `${upd}<p class="lead">${h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}, Cynn.</p>${weekCard()}${cards.join('')}${musicCard()}${wrapCard()}`;
 }
 
 /* ----- Passcode ----- */
@@ -217,10 +236,33 @@ function lockHtml() {
     <div class="dots4" aria-hidden="true">${[0, 1, 2, 3].map(i => `<i class="${i < pinBuf.length ? 'on' : ''}"></i>`).join('')}</div>
     <p class="small" id="lockMsg" role="alert" style="min-height:22px;color:var(--danger);font-weight:700"></p>
     <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => k === '' ? '<span></span>' : `<button data-pin="${k}" aria-label="${k === '⌫' ? 'Delete' : k}">${k}</button>`).join('')}</div>
+    ${locked && S.faceId && FID_OK ? '<button class="btn block mt" data-pin="face">Unlock with Face ID</button>' : ''}
     ${PINF ? '<button class="link" data-pin="cancel">Cancel</button>' : ''}</div></div>`;
 }
 function drawLock(msg) { $('#lockRoot').innerHTML = lockHtml(); if (msg && $('#lockMsg')) $('#lockMsg').textContent = msg; }
+/* ----- Face ID (uses the iPhone's passkey system; the passcode stays as a backup) ----- */
+let FID_OK = false;
+try { if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable)
+  PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(v => { FID_OK = !!v; if (locked) drawLock(); if (S.tab === 'settings') render(); }).catch(() => {}); } catch (e) {}
+const fidB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const fidBin = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+async function faceSetup() {
+  try {
+    const cred = await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Hibi', id:location.hostname},
+      user:{id:crypto.getRandomValues(new Uint8Array(16)), name:'Hibi unlock', displayName:'Hibi unlock'}, pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+      authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged'}, timeout:60000, attestation:'none'}});
+    S.faceId = fidB64(cred.rawId); save(); render(); toast('Face ID is on. Your passcode still works as a backup.');
+  } catch (e) { toast(e && e.name === 'NotAllowedError' ? 'Face ID setup was canceled.' : "Face ID isn't available here. Your passcode still works."); }
+}
+async function faceUnlock(auto) {
+  try {
+    await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)), rpId:location.hostname, userVerification:'required', timeout:60000,
+      allowCredentials:[{type:'public-key', id:fidBin(S.faceId), transports:['internal']}]}});
+    locked = false; pinBuf = ''; drawLock(); setTimeout(wrapCheck, 300);
+  } catch (e) { drawLock(auto ? '' : e && e.name === 'NotAllowedError' ? 'Face ID was canceled. Use your passcode.' : "Face ID didn't work. Use your passcode."); }
+}
 async function pinKey(k) {
+  if (k === 'face') { faceUnlock(); return; }
   if (k === 'cancel') { PINF = null; pinBuf = ''; drawLock(); return; }
   if (k === '⌫') { pinBuf = pinBuf.slice(0, -1); drawLock(); return; }
   if (pinBuf.length >= 4) return;
@@ -230,7 +272,7 @@ async function pinKey(k) {
   if (locked) { if (await hashPin(entered) === S.pin) { locked = false; drawLock(); setTimeout(wrapCheck, 300); } else bad('Wrong passcode. Try again.'); return; }
   if (PINF.step === 'current') {
     if (await hashPin(entered) !== S.pin) return bad("That isn't your current passcode.");
-    if (PINF.then === 'off') { S.pin = ''; PINF = null; save(); drawLock(); render(); toast('Passcode turned off.'); return; }
+    if (PINF.then === 'off') { S.pin = ''; S.faceId = ''; PINF = null; save(); drawLock(); render(); toast('Passcode turned off.'); return; }
     PINF = {step:'new'}; drawLock(); return;
   }
   if (PINF.step === 'new') { PINF = {step:'confirm', first:entered}; drawLock(); return; }
@@ -254,7 +296,9 @@ function settingsCommon() {
       <p class="note">The order here is the order in the mode switcher and on Home. Home always stays first.</p></section>
     <section class="card"><h2>Passcode</h2>
       <p class="note">${S.pin ? 'The app asks for your passcode when it opens and after a minute in the background.' : 'Ask for a 4-digit passcode when the app opens.'} It stops people from casually looking, but it isn't as strong as Face ID. If you forget it, you'd have to erase the app's data, so keep a backup.</p>
-      <div class="btns mt">${S.pin ? '<button class="btn ghost" data-act="pinChange">Change passcode</button><button class="btn ghost" data-act="pinOff">Turn off</button>' : '<button class="btn" data-act="pinSet">Set a passcode</button>'}</div></section>
+      <div class="btns mt">${S.pin ? '<button class="btn ghost" data-act="pinChange">Change passcode</button><button class="btn ghost" data-act="pinOff">Turn off</button>' : '<button class="btn" data-act="pinSet">Set a passcode</button>'}</div>
+      ${S.pin && FID_OK ? `<div class="setrow mt"><span>Unlock with Face ID</span>${S.faceId ? '<button class="btn sm ghost" data-act="faceOff">Turn off</button>' : '<button class="btn sm" data-act="faceOn">Turn on</button>'}</div>
+      <p class="note">${S.faceId ? 'The lock screen shows an Unlock with Face ID button. Your passcode still works too.' : 'Your iPhone saves a passkey called "Hibi unlock" in Passwords. That\'s how Face ID works for web apps. Nothing leaves your phone.'}</p>` : S.pin ? '' : '<p class="note">Set a passcode first to turn on Face ID.</p>'}</section>
 `;
 }
 
@@ -262,6 +306,9 @@ function settingsCommon() {
 const XVIEWS = {hhome:viewHome, kdue:viewKDue, kclass:viewKClass, knotes:viewKNotes};
 const XACT = {
   homeTpl: d => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; ACT.startTpl(d); go('workout'); },
+  faceOn: () => { faceSetup(); return false; },
+  faceOff: () => { S.faceId = ''; toast('Face ID unlock is off. Remove the "Hibi unlock" passkey in the Passwords app if you like.'); },
+  kTerm: d => { S.sc.term = d.t; delete UI.open.kClassForm; },
   modeMove: d => { const o = S.order, i = o.indexOf(d.k), j = i + (+d.n); if (i < 0 || j < 0 || j >= o.length) return false; [o[i], o[j]] = [o[j], o[i]]; },
   homeGym: () => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; go('workout'); },
   kToggle: d => { const x = S.sc.tasks.find(t => t.id === d.id); if (!x) return false; x.done = !x.done; x.doneAt = x.done ? Date.now() : 0; if (x.done) toast(`Done: ${x.title}`); },
@@ -282,9 +329,10 @@ Object.assign(SAVE, {
   },
   kclass: o => {
     if (!o.name) { toast('Add the class name.'); return false; }
-    const rec = {name:o.name, code:o.code || '', days:K_DAYS.map(d => d[0]).filter(k => o['d_' + k]).join(''), time:o.time || '', room:o.room || '', teacher:o.teacher || '', color:o.color || K_COLORS[0]};
+    const rec = {name:o.name, code:o.code || '', days:K_DAYS.map(d => d[0]).filter(k => o['d_' + k]).join(''), time:o.time || '', end:o.end || '', term:o.term || termOf(new Date()), room:o.room || '', teacher:o.teacher || '', color:o.color || K_COLORS[0]};
     const ed = UI.edit && UI.edit.kind === 'kclass' ? kClass(UI.edit.id) : null;
-    if (ed) { Object.assign(ed, rec); toast('Class updated.'); } else { S.sc.classes.push(Object.assign(rec, {id:'c' + Date.now()})); toast(`Added ${rec.name}.`); }
+    if (ed) { Object.assign(ed, rec); toast('Class updated.'); } else { S.sc.classes.push(Object.assign(rec, {id:'c' + Date.now()})); toast(`Added ${rec.name} to ${rec.term}.`); }
+    S.sc.term = rec.term;
     UI.open.kClassForm = false;
   },
   knote: o => {

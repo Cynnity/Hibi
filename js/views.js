@@ -12,6 +12,8 @@ const det = (key, dflt) => `data-keep="${esc(key)}"${isOpen(key, dflt) ? ' open'
 function subtitle() {
   if (TAB_INFO[S.tab].g[0] === 'j') return jpSubtitle();
   if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+  if (['wtoday', 'wshifts', 'wpay'].includes(S.tab)) return workSubtitle();
+  if (S.tab === 'kfocus') { const st = focusStats(); return st.n ? `${plural(st.n, 'focus round')} today` : 'Pomodoro timer'; }
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
   if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => live(g) && !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
   if (['gnow', 'glib', 'gadd', 'gstats'].includes(TAB_INFO[S.tab].g)) { const L = S.gm.items.filter(live), n = L.filter(g => g.status === 'now').length; return `${n} playing, ${plural(L.length, 'game')} in total`; }
@@ -23,7 +25,7 @@ function subtitle() {
     case 'care': return 'Stretches and recovery basics';
     case 'history': return plural(S.history.length, 'workout') + ' logged';
     case 'body': return 'Body weight and progress photos';
-    case 'badges': return `${BADGES.filter(b => S.bd[b[0]]).length} of ${BADGES.length} unlocked`;
+    case 'hbadges': case 'badges': return `${BADGES.filter(b => S.bd[b[0]]).length} of ${BADGES.length} unlocked`;
     case 'today': return nowStr;
     case 'journal': return 'One entry a day';
     default: return 'Theme, units and your data';
@@ -42,8 +44,8 @@ function upNext() {
 function cardioSection(compact) {
   const M = cardioMachines(), r = S.crun;
   if (r) return `<section class="card crun"><span class="small muted">${CARDIO_EM[r.k] || '🏃'} ${esc(r.name)} running</span>
-      <div class="clock" id="cardioClock">${clock(Date.now() - r.start)}</div>
-      <div class="btns mt"><button class="btn" style="flex:1" data-act="cardioStop">Done</button><button class="btn ghost" data-act="cardioCancel" data-confirm>Cancel</button></div></section>`;
+      <div class="clock${r.pausedAt ? ' paused' : ''}" id="cardioClock">${clock(runMs(r))}</div>
+      <div class="btns mt"><button class="btn" style="flex:1" data-act="cardioStop">Done</button><button class="btn ghost" data-act="cardioPause">${r.pausedAt ? '▶ Resume' : '⏸ Pause'}</button><button class="btn ghost" data-act="cardioCancel" data-confirm>Cancel</button></div></section>`;
   if (!M.length) return '';
   const wk = cardioWeek(), last = [...cardioLogs()].reverse().slice(0, compact ? 0 : 3);
   return `<section class="card"><div class="row"><h2>Cardio</h2>${wk.n ? `<span class="small muted">${fmtN(Math.round(wk.min))} min this week</span>` : ''}</div>
@@ -96,10 +98,10 @@ function viewSession(a) {
   const inSession = new Set(a.exercises.map(e => norm(e.name)));
   const pool = S.ex.filter(e => live(e) && !CARDIO[e.kind] && (!a.cat || e.cats.includes(a.cat)) && !inSession.has(norm(e.name)));
   return `<section class="card"><div class="row"><div>
-      <span class="small muted"><b>${esc(a.cat ? catName(a.cat) : 'Workout')}</b> in progress</span>
-      <div class="clock" id="elapsed">${clock(Date.now() - a.start)}</div>
+      <span class="small muted"><b>${esc(a.cat ? catName(a.cat) : 'Workout')}</b> ${a.pausedAt ? '<b style="color:var(--accent)">paused</b>' : 'in progress'}</span>
+      <div class="clock${a.pausedAt ? ' paused' : ''}" id="elapsed">${clock(runMs(a))}</div>
       <span class="small muted">${done} of ${plural(total, 'set')} done</span></div>
-      <button class="btn" data-act="finish">Finish</button></div></section>
+      <div class="stack" style="gap:8px;flex:none"><button class="btn" data-act="finish">Finish</button><button class="btn ghost sm" data-act="pauseWorkout">${a.pausedAt ? '▶ Resume' : '⏸ Pause'}</button></div></div></section>
     ${a.exercises.map(exCard).join('') || emptyCard('No exercises yet', 'Add one below to start logging sets.')}
     <section class="card"><h2>Add exercise</h2>
       ${pool.length ? `<div class="chips mt">${pool.map(e => `<button class="chip" data-act="addFromLib" data-id="${esc(e.id)}">+ ${esc(e.name)}</button>`).join('')}</div>` : ''}
@@ -235,17 +237,6 @@ function viewBody() {
       ${PH.length ? `<div class="photos">${PH.map(p => `<figure><img src="${p.url}" alt="Progress photo from ${esc(fmtMD(keyDate(p.d)))}" loading="lazy">
         <figcaption>${esc(fmtMD(keyDate(p.d)))}<button class="link danger" data-act="deletePhoto" data-id="${p.id}" data-confirm>Delete</button></figcaption></figure>`).join('')}</div>` : ''}</section>`;
 }
-function viewBadges() {
-  const s = stats(), n = BADGES.filter(b => S.bd[b[0]]).length;
-  const card = ([id, em, name, desc, , f]) => {
-    const [c, g] = f(s), on = !!S.bd[id];
-    return `<div class="badge${on ? '' : ' lock'}"><div class="em" aria-hidden="true">${em}</div><b>${esc(name)}</b><span>${esc(desc)}</span>
-      ${on ? `<span>Unlocked ${fmtMD(new Date(S.bd[id]))}</span>` : `<div class="meter" role="progressbar" aria-label="${esc(name)} progress" aria-valuenow="${Math.floor(Math.min(c, g))}" aria-valuemax="${g}"><i style="width:${Math.min(100, c / g * 100)}%"></i></div><span>${short(Math.min(c, g))} of ${short(g)}</span>`}</div>`;
-  };
-  return `<section class="card"><div class="row"><h2>Collection</h2><b>${n} / ${BADGES.length}</b></div><div class="meter"><i style="width:${n / BADGES.length * 100}%"></i></div></section>
-    <h2 class="sec">Achievements</h2><div class="badges">${BADGES.filter(b => b[4] === 'real').map(card).join('')}</div>
-    <h2 class="sec">Just for fun</h2><div class="badges">${BADGES.filter(b => b[4] === 'fun').map(card).join('')}</div>`;
-}
 
 /* ----- Daily ----- */
 function viewToday() {
@@ -259,6 +250,10 @@ function viewToday() {
         <button class="check" aria-label="Took ${esc(x.name)} today" aria-pressed="${took(x.id, now)}" data-act="toggleSup" data-id="${esc(x.id)}">${ICON_CHECK}</button></div>`).join('') || '<p class="note">No supplements yet. Add one below.</p>'}
       <details class="mt" ${det('manageSup')}><summary class="link">Manage supplements</summary>
         ${S.sup.map(x => `<div class="lrow" style="align-items:center"><b style="flex:none">${esc(x.name)}</b><input class="input" style="min-height:40px" placeholder="Dose from your label" data-bind="dose" data-id="${esc(x.id)}" value="${esc(x.dose)}" aria-label="${esc(x.name)} dose"><button class="link danger" data-act="removeSup" data-id="${esc(x.id)}" data-confirm>Remove</button></div>`).join('')}
+        <span class="label">Daily reminders</span>
+        ${S.sup.map(x => `<div class="lrow" style="align-items:center"><span style="flex:1;text-align:left;color:var(--ink)">${esc(x.name)}</span><input class="input" type="time" style="width:130px;min-height:40px" data-bind="suptime" data-id="${esc(x.id)}" value="${esc(x.time || '')}" aria-label="Reminder time for ${esc(x.name)}"></div>`).join('')}
+        <button class="btn ghost block mt" data-act="supCal">📅 Add reminders to Calendar</button>
+        <p class="note">Set a time for each one, then tap the button. Your iPhone adds a daily repeating event with an alert, and you just tap Add All. Supplements with the same time share one reminder. If you change times later, delete the old Hibi reminders in Calendar and add them again.</p>
         <span class="label">Add a supplement</span>
         <input class="input" placeholder="Name, like Vitamin D" data-bind="ns" data-f="name" value="${esc(NS.name)}" aria-label="Supplement name">
         <div class="field mt"><input class="input" placeholder="Dose from your label" data-bind="ns" data-f="dose" value="${esc(NS.dose)}" aria-label="Dose"><button class="btn" data-act="addSup">Add</button></div></details></section>`;
@@ -292,7 +287,7 @@ function viewSettings() {
   return `<section class="card"><h2>Theme</h2>
       <div class="swatches">${THEMES.map(([id, n, a, b]) => `<button class="swatch" aria-pressed="${S.theme === id}" data-act="theme" data-k="${id}"><i style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></i>${n}</button>`).join('')}</div>
       <p class="note">Sakura follows your phone's light or dark mode. The others stay fixed.</p></section>
-${S.mode === 'home' || S.mode === 'school' ? '' : S.mode === 'gym' ? `    <section class="card"><h2>Training</h2>
+${S.mode === 'home' ? musicSettings() : S.mode === 'school' ? '' : S.mode === 'gym' ? `    <section class="card"><h2>Training</h2>
       <label class="setrow"><span>Weight unit</span><select class="input" data-bind="setting" data-k="unit">${['lb', 'kg'].map(u => `<option${S.unit === u ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rest timer</span><select class="input" data-bind="setting" data-k="rest">${[45, 60, 90, 120, 150, 180, 240].map(n => `<option value="${n}"${S.rest === n ? ' selected' : ''}>${clock(n * 1000)}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rep range for hints</span><select class="input" data-bind="setting" data-k="rr">${['5-8', '6-10', '8-12', '10-15', '12-20'].map(r => `<option value="${r}"${S.rr === r ? ' selected' : ''}>${r.replace('-', ' to ')} reps</option>`).join('')}</select></label>
@@ -300,7 +295,7 @@ ${S.mode === 'home' || S.mode === 'school' ? '' : S.mode === 'gym' ? `    <secti
       <label class="setrow"><span>Bar weight</span><select class="input" data-bind="setting" data-k="bar">${barOpts().map(n => `<option value="${n}"${barW() === n ? ' selected' : ''}>${n} ${S.unit}</option>`).join('')}</select></label>
       <p class="note">Hints tell you to add weight once you hit the top of your rep range on every set.</p>
       <p class="note">Changing the unit only changes labels. Numbers you already logged stay as entered.</p></section>
-` : S.mode === 'save' ? svSettings() : S.mode === 'games' ? gmSettings() : S.mode === 'japan' ? `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
+` : S.mode === 'save' ? svSettings() : S.mode === 'games' ? gmSettings() : S.mode === 'work' ? wkSettings() : S.mode === 'japan' ? `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
       <div class="ff"><label>First day<input class="input" type="date" name="start" value="${esc(S.jp.start)}"></label><label>Last day<input class="input" type="date" name="end" value="${esc(S.jp.end)}"></label></div>
       <button class="btn" type="submit">Save dates</button></form>
       <p class="note">Exchange rate: ¥${fmtN(R())} per dollar. Change it in Money, then Converter.</p></section>

@@ -79,6 +79,7 @@ function viewVGoals() {
       <div class="stats"><div class="stat"><b>${usd(savedAll)}</b><span>saved in total</span></div><div class="stat"><b>${month >= 0 ? '+' : '−'}${usd(Math.abs(month))}</b><span>this month</span></div><div class="stat"><b>${active.length}</b><span>${active.length === 1 ? 'goal' : 'goals'} in progress</span></div></div>
       ${targetActive ? `<div class="meter"><i style="width:${Math.min(100, savedActive / targetActive * 100)}%"></i></div><p class="note">${usd(savedActive)} of ${usd(targetActive)} across your active goals.</p>` : ''}
       ${active.length ? `<details class="mt" ${det('payday')}><summary class="link">💵 Payday: split money across your goals</summary>
+        ${wkReady() ? (p => `<p class="note">💼 Next paycheck from Work: about <b>${cash(p.net)}</b> on ${esc(fmtShort(periodFor(today()).pay))}. <button class="link" type="button" data-act="payFromWork" data-v="${Math.round(p.net * 100) / 100}">Use it</button></p>`)(payFor(periodFor(today()))) : ''}
         <form data-form="payday" class="stack mt"><div class="field"><input class="input" name="amt" id="payAmt" inputmode="decimal" placeholder="Amount to save, in $" aria-label="Amount to save" autocomplete="off"><button class="btn" type="submit">Save</button></div>
         <div id="payPrev"></div><p class="note">It splits by each goal's payday share if you set one. Otherwise it uses what each dated goal needs per paycheck, or splits evenly.</p></form></details>` : ''}</section>
     ${active.map(goalCard).join('')}

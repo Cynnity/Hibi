@@ -38,34 +38,38 @@ function recap(P) {
   o.dist = r1(C.reduce((t, x) => t + (x.k === 'stairs' ? 0 : distOf(x)), 0)); o.floors = C.reduce((t, x) => t + num(x.fl), 0);
 
   const A = S.alog.filter(a => inR(a[0], P)), sumK = k => A.filter(a => a[1] === k).reduce((t, a) => t + a[2], 0);
-  o.ep = sumK('ep'); o.ch = sumK('ch'); o.vols = sumK('vol'); o.pages = sumK('page'); o.gh = r1(sumK('gh'));
-  const gh = {}, mh = {};
-  A.forEach(a => { if (a[1] === 'gh') gh[a[3]] = (gh[a[3]] || 0) + a[2]; else mh[a[3]] = (mh[a[3]] || 0) + a[2]; });
-  const tg = topKey(gh); o.topGame = tg && tg[1] > 0 && gFind(tg[0]) ? {g:gFind(tg[0]), h:r1(tg[1])} : null;
+  o.ep = sumK('ep'); o.ch = sumK('ch'); o.vols = sumK('vol'); o.pages = sumK('page');
+  const mh = {};
+  A.forEach(a => { if (a[1] !== 'gh') mh[a[3]] = (mh[a[3]] || 0) + a[2]; });
   const tm = topKey(mh); o.topShow = tm && tm[1] > 0 && mFind(tm[0]) ? {m:mFind(tm[0]), n:tm[1]} : null;
-  const genreH = {}; Object.entries(gh).forEach(([id, h]) => { const g = gFind(id); if (g && g.genres[0]) genreH[g.genres[0]] = (genreH[g.genres[0]] || 0) + h; });
-  o.topGenre = topKey(genreH);
   o.beaten = S.gm.items.filter(g => gDone(g) && g.finished && inR(g.finished, P)).sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  o.gStarted = S.gm.items.filter(g => g.started && inR(g.started, P));
+  o.gAdded = S.gm.items.filter(g => g.added && inR(g.added, P) && g.status === 'plan').length;
+  const genreN = {}; [...o.beaten, ...o.gStarted].forEach(g => { if (g.genres[0]) genreN[g.genres[0]] = (genreN[g.genres[0]] || 0) + 1; });
+  o.topGenre = topKey(genreN);
   o.finished = S.md.items.filter(m => m.status === 'done' && m.finished && inR(m.finished, P)).sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
   const T = S.sv.tx.filter(t => dIn(t.d, P) && num(t.amt) > 0);
   o.saved = Math.round(T.reduce((t, x) => t + num(x.amt), 0) * 100) / 100; o.deposits = T.length;
   o.tasks = S.sc.tasks.filter(t => t.done && t.doneAt && inR(t.doneAt, P)).length;
+  const WS = shiftsSplit().filter(s => dIn(s.d, P)); o.workMin = WS.reduce((t, s) => t + s.mins, 0); o.shifts = WS.length;
+  o.earned = WS.reduce((t, s) => t + s.reg / 60 * shRate(s) + s.ot / 60 * shRate(s) * 1.5, 0) + S.wk.bonus.filter(b => dIn(b.d, P)).reduce((t, b) => t + num(b.amt), 0);
+  const FL = S.pomo.log.filter(x => inR(x[0], P)); o.focusN = FL.length; o.focusMin = FL.reduce((t, x) => t + x[1], 0);
   const J = S.j.filter(e => dIn(e.d, P)), moods = {}; J.forEach(e => { if (e.m) moods[e.m] = (moods[e.m] || 0) + 1; });
   o.journal = J.length; const tmo = topKey(moods); o.mood = tmo ? MOODS[+tmo[0] - 1] : null;
   o.badges = BADGES.filter(b => S.bd[b[0]] && inR(S.bd[b[0]], P));
   o.jpDays = tripDays().filter(d => dIn(d, P)).length;
   o.jpSpent = Math.round(S.jp.exp.filter(x => dIn(x.date, P)).reduce((t, x) => t + toUSD(x.amount, x.cur), 0));
-  o.any = !!(o.workouts || o.cardioN || o.gh || o.ep || o.ch || o.vols || o.pages || o.beaten.length || o.finished.length || o.saved || o.tasks || o.journal || o.badges.length || o.jpDays);
+  o.any = !!(o.workouts || o.cardioN || o.gStarted.length || o.ep || o.ch || o.vols || o.pages || o.beaten.length || o.finished.length || o.saved || o.tasks || o.focusN || o.shifts || o.journal || o.badges.length || o.jpDays);
   return o;
 }
 
 /* ----- Weekly recap card on Home ----- */
 function weekCard() {
   const cur = weekStart(Date.now()), last = UI.wk === 'last', P = periodOf('week', last ? cur - 7 * DAY_MS : cur), o = recap(P);
-  const tiles = [[o.workouts, o.workouts === 1 ? 'workout' : 'workouts', '🏋️'], [o.cardioMin, 'cardio min', '🏃'], [o.gh, 'hours played', '🎮'],
+  const tiles = [[o.workouts, o.workouts === 1 ? 'workout' : 'workouts', '🏋️'], [o.cardioMin, 'cardio min', '🏃'], [o.gStarted.length, o.gStarted.length === 1 ? 'game started' : 'games started', '🎮'], [o.beaten.length, o.beaten.length === 1 ? 'game beaten' : 'games beaten', '🏁'],
     [o.ep, o.ep === 1 ? 'episode' : 'episodes', '📺'], [o.ch, o.ch === 1 ? 'chapter' : 'chapters', '📖'], [o.pages, 'pages', '📚'], [o.saved ? usd(o.saved) : 0, 'saved', '💰'],
-    [o.tasks, 'homework done', '🎓'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
+    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? usd(Math.round(o.earned)) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🍅'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
   const hi = [o.prs ? `🏆 ${plural(o.prs, 'new PR')}` : '', ...o.beaten.slice(0, 2).map(g => `🎮 Beat ${g.title}`), ...o.finished.slice(0, 2).map(m => `✅ Finished ${m.title}`),
     ...o.badges.slice(0, 2).map(b => `${b[1]} ${b[2]}`)].filter(Boolean);
   return `<section class="card"><div class="row"><h2>${last ? 'Last week' : 'This week'}</h2>
@@ -89,8 +93,8 @@ function wrapCard() {
 function wrapSlides(kind, key) {
   const P = periodOf(kind, key), o = recap(P), L = [], yr = kind === 'year', unit = S.unit;
   const add = s => L.push(s);
-  const live = P.to > Date.now();
-  add({em:'🎁', eye:'Hibi Wrapped', big:P.label + (live ? ' so far' : ''), text:live ? `Here's ${yr ? 'your year' : P.short} so far.` : yr ? "Let's look back at your year." : `Here's how ${P.short} went.`, x:['Tap to continue']});
+  const ongoing = P.to > Date.now();
+  add({em:'🎁', eye:'Hibi Wrapped', big:P.label + (ongoing ? ' so far' : ''), text:ongoing ? `Here's ${yr ? 'your year' : P.short} so far.` : yr ? "Let's look back at your year." : `Here's how ${P.short} went.`, x:['Tap to continue']});
   if (o.workouts) {
     const cars = o.volume / (unit === 'kg' ? 1800 : 4000);
     add({em:'🏋️', eye:'In the gym', big:fmtN(o.workouts), unit:o.workouts === 1 ? 'workout' : 'workouts',
@@ -101,20 +105,25 @@ function wrapSlides(kind, key) {
     x:[o.favEx ? `Favorite exercise: ${o.favEx[0]} (${plural(o.favEx[1], 'set')})` : '', o.topMuscle ? `Most trained: ${o.topMuscle[0]}` : '']});
   if (o.cardioN) add({em:'🏃', eye:'Cardio', big:fmtN(o.cardioMin), unit:'minutes', text:`Across ${plural(o.cardioN, 'session')}.`,
     x:[o.dist ? `${fmtN(o.dist)} ${distU()} covered` : '', o.floors ? `${fmtN(o.floors)} floors climbed` : '']});
-  if (o.gh || o.beaten.length) add({em:'🎮', eye:'Gaming', big:fmtN(o.gh || o.beaten.length), unit:o.gh ? 'hours played' : (o.beaten.length === 1 ? 'game beaten' : 'games beaten'),
-    text:o.topGame ? `Most played: ${o.topGame.g.title} (${fmtN(o.topGame.h)} h)` : '', img:o.topGame && o.topGame.g.img,
-    x:[o.topGame ? '' : '', o.gh && o.beaten.length ? `Beat ${plural(o.beaten.length, 'game')}: ${o.beaten.slice(0, 3).map(g => g.title).join(', ')}` : '', o.topGenre ? `Top genre: ${o.topGenre[0]}` : '']});
+  if (o.beaten.length || o.gStarted.length) { const b = o.beaten.length, best = o.beaten[0] || o.gStarted[0];
+    add({em:'🎮', eye:'Gaming', big:fmtN(b || o.gStarted.length), unit:b ? (b === 1 ? 'game beaten' : 'games beaten') : (o.gStarted.length === 1 ? 'game started' : 'games started'),
+      text:b ? `${o.beaten.slice(0, 3).map(g => g.title).join(', ')}${b > 3 ? ' and more' : ''}` : o.gStarted.slice(0, 3).map(g => g.title).join(', '), img:best && best.img,
+      x:[b && o.gStarted.length ? `Started ${plural(o.gStarted.length, 'game')}` : '', o.beaten[0] && o.beaten[0].rating ? `Best: ${o.beaten[0].title} (${o.beaten[0].rating}/10)` : '', o.gAdded ? `${plural(o.gAdded, 'game')} added to your backlog` : '', o.topGenre ? `Top genre: ${o.topGenre[0]}` : '']}); }
   const md = [[o.ep, 'episodes'], [o.ch, 'chapters'], [o.vols, 'volumes'], [o.pages, 'pages']].filter(x => x[0] > 0);
   if (md.length || o.finished.length) add({em:'📺', eye:'Watching and reading', big:fmtN(md.length ? md[0][0] : o.finished.length), unit:md.length ? md[0][1] : 'titles finished',
     text:o.topShow ? `Most watched or read: ${o.topShow.m.title}` : '', img:o.topShow && o.topShow.m.img,
     x:[...md.slice(1).map(([n, l]) => `${fmtN(n)} ${l}`), o.finished.length ? `Finished ${plural(o.finished.length, 'title')}${o.finished[0].rating ? `. Best: ${o.finished[0].title} (${o.finished[0].rating}/10)` : ''}` : '']});
+  if (S.mu.artists.length && S.mu.at && (ongoing || Date.now() - P.to < 14 * DAY_MS) && kind === 'month') add({em:'🎧', eye:'On repeat', big:S.mu.artists[0].name, unit:'your top artist lately', img:S.mu.artists[0].img,
+    x:[S.mu.tracks[0] ? `Top song: ${S.mu.tracks[0].name} by ${S.mu.tracks[0].artist}` : '', S.mu.artists.slice(1, 3).length ? `Also: ${S.mu.artists.slice(1, 3).map(a => a.name).join(', ')}` : '']});
+  if (o.shifts) add({em:'💼', eye:'Work', big:fmtN(r1(o.workMin / 60)), unit:'hours worked', text:`Across ${plural(o.shifts, 'shift')}.`, x:[o.earned ? `About ${usd(Math.round(o.earned))} earned before taxes` : '']});
   if (o.saved) add({em:'💰', eye:'Savings', big:usd(o.saved), unit:'saved', text:`Across ${plural(o.deposits, 'deposit')}. Future you says thanks.`});
   if (o.jpDays) add({em:'🗾', eye:'Japan', big:fmtN(o.jpDays), unit:o.jpDays === 1 ? 'day in Japan' : 'days in Japan', text:o.jpSpent ? `${usd(o.jpSpent)} spent on the trip.` : 'A trip to remember.'});
-  if (o.tasks) add({em:'🎓', eye:'School', big:fmtN(o.tasks), unit:o.tasks === 1 ? 'assignment done' : 'assignments done', text:'One step closer to that degree.'});
+  if (o.tasks || o.focusN) add({em:'🎓', eye:'School', big:fmtN(o.tasks || r1(o.focusMin / 60)), unit:o.tasks ? (o.tasks === 1 ? 'assignment done' : 'assignments done') : 'hours of focus', text:'One step closer to that degree.',
+    x:[o.tasks && o.focusN ? `🍅 ${fmtN(r1(o.focusMin / 60))} hours of focus across ${plural(o.focusN, 'round')}` : '']});
   if (o.journal) add({em:o.mood ? o.mood[0] : '📝', eye:'Journal', big:fmtN(o.journal), unit:o.journal === 1 ? 'entry' : 'entries', text:o.mood ? `Most days felt ${o.mood[1].toLowerCase()}.` : ''});
   if (o.badges.length) add({em:'🏅', eye:'Badges unlocked', big:fmtN(o.badges.length), unit:o.badges.length === 1 ? 'badge' : 'badges', x:o.badges.slice(0, 6).map(b => `${b[1]} ${b[2]}`)});
-  const sum = [[o.workouts, 'workouts'], [o.cardioMin, 'cardio min'], [o.gh, 'hours played'], [o.ep || o.ch, o.ep ? 'episodes' : 'chapters'], [o.saved ? usd(o.saved) : 0, 'saved'], [o.tasks, 'assignments'], [o.beaten.length, 'games beaten'], [o.finished.length, 'titles finished']].filter(x => x[0]).slice(0, 6);
-  const next = live ? 'Keep it going.' : yr ? `Here's to ${+key + 1}.` : `On to ${MON_NAMES[(+key.split('-')[1]) % 12]}.`;
+  const sum = [[o.workouts, 'workouts'], [o.cardioMin, 'cardio min'], [o.beaten.length, 'games beaten'], [o.ep || o.ch, o.ep ? 'episodes' : 'chapters'], [o.saved ? usd(o.saved) : 0, 'saved'], [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked'], [o.tasks, 'assignments'], [o.gStarted.length, 'games started'], [o.finished.length, 'titles finished']].filter(x => x[0]).slice(0, 6);
+  const next = ongoing ? 'Keep it going.' : yr ? `Here's to ${+key + 1}.` : `On to ${MON_NAMES[(+key.split('-')[1]) % 12]}.`;
   add({em:'✨', eye:`${P.label} in Hibi`, big:'', sum, text:next, done:true});
   return {P, L};
 }
@@ -154,6 +163,6 @@ Object.assign(XACT, {
   wrapOpen: d => { UI.wrap = {kind:d.k, key:d.key, i:0}; },
   wrapNext: () => { const n = wrapSlides(UI.wrap.kind, UI.wrap.key).L.length; if (UI.wrap.i < n - 1) UI.wrap.i++; render(); return false; },
   wrapPrev: () => { if (UI.wrap.i > 0) UI.wrap.i--; render(); return false; },
-  wrapClose: () => { const w = UI.wrap; UI.wrap = null; if (w && w.id) S.wrapSeen[w.id] = 1; setTimeout(wrapCheck, 400); },
+  wrapClose: () => { const w = UI.wrap; UI.wrap = null; if (w && w.i > 0) S.wrapViewed = 1; if (w && w.id) S.wrapSeen[w.id] = 1; setTimeout(wrapCheck, 400); },
 });
 document.addEventListener('keydown', e => { if (!UI.wrap) return; if (e.key === 'ArrowRight') XACT.wrapNext(); else if (e.key === 'ArrowLeft') XACT.wrapPrev(); else if (e.key === 'Escape') { XACT.wrapClose(); afterChange(); } });

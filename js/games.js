@@ -1,4 +1,4 @@
-// Hibi: Games mode. Track what you play, hours, genres and a 1 to 10 rating. Search uses RAWG.
+// Hibi: Games mode. Track what you're playing, what you've beaten and what you want to play, with genres and a 1 to 10 rating. Search uses RAWG.
 'use strict';
 /* =========================================================
    Games mode
@@ -18,7 +18,6 @@ const gmSt = s => (GM_ST.find(x => x[0] === s) || GM_ST[1])[1];
 const gFind = id => S.gm.items.find(x => x.id === id);
 const gDone = g => g.status === 'done' || g.status === 'full';
 const gCover = (g, lg) => cover(g, 'wide' + (lg ? ' lg' : ''));
-const hrs = h => { h = num(h); return h ? `${fmtN(Math.round(h * 10) / 10)} h` : ''; };
 let GQ = '', GRES = [];
 // Up next: an ordered list of backlog games to play next
 const gQueued = g => S.gm.queue.includes(g.id);
@@ -37,16 +36,14 @@ const allGenres = () => { const have = [...new Set(S.gm.items.flatMap(g => g.gen
 
 /* ----- Rows and cards ----- */
 function gNowRow(g) {
-  return `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${[g.plat, hrs(g.hours) || 'No hours yet'].filter(Boolean).map(esc).join(', ')}</span></div>
-    <button class="btn sm" style="min-width:64px" data-act="gHrs" data-id="${esc(g.id)}" data-h="1" aria-label="Add an hour to ${esc(g.title)}">+1 h</button></div>`;
+  return `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${[g.plat, g.genres.slice(0, 2).join(', ')].filter(Boolean).map(esc).join(' · ') || 'Playing'}</span></div>
+    <button class="btn sm ghost" data-act="gBeat" data-id="${esc(g.id)}" aria-label="Mark ${esc(g.title)} as beaten">🏁 Beat</button></div>`;
 }
 function gCard(g) {
   return `<details class="card" ${det('g-' + g.id)}><summary class="sum"><div class="gsum">${gCover(g)}<div><h3>${g.fav ? '❤️ ' : ''}${esc(g.title)}</h3>
-      <span class="small muted">${[gmSt(g.status), g.genres.slice(0, 2).join(', '), hrs(g.hours)].filter(Boolean).map(esc).join(' · ')}</span></div>${g.rating ? ring(g.rating, 36) : ''}</div></summary>
+      <span class="small muted">${[gmSt(g.status), g.genres.slice(0, 2).join(', ')].filter(Boolean).map(esc).join(' · ')}</span></div>${g.rating ? ring(g.rating, 36) : ''}</div></summary>
     <span class="label">Status</span><select class="input" data-bind="gstatus" data-id="${esc(g.id)}" aria-label="Status">${GM_ST.map(([k, l]) => opt(k, l, g.status)).join('')}</select>
     <span class="label">Your rating</span>${rater('gRate', g.id, g.rating || 0)}
-    <span class="label">Hours played: <b>${hrs(g.hours) || '0 h'}</b></span>
-    <div class="btns"><button class="btn sm ghost" data-act="gHrs" data-id="${esc(g.id)}" data-h="-1">−1 h</button><button class="btn sm ghost" data-act="gHrs" data-id="${esc(g.id)}" data-h="0.5">+30 min</button><button class="btn sm" data-act="gHrs" data-id="${esc(g.id)}" data-h="1">+1 h</button></div>
     ${g.genres.length ? `<p class="small mt">Genres: <b>${esc(g.genres.join(', '))}</b></p>` : ''}
     ${g.plat ? `<p class="small">Playing on: <b>${esc(g.plat)}</b></p>` : ''}${g.year ? `<p class="small">Released: <b>${esc(g.year)}</b></p>` : ''}
     ${g.notes ? `<p class="small muted mt">${esc(g.notes).replace(/\n/g, '<br>')}</p>` : ''}
@@ -69,7 +66,7 @@ function viewGNow() {
         <button class="btn sm${i ? ' ghost' : ''}" data-act="gStart" data-id="${esc(g.id)}">Start</button></div>`).join('')}</section>` : ''}
     ${plan.length ? `<section class="card"><div class="row"><h2>Want to play</h2><button class="link" data-act="gFilter" data-s="plan">See all</button></div>
       ${plan.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span></div><button class="btn sm ghost" data-act="gQ" data-id="${esc(g.id)}">+ Up next</button></div>`).join('')}</section>` : ''}
-    ${recent.length ? `<section class="card"><h2>Recently beaten</h2>${recent.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${[gmSt(g.status), hrs(g.hours)].filter(Boolean).join(', ')}</span></div>${g.rating ? ring(g.rating, 36) : `<button class="link" data-act="gOpen" data-id="${esc(g.id)}">Rate</button>`}</div>`).join('')}</section>` : ''}`;
+    ${recent.length ? `<section class="card"><h2>Recently beaten</h2>${recent.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(gmSt(g.status))}</span></div>${g.rating ? ring(g.rating, 36) : `<button class="link" data-act="gOpen" data-id="${esc(g.id)}">Rate</button>`}</div>`).join('')}</section>` : ''}`;
 }
 
 /* ----- Library ----- */
@@ -92,7 +89,7 @@ function viewGLib() {
   return `<input class="input" id="gmSearch" type="search" placeholder="Search games, genres or platforms" value="${esc(GQ)}" autocomplete="off" aria-label="Search games">
     <div class="chips mt">${chip(`All ${I.filter(live).length}`, S.gm.fs === 'all', 'data-act="gFilter" data-s="all"')}${GM_ST.filter(([k]) => counts[k]).map(([k, l]) => chip(`${l} ${counts[k]}`, S.gm.fs === k, `data-act="gFilter" data-s="${k}"`)).join('')}${I.some(g => g.archived) ? chip(`Archived ${I.filter(g => g.archived).length}`, S.gm.fs === 'arch', 'data-act="gFilter" data-s="arch"') : ''}</div>
     ${genres.length ? `<div class="chips mt">${chip('All genres', S.gm.fg === 'all', 'data-act="gGenreF" data-g="all"')}${genres.map(x => chip(x, S.gm.fg === x, `data-act="gGenreF" data-g="${esc(x)}"`)).join('')}</div>` : ''}
-    <div class="row mt mb"><span class="small muted">Sort by</span><select class="input" style="width:auto" data-bind="gsort" aria-label="Sort by">${[['updated', 'Recently updated'], ['genre', 'Genre'], ['rating', 'Rating'], ['hours', 'Hours played'], ['title', 'Title'], ['year', 'Release year']].map(([k, l]) => opt(k, l, S.gm.sort)).join('')}</select></div>
+    <div class="row mt mb"><span class="small muted">Sort by</span><select class="input" style="width:auto" data-bind="gsort" aria-label="Sort by">${[['updated', 'Recently updated'], ['genre', 'Genre'], ['rating', 'Rating'], ['title', 'Title'], ['year', 'Release year']].map(([k, l]) => opt(k, l, S.gm.sort)).join('')}</select></div>
     <div id="gmList">${gList()}</div>`;
 }
 
@@ -111,7 +108,6 @@ function viewGAdd() {
       <input class="input" name="title" placeholder="Title" value="${fval(ed, 'title')}" aria-label="Title">
       <div class="ff">
         <label>Status<select class="input" name="status">${GM_ST.map(([k, l]) => opt(k, l, ed ? ed.status : 'now')).join('')}</select></label>
-        <label>Hours played<input class="input" name="hours" inputmode="decimal" placeholder="0" value="${ed && ed.hours ? esc(ed.hours) : ''}"></label>
         <label>Playing on<input class="input" name="plat" list="gmPlats" placeholder="PC" value="${fval(ed, 'plat')}"></label>
         <label>Release year<input class="input" name="year" inputmode="numeric" placeholder="2024" value="${fval(ed, 'year')}"></label></div>
       <datalist id="gmPlats">${plats.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
@@ -129,18 +125,16 @@ function viewGStats() {
   if (!I.length) return emptyCard('No stats yet', 'Add a few games to see your stats.', 'Add a game', 'data-act="go" data-to="gadd"');
   const c = s => I.filter(g => g.status === s).length, beatY = I.filter(g => gDone(g) && g.finished && new Date(g.finished).getFullYear() === y).length;
   const rated = I.filter(g => g.rating), avg = rated.length ? Math.round(rated.reduce((t, g) => t + g.rating, 0) / rated.length * 10) / 10 : 0;
-  const total = I.reduce((t, g) => t + num(g.hours), 0);
-  const gStats = {}; I.forEach(g => g.genres.forEach(x => { const o = gStats[x] = gStats[x] || {n:0, r:0, rn:0, h:0}; o.n++; o.h += num(g.hours); if (g.rating) { o.r += g.rating; o.rn++; } }));
+  const gStats = {}; I.forEach(g => g.genres.forEach(x => { const o = gStats[x] = gStats[x] || {n:0, r:0, rn:0, h:0}; o.n++; if (g.rating) { o.r += g.rating; o.rn++; } }));
   const byGenre = Object.entries(gStats).sort((a, b) => b[1].n - a[1].n).slice(0, 10), maxG = Math.max(1, ...byGenre.map(x => x[1].n));
-  const top = I.filter(g => g.rating >= 8).sort((a, b) => b.rating - a.rating || num(b.hours) - num(a.hours)).slice(0, 8);
-  const most = I.filter(g => num(g.hours)).sort((a, b) => num(b.hours) - num(a.hours)).slice(0, 5);
+  const top = I.filter(g => g.rating >= 8).sort((a, b) => b.rating - a.rating).slice(0, 8);
   return `<section class="card"><h2>Overview</h2>
       <div class="stats"><div class="stat"><b>${c('now')}</b><span>playing</span></div><div class="stat"><b>${beatY}</b><span>beaten in ${y}</span></div><div class="stat"><b>${c('plan')}</b><span>backlog</span></div></div>
-      <div class="stats"><div class="stat"><b>${short(Math.round(total))}</b><span>hours played</span></div><div class="stat"><b>${c('full')}</b><span>at 100%</span></div><div class="stat"><b>${I.length}</b><span>games</span></div></div>
+      <div class="stats"><div class="stat"><b>${c('done') + c('full')}</b><span>beaten total</span></div><div class="stat"><b>${c('full')}</b><span>at 100%</span></div><div class="stat"><b>${I.length}</b><span>games</span></div></div>
       ${rated.length ? `<div class="rate-row mt">${ring(Math.round(avg), 56)}<p class="note" style="margin:0">Your average rating is <b>${fmtN(avg)}</b> across ${plural(rated.length, 'game')}.</p></div>` : ''}</section>
-    ${byGenre.length ? `<section class="card"><h2>By genre</h2>${byGenre.map(([x, o]) => `<div class="crow"><div class="row"><b>${esc(x)}</b><span>${o.n}${o.rn ? ` · avg ${fmtN(Math.round(o.r / o.rn * 10) / 10)}` : ''}${o.h ? ` · ${hrs(o.h)}` : ''}</span></div><div class="cbar"><i style="width:${o.n / maxG * 100}%"></i></div></div>`).join('')}</section>` : ''}
+    ${byGenre.length ? `<section class="card"><h2>By genre</h2>${byGenre.map(([x, o]) => `<div class="crow"><div class="row"><b>${esc(x)}</b><span>${o.n}${o.rn ? ` · avg ${fmtN(Math.round(o.r / o.rn * 10) / 10)}` : ''}</span></div><div class="cbar"><i style="width:${o.n / maxG * 100}%"></i></div></div>`).join('')}</section>` : ''}
     ${top.length ? `<section class="card"><h2>Top rated</h2>${top.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', '))}</span></div>${ring(g.rating, 40)}</div>`).join('')}</section>` : ''}
-    ${most.length ? `<section class="card"><h2>Most played</h2>${most.map(g => `<div class="lrow"><b>${esc(g.title)}</b><span>${hrs(g.hours)}</span></div>`).join('')}</section>` : ''}`;
+`;
 }
 function gmSettings() {
   return `    <section class="card"><h2>Game search</h2>
@@ -170,9 +164,9 @@ const gFormGenres = () => { const f = $('form[data-form="game"]'); const v = f ?
 /* ----- Actions ----- */
 function gTouch(g) { g.updated = Date.now(); }
 Object.assign(MACT, {
-  gHrs: d => { const g = gFind(d.id); if (!g) return false; const was = num(g.hours); g.hours = Math.max(0, Math.round((was + num(d.h)) * 10) / 10); logAct('gh', Math.round((g.hours - was) * 10) / 10, g.id); if (num(d.h) > 0 && (g.status === 'plan' || g.status === 'hold')) g.status = 'now'; gTouch(g); },
+  gBeat: d => { const g = gFind(d.id); if (!g) return false; g.status = 'done'; g.finished = Date.now(); gTouch(g); gUnqueue(g); UI.open['g-' + g.id] = true; const nx = gUpNext()[0]; toast(`Beaten: ${g.title}! Rate it in Library.${nx ? ` Up next: ${nx.title}.` : ''}`); },
   gRate: d => { const g = gFind(d.id); if (!g) return false; g.rating = g.rating === +d.v ? 0 : +d.v; },
-  gStart: d => { const g = gFind(d.id); if (!g) return false; g.status = 'now'; gTouch(g); gUnqueue(g); toast(`Started ${g.title}. Have fun!`); },
+  gStart: d => { const g = gFind(d.id); if (!g) return false; g.status = 'now'; g.started = Date.now(); gTouch(g); gUnqueue(g); toast(`Started ${g.title}. Have fun!`); },
   gQ: d => { const g = gFind(d.id); if (!g) return false;
     if (gQueued(g)) { S.gm.queue = S.gm.queue.filter(id => id !== g.id); toast(`Took ${g.title} off Up next.`); }
     else { if (g.status !== 'hold') g.status = 'plan'; S.gm.queue.push(g.id); toast(`${g.title} is #${S.gm.queue.length} in Up next.`); } },
@@ -213,13 +207,13 @@ Object.assign(MACT, {
 Object.assign(SAVE, {
   game: o => {
     if (!o.title) { toast('Add a title first.'); return false; }
-    const rec = {title:o.title, status:o.status || 'now', hours:Math.max(0, Math.round(num(o.hours) * 10) / 10), plat:o.plat || '', year:o.year || '',
+    const rec = {title:o.title, status:o.status || 'now', plat:o.plat || '', year:o.year || '',
       genres:o.genres ? o.genres.split('|').filter(Boolean) : [], plats:o.plats ? o.plats.split('|').filter(Boolean) : [], img:o.img || '', src:o.src || '', notes:o.notes || '', fav:o.fav === 'on', updated:Date.now()};
     const ed = UI.edit && UI.edit.kind === 'game' ? gFind(UI.edit.id) : null;
     if (ed) { if (gDone(rec) && !gDone(ed)) rec.finished = Date.now(); Object.assign(ed, rec); gUnqueue(ed); toast('Updated.'); go('glib'); }
     else {
       if (S.gm.items.some(g => norm(g.title) === norm(rec.title) && !g.archived)) { toast(`${rec.title} is already in your games.`); return false; }
-      Object.assign(rec, {id:'g' + Date.now(), added:Date.now(), rating:0}); if (gDone(rec)) rec.finished = Date.now();
+      Object.assign(rec, {id:'g' + Date.now(), added:Date.now(), rating:0}); if (gDone(rec)) rec.finished = Date.now(); if (rec.status === 'now') rec.started = Date.now();
       S.gm.items.push(rec); toast(`Added ${rec.title}.`); go(rec.status === 'now' ? 'gnow' : 'glib');
     }
   },

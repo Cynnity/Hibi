@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 
 /* =========================================================
    Constants and reference data
@@ -99,6 +99,19 @@ function clock(ms, roundUp) {
 // Activity log for things that only keep running totals (episodes, chapters, game hours), so recaps know when they happened.
 // Each entry: [time, kind, amount, item id]
 const logAct = (k, n, id) => { if (n) S.alog.push([Date.now(), k, n, id || '']); };
+// Running time for anything that can be paused: {start, pausedMs, pausedAt}
+const runMs = r => r ? Math.max(0, (r.pausedAt || Date.now()) - r.start - (r.pausedMs || 0)) : 0;
+function togglePause(r) { if (!r) return; if (r.pausedAt) { r.pausedMs = (r.pausedMs || 0) + (Date.now() - r.pausedAt); r.pausedAt = 0; } else r.pausedAt = Date.now(); }
+// Hands a calendar (.ics) file to iPhone, which offers to add the events to Calendar
+function saveCalendar(text, filename, count) {
+  let framed = true; try { framed = window.top !== window; } catch (e) {}
+  if (framed) { toast('This works from your Home Screen app.'); return; }
+  const url = URL.createObjectURL(new Blob([text], {type:'text/calendar'})), a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+  toast(`Calendar file with ${plural(count, 'event')} is ready. Open it and tap Add All.`);
+}
+const icsEsc = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+const icsWrap = (events, name) => ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//Hibi//${name}//EN`, 'CALSCALE:GREGORIAN', ...events, 'END:VCALENDAR'].join('\r\n');
 const weekStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
 const chip = (text, on, attrs) => `<button class="chip${on ? ' on' : ''}" aria-pressed="${!!on}" ${attrs}>${esc(text)}</button>`;
 
@@ -136,10 +149,14 @@ function normalize(s) {
   normalizeJp(s);
   normalizeMd(s);
   normalizeGm(s);
+  normalizeMu(s);
+  normalizePomo(s);
+  normalizeWk(s);
   if (!Array.isArray(s.alog)) s.alog = [];
   { const cut = Date.now() - 800 * 864e5; s.alog = s.alog.filter(a => Array.isArray(a) && a[0] > cut); }
   if (!s.wrapSeen || typeof s.wrapSeen !== 'object') s.wrapSeen = {};
-  if (!s.wrapSince) s.wrapSince = Date.now();   // Wrapped only opens on its own for periods that end after this
+  if (!s.wrapSince) s.wrapSince = Date.now();
+  if (!Array.isArray(s.themesUsed)) s.themesUsed = [s.theme || 'sakura'];   // Wrapped only opens on its own for periods that end after this
   normalizeSv(s);
   normalizeExtra(s);
   return s;

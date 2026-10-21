@@ -363,6 +363,16 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .wsum b{display:block;font:400 26px/1.1 "Dela Gothic One",sans-serif}
 .wsum span{font-size:13px;font-weight:800;opacity:.92}
 .wdone{position:relative;z-index:3;pointer-events:auto;margin-top:22px;min-height:52px;border:0;border-radius:14px;background:#fff;color:#2B1B52;font-weight:900;font-size:17px}
+.clock.paused{opacity:.45}
+#rest.paused .t{opacity:.5}
+.layover{margin:-4px 8px 10px;padding:8px 12px;border-left:3px dashed var(--accent);font-size:14px;color:var(--mute)}
+.mu-art{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 4px;text-align:center}
+.mu-art img,.mu-ph{display:grid;place-items:center;width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;border:2px solid var(--ink);background:var(--surface-2);font:400 28px "Dela Gothic One",sans-serif;color:var(--mute)}
+.mu-art b{display:block;margin-top:6px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pomo-ring{width:min(240px,70vw);height:auto;display:block;margin:4px auto 6px}
+.pomo-ring text{font:400 46px "Dela Gothic One",sans-serif;fill:var(--ink);font-variant-numeric:tabular-nums}
+.pomo-ring text.ph{font:800 16px "Zen Maru Gothic",sans-serif;fill:var(--mute)}
+.badge.fun{border-style:dashed}
 .gsec{margin:18px 4px 8px;font:400 18px "Dela Gothic One",sans-serif}
 .stars{display:inline-flex;gap:2px;align-items:center}
 .star{background:none;border:0;padding:2px 3px;font-size:26px;line-height:1;color:var(--line)}

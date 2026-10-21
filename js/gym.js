@@ -220,6 +220,7 @@ function stats() {
   o.stack = ids.length ? Object.keys(S.sl).filter(k => ids.every(i => S.sl[k].includes(i))).length : 0;
   o.creat = Object.keys(S.sl).filter(k => S.sl[k].includes('creatine')).length;
   o.jr = S.j.length; o.bw = S.bw.length; o.photos = PH.length; o.tpl = S.tpl.length;
+  Object.assign(o, statsMore());
   return o;
 }
 const byUnit = (lb, kg) => S.unit === 'kg' ? kg : lb;

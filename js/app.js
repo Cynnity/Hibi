@@ -12,7 +12,7 @@ function render() {
 function drawApp() {
   const g = TAB_INFO[S.tab].g, tabs = GROUPS[g];
   const seg = tabs.length > 1 ? `<div class="seg" role="tablist">${tabs.map(t => `<button role="tab" aria-selected="${t === S.tab}" data-act="go" data-to="${t}">${TAB_INFO[t].t}</button>`).join('')}</div>` : '';
-  $('#app').innerHTML = `${updateBanner()}${modeBar()}<header class="top"><h1>${TAB_INFO[S.tab].t}</h1><p>${esc(subtitle())}</p></header>${seg}${(VIEWS[S.tab] || JVIEWS[S.tab] || MVIEWS[S.tab] || SVIEWS[S.tab] || XVIEWS[S.tab])()}`;
+  $('#app').innerHTML = `${updateBanner()}${modeBar()}<header class="top"><h1>${TAB_INFO[S.tab].t}</h1><p>${esc(subtitle())}</p></header>${seg}${S.mode === 'school' ? pomoBanner() : ''}${(VIEWS[S.tab] || JVIEWS[S.tab] || MVIEWS[S.tab] || SVIEWS[S.tab] || XVIEWS[S.tab])()}`;
   $('#sheetRoot').innerHTML = sheetHtml();
   { const mb = $('.modes'), sel = mb && mb.querySelector('[aria-selected="true"]'); if (sel && (sel.offsetLeft + sel.offsetWidth > mb.clientWidth + mb.scrollLeft || sel.offsetLeft < mb.scrollLeft)) mb.scrollLeft = Math.max(0, sel.offsetLeft - 16); }
   $('#nav').innerHTML = MODES[S.mode].nav.map(([ng, label, ic]) => `<button data-nav="${ng}"${ng === g ? ' aria-current="page"' : ''}><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg></span>${label}</button>`).join('');
@@ -49,14 +49,18 @@ function beep() {
    Timers
    ========================================================= */
 function startRest() { S.timer = {end:Date.now() + S.rest * 1000, total:S.rest}; }
+const restLeft = () => S.timer ? (S.timer.paused != null ? S.timer.paused : S.timer.end - Date.now()) : 0;
 function tick() {
   const jc = $('#jpClock'); if (jc) jc.textContent = tokyoNow();
-  const el = $('#elapsed'); if (el && S.active) el.textContent = clock(Date.now() - S.active.start);
-  const cc = $('#cardioClock'); if (cc && S.crun) cc.textContent = clock(Date.now() - S.crun.start);
+  const el = $('#elapsed'); if (el && S.active) el.textContent = clock(runMs(S.active));
+  const cc = $('#cardioClock'); if (cc && S.crun) cc.textContent = clock(runMs(S.crun));
+  pomoTick();
+  workTick();
   const r = $('#rest');
   if (!S.timer) { r.hidden = true; return; }
-  const left = S.timer.end - Date.now();
-  if (left <= 0) {
+  const left = restLeft();
+  const pb = $('#restPause'); if (pb) { const p = S.timer.paused != null; pb.textContent = p ? '▶' : '⏸'; pb.setAttribute('aria-label', p ? 'Resume rest timer' : 'Pause rest timer'); r.classList.toggle('paused', p); }
+  if (left <= 0 && S.timer.paused == null) {
     const stale = left < -60000;
     S.timer = null; save(); r.hidden = true;
     if (!stale) { beep(); toast('Rest is over. Next set!'); }
@@ -104,15 +108,19 @@ const ACT = {
         if (k === 'tread' && !num(o.dist) && distOf(o)) o.dist = String(distOf(o)); return o; })}; }).filter(e => e.sets.length);
     if (!ex.length) { toast('Check off at least one set to save this workout.'); return false; }
     const prs = ex.filter(e => { if (e.k) return false; const old = series(e.name); return old.length && topOf(e) > Math.max(...old.map(p => p.v)); }).map(e => e.name);
-    S.history.push({id:a.id, start:a.start, end:Date.now(), cat:a.cat, tpl:a.tpl || null, muscles:a.muscles, exercises:ex});
+    const end = Date.now();
+    S.history.push({id:a.id, start:end - runMs(a), end, cat:a.cat, tpl:a.tpl || null, muscles:a.muscles, exercises:ex});
     if (a.tpl && S.tpl.some(t => t.id === a.tpl)) S.next = tplAfter(a.tpl);
     S.active = null; S.timer = null;
     toast(prs.length ? `🏆 New PR: ${prs.join(', ')}!` : `Workout saved. ${ex.every(e => e.k) ? 'Cardio logged.' : plural(ex.reduce((t, e) => t + e.sets.length, 0), 'set') + ' logged.'}`);
   },
   discard: () => { S.active = null; S.timer = null; },
-  restMinus: () => { if (!S.timer) return false; S.timer.end -= 15000; S.timer.total = Math.max(15, S.timer.total - 15); },
-  restPlus: () => { if (!S.timer) return false; S.timer.end += 15000; S.timer.total += 15; },
+  restMinus: () => { if (!S.timer) return false; if (S.timer.paused != null) S.timer.paused = Math.max(0, S.timer.paused - 15000); S.timer.end -= 15000; S.timer.total = Math.max(15, S.timer.total - 15); },
+  restPlus: () => { if (!S.timer) return false; if (S.timer.paused != null) S.timer.paused += 15000; S.timer.end += 15000; S.timer.total += 15; },
   restSkip: () => { S.timer = null; },
+  restPause: () => { const t = S.timer; if (!t) return false; if (t.paused != null) { t.end = Date.now() + t.paused; t.paused = null; } else t.paused = Math.max(0, t.end - Date.now()); tick(); },
+  pauseWorkout: () => { togglePause(S.active); toast(S.active.pausedAt ? 'Workout paused.' : 'Back to it!'); },
+  cardioPause: () => { togglePause(S.crun); },
   applyHint: d => {
     const ex = S.active.exercises[+d.x], h = hintFor(ex.name); if (!h) return false;
     ex.sets.forEach(s => { if (!s.done) { s.w = String(h.w); s.r = String(h.r); } });
@@ -158,7 +166,7 @@ const ACT = {
   nfKind: d => { NF.kind = d.k; },
   cardioOpen: d => { const e = S.ex.find(x => x.id === d.id); if (!e || !CARDIO[e.kind]) return false; UI.clog = {name:e.name, k:e.kind}; },
   cardioStart: () => { const c = UI.clog; if (!c) return false; S.crun = {name:c.name, k:c.k, start:Date.now()}; UI.clog = null; toast(`${c.name} timer started.`); },
-  cardioStop: () => { const r = S.crun; if (!r) return false; UI.clog = {name:r.name, k:r.k, start:r.start, min:String(Math.max(1, Math.round((Date.now() - r.start) / 6e3) / 10))}; },
+  cardioStop: () => { const r = S.crun; if (!r) return false; UI.clog = {name:r.name, k:r.k, start:r.start, min:String(Math.max(1, Math.round(runMs(r) / 6e3) / 10))}; },
   cardioCancel: () => { S.crun = null; },
   cardioDel: d => { S.cardio = S.cardio.filter(x => String(x.id) !== d.id); },
   exKind: d => { const e = S.ex.find(x => x.id === d.id); if (!e) return false; if (d.k) e.kind = d.k; else delete e.kind;
@@ -189,6 +197,17 @@ const ACT = {
     S.sup.push({id:'p' + Date.now(), name:NS.name.trim(), dose:NS.dose.trim()}); NS = {name:'', dose:''};
   },
   removeSup: d => { S.sup = S.sup.filter(x => x.id !== d.id); },
+  supCal: () => {
+    const L = S.sup.filter(x => /^\d\d:\d\d$/.test(x.time || ''));
+    if (!L.length) { toast('Set a reminder time for at least one supplement first.'); return false; }
+    const byT = {}; L.forEach(x => (byT[x.time] = byT[x.time] || []).push(x));
+    const start = dk(new Date()).replace(/-/g, ''), stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+    const ev = Object.entries(byT).map(([t, xs]) => { const [h, m] = t.split(':'), names = xs.map(x => x.name + (x.dose ? ` (${x.dose})` : ''));
+      return ['BEGIN:VEVENT', `UID:hibi-sup-${t.replace(':', '')}@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${start}T${h}${m}00`, `DTEND:${start}T${h}${m}00`, 'RRULE:FREQ=DAILY',
+        `SUMMARY:${icsEsc('💊 Take ' + xs.map(x => x.name).join(', '))}`, `DESCRIPTION:${icsEsc(names.join('\n') + '\nCheck them off in Hibi, then Gym, then Daily.')}`, 'TRANSP:TRANSPARENT',
+        'BEGIN:VALARM', 'TRIGGER:PT0M', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Time for ' + xs.map(x => x.name).join(', '))}`, 'END:VALARM', 'END:VEVENT'].join('\r\n'); });
+    saveCalendar(icsWrap(ev, 'Supplements'), 'hibi-supplements.ics', ev.length); return false;
+  },
   mood: d => { JD.m = JD.m === +d.m ? 0 : +d.m; },
   saveJournal: () => {
     if (!JD.m && !JD.t.trim()) { toast('Pick a mood or write a few words first.'); return false; }
@@ -196,7 +215,7 @@ const ACT = {
   },
   deleteEntry: d => { S.j = S.j.filter(e => e.d !== d.d); if (d.d === today()) JD = null; },
 
-  theme: d => { S.theme = d.k; applyTheme(); },
+  theme: d => { S.theme = d.k; applyTheme(); if (!S.themesUsed.includes(d.k)) S.themesUsed.push(d.k); },
   shareBackup: () => {
     const file = new File([JSON.stringify(backup())], `hibi-backup-${today()}.json`, {type:'application/json'});
     if (navigator.canShare && navigator.canShare({files:[file]})) {

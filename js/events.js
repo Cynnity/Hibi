@@ -30,6 +30,13 @@ document.addEventListener('click', e => {
   } catch (err) { Crash.record(err, 'button'); toast('Something went wrong. A crash report was saved.'); try { save(); render(); } catch (x) {} return; }
   if (S.tab !== wasTab) scrollTo(0, 0);
 });
+// Tapping a number box selects what's in it, so typing replaces the old number instead of adding to it
+document.addEventListener('focusin', e => {
+  const t = e.target;
+  if (t && t.tagName === 'INPUT' && (t.classList.contains('num-in') || /^(numeric|decimal)$/.test(t.getAttribute('inputmode') || '') || t.type === 'number')) {
+    setTimeout(() => { try { if (document.activeElement === t) t.setSelectionRange(0, t.value.length); } catch (x) { try { t.select(); } catch (y) {} } }, 0);
+  }
+});
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'cvJ' || t.id === 'cvU') { const r = R(), v = num(t.value), o = $(t.id === 'cvJ' ? '#cvU' : '#cvJ'); o.value = t.value.trim() === '' ? '' : t.id === 'cvJ' ? (v / r).toFixed(2) : String(Math.round(v * r)); return; }
@@ -60,8 +67,11 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'svfreq') { S.sv.freq = t.value; save(); render(); return; }
   if (t.dataset.bind === 'mstatus') { const m = mFind(t.dataset.id); if (m) { const was = m.status; m.status = t.value; m.updated = Date.now(); if (t.value === 'done' && was !== 'done') { m.finished = Date.now(); if (m.total) m.prog = Math.max(m.prog || 0, m.total); } afterChange(); } return; }
   if (t.dataset.bind === 'msort') { S.md.sort = t.value; save(); render(); return; }
+  if (t.dataset.bind === 'suptime') { const x = S.sup.find(q => q.id === t.dataset.id); if (x) { x.time = t.value; save(); } return; }
+  if (t.dataset.bind === 'pomo') { S.pomo[t.dataset.k] = +t.value; save(); render(); return; }
+  if (t.dataset.bind === 'pomoClass') { S.pomo.c = t.value; save(); return; }
   if (t.dataset.bind === 'gsort') { S.gm.sort = t.value; save(); render(); return; }
-  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); gUnqueue(g); if (gDone(g) && !was) { g.finished = Date.now(); const nx = gUpNext()[0]; toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.${nx ? ` Up next: ${nx.title}.` : ''}`); } afterChange(); } return; }
+  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); if (t.value === 'now') g.started = Date.now(); gUnqueue(g); if (gDone(g) && !was) { g.finished = Date.now(); const nx = gUpNext()[0]; toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.${nx ? ` Up next: ${nx.title}.` : ''}`); } afterChange(); } return; }
   if (t.dataset.bind === 'jjday') { S.jp.jsel = t.value; save(); render(); return; }
   if (t.type === 'file') {
     const f = t.files && t.files[0]; const kind = t.dataset.file; t.value = ''; if (!f) return;
