@@ -4,6 +4,9 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.7.1 — "Press start" (Oct 21)
+- **Game search is on.** Hibi now has its own RAWG key built in, so search works right away, even after a restore or on another device.
+
 ## 1.7 — "Player 2 has joined" (Oct 21)
 - **New Games mode 🎮** with Playing, Library, Add and Stats tabs.
 - **Track every game:** Playing, Want to play, On hold, Beaten, 100% and Dropped, plus hours played, what you play it on, genres, notes and favorites.

@@ -9,7 +9,7 @@ Object.assign(TAB_INFO, {gnow:{g:'gnow',t:'Playing'}, glib:{g:'glib',t:'Games'},
 Object.assign(GROUPS, {gnow:['gnow'], glib:['glib'], gadd:['gadd'], gstats:['gstats']});
 
 // Free key from rawg.io/apidocs. It can also be set in Games settings.
-const RAWG_KEY = '';
+const RAWG_KEY = '9ff87aa432d447259d851b4e474a4b60';
 const rawgKey = () => (S.gm.key || RAWG_KEY || '').trim();
 const GM_ST = [['now','Playing'],['plan','Want to play'],['hold','On hold'],['done','Beaten'],['full','100%'],['drop','Dropped']];
 const GM_GENRES = ['Action','Adventure','RPG','Shooter','Platformer','Fighting','Racing','Sports','Strategy','Simulation','Puzzle','Horror','Roguelike','Souls-like','MOBA','Battle royale','Rhythm','Visual novel','Indie','Casual','Massively Multiplayer','Family'];
