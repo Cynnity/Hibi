@@ -141,8 +141,8 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:38px;
 .stat{background:var(--surface-2);border-radius:12px;padding:10px 12px}
 .stat b{display:block;font:400 22px/1.15 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums}
 .stat span{font-size:13px;color:var(--mute);font-weight:700}
-.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
-.tile{appearance:none;text-align:left;padding:14px;border-radius:14px;border:2px solid var(--ink);background:var(--surface);box-shadow:3px 3px 0 var(--panel);transition:transform .08s,box-shadow .08s}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.tile{appearance:none;text-align:left;min-width:0;padding:14px;border-radius:14px;border:2px solid var(--ink);background:var(--surface);box-shadow:3px 3px 0 var(--panel);transition:transform .08s,box-shadow .08s}
 .tile:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--panel)}
 .tile b{display:block;font:400 19px/1.2 "Dela Gothic One",sans-serif}
 .tile span{font-size:13px;color:var(--mute);font-weight:700}
@@ -255,6 +255,19 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .hint .txt b{color:var(--ink)}
 .hint.up{background:var(--good-soft)}
 .hint.up .txt{color:var(--ink)}
+.tpls{padding:6px 16px}
+.tpls>.sum{padding:10px 30px 10px 0}
+.tpl{border-top:1.5px solid var(--line)}
+.tpl>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 26px 12px 0;cursor:pointer;position:relative}
+.tpl>summary::-webkit-details-marker{display:none}
+.tpl>summary::after{content:"";position:absolute;right:6px;top:50%;width:7px;height:7px;margin-top:-6px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg);transition:transform .2s}
+.tpl[open]>summary::after{transform:rotate(225deg);margin-top:-2px}
+.tpl>summary b{font:400 17px/1.2 "Dela Gothic One",sans-serif;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tpl>summary span{font-size:13px;color:var(--mute);font-weight:700;white-space:nowrap}
+.tpl .chip{font-size:11px;line-height:1.5;min-height:0;border:0;box-shadow:none;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--accent);color:var(--on-accent,#fff);white-space:nowrap}
+.tpl ol{margin:0 0 10px;padding-left:22px;font-size:14px;line-height:1.55}
+.tpl ol small{color:var(--mute)}
+.tpl .btns{margin-bottom:12px}
 .tile small{display:block;font-size:12px;color:var(--mute);margin-top:6px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ex-actions{display:flex;gap:14px;align-items:center}
 #sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,6,25,.5)}
@@ -349,7 +362,7 @@ span.star{font-size:14px;padding:0}
 .notes p{margin:6px 0;color:var(--mute)}
 .notes hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 .notes code{background:var(--surface-2);padding:1px 6px;border-radius:6px;font-size:.9em}
-@media (min-width:700px){main{max-width:720px}.figure{max-width:340px}.badges{grid-template-columns:repeat(3,1fr)}.tiles{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:700px){main{max-width:720px}.figure{max-width:340px}.badges{grid-template-columns:repeat(3,1fr)}.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -1264,7 +1277,7 @@ function airText(m) {
 }
 
 /* ----- App version and update banner ----- */
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.2';
 const HIBI_LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64" style="border-radius:15px;flex:none" aria-hidden="true"> <defs> <linearGradient id="hb-bg" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#FF7AAA"/> <stop offset="0.55" stop-color="#F0467F"/> <stop offset="1" stop-color="#C92E6B"/> </linearGradient> <pattern id="hb-tone" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"> <circle cx="11" cy="11" r="3.2" fill="#FFFFFF"/> </pattern> <radialGradient id="hb-fade" cx="0.88" cy="0.9" r="0.55"> <stop offset="0" stop-color="#fff" stop-opacity="1"/> <stop offset="1" stop-color="#fff" stop-opacity="0"/> </radialGradient> <mask id="hb-toneMask"><rect width="512" height="512" fill="url(#hb-fade)"/></mask> <path id="hb-petal" d="M256 262 C 200 212 182 136 222 92 L 256 120 L 290 92 C 330 136 312 212 256 262 Z"/> </defs> <rect width="512" height="512" fill="url(#hb-bg)"/> <rect width="512" height="512" fill="url(#hb-tone)" opacity="0.22" mask="url(#hb-toneMask)"/> <g transform="translate(0 14)"> <g fill="#2B1B52" transform="translate(9 9)"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g fill="#FFFFFF" stroke="#2B1B52" stroke-width="12" stroke-linejoin="round"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g stroke="#FFC2D7" stroke-width="7" stroke-linecap="round"> <path d="M256 238 V 168"/><path d="M256 238 V 168" transform="rotate(72 256 256)"/><path d="M256 238 V 168" transform="rotate(144 256 256)"/> <path d="M256 238 V 168" transform="rotate(216 256 256)"/><path d="M256 238 V 168" transform="rotate(288 256 256)"/> </g> <circle cx="256" cy="256" r="30" fill="#F0467F" stroke="#2B1B52" stroke-width="10"/> <circle cx="246" cy="246" r="8" fill="#FFFFFF"/> </g> <g transform="translate(404 104)"> <path d="M0 -46 C 6 -14 14 -6 46 0 C 14 6 6 14 0 46 C -6 14 -14 6 -46 0 C -14 -6 -6 -14 0 -46 Z" fill="#5CE1F5" stroke="#2B1B52" stroke-width="8" stroke-linejoin="round"/> </g> <g transform="translate(112 410)"> <path d="M0 -22 C 3 -7 7 -3 22 0 C 7 3 3 7 0 22 C -3 7 -7 3 -22 0 C -7 -3 -3 -7 0 -22 Z" fill="#FFFFFF" stroke="#2B1B52" stroke-width="6" stroke-linejoin="round"/> </g> </svg>`;
 let updateReady = false, hadController = false;
 try {
@@ -2063,6 +2076,14 @@ function upNext() {
     <p class="note">${last ? 'Last done ' + fmtLong(last.end) + '.' : 'Not done yet.'}</p>
     <div class="btns mt"><button class="btn" style="flex:1" data-act="startTpl" data-id="${esc(t.id)}">Start ${esc(t.name)}</button>${S.tpl.length > 1 ? '<button class="btn ghost" data-act="skipRot">Skip</button>' : ''}</div></section>`;
 }
+function tplList() {
+  const L = S.tpl.filter(live); if (!L.length) return '';
+  const nx = nextTpl();
+  return `<details class="card tpls" ${det('tplList', true)}><summary class="sum"><h2>Templates</h2><span class="small muted">${plural(L.length, 'template')}. Tap one to see its exercises.</span></summary>
+    ${L.map(t => `<details class="tpl" ${det('tpl:' + t.id)}><summary><b>${esc(t.name)}</b>${nx && nx.id === t.id ? '<span class="chip">Next</span>' : ''}<span>${plural(t.items.length, 'exercise')}</span></summary>
+      <ol>${t.items.map(i => `<li>${esc(i.name)}${i.sets ? ` <small>· ${plural(i.sets, 'set')}</small>` : ''}</li>`).join('')}</ol>
+      <div class="btns"><button class="btn" style="flex:1" data-act="startTpl" data-id="${esc(t.id)}">Start ${esc(t.name)}</button></div></details>`).join('')}</details>`;
+}
 function viewWorkout() {
   if (S.active) return viewSession(S.active);
   const ws = weekStart(Date.now()), wk = S.history.filter(w => w.end >= ws), last = S.history[S.history.length - 1];
@@ -2072,7 +2093,7 @@ function viewWorkout() {
       <div class="stats"><div class="stat"><b>${wk.length}</b><span>${wk.length === 1 ? 'workout' : 'workouts'}</span></div>
       <div class="stat"><b>${short(vol)}</b><span>${S.unit} lifted</span></div><div class="stat"><b>${Math.round(mins)}</b><span>minutes</span></div></div>
       <p class="note">${last ? `Last workout ${fmtLong(last.end)}${last.cat ? ', ' + esc(catName(last.cat)) : ''}.` : 'Finish your first workout and it shows up here.'}</p></section>
-    ${S.tpl.some(live) ? `<h2 class="sec">All templates</h2><div class="tiles">${S.tpl.filter(live).map(t => `<button class="tile" data-act="startTpl" data-id="${esc(t.id)}"><b>${esc(t.name)}</b><span>${plural(t.items.length, 'exercise')}</span><small>${esc(t.items.map(i => i.name).join(', '))}</small></button>`).join('')}</div>` : ''}
+    ${tplList()}
     <h2 class="sec">${S.tpl.some(live) ? 'Or start by category' : 'Start a workout'}</h2>
     <div class="tiles">${S.cats.filter(live).map(c => { const n = S.ex.filter(e => live(e) && e.cats.includes(c.id)).length;
       return `<button class="tile" data-act="start" data-cat="${esc(c.id)}"><b>${esc(c.name)}</b><span>${plural(n, 'exercise')}</span></button>`; }).join('')}</div>
