@@ -882,7 +882,7 @@ function icsFile() {
   const d8 = k => k.replace(/-/g, '');
   const ev = [];
   const add = (uid, k, time, title, place, note) => {
-    const lines = ['BEGIN:VEVENT', `UID:${uid}@lift-log`, `DTSTAMP:${stamp}`];
+    const lines = ['BEGIN:VEVENT', `UID:${uid}@hibi`, `DTSTAMP:${stamp}`];
     if (time) { const [h, m] = time.split(':').map(Number), end = Math.min(h + 1, 23); lines.push(`DTSTART;TZID=Asia/Tokyo:${d8(k)}T${pad(h)}${pad(m)}00`, `DTEND;TZID=Asia/Tokyo:${d8(k)}T${pad(end)}${pad(end === h + 1 ? m : 59)}00`); }
     else { const n = keyDate(k); n.setDate(n.getDate() + 1); lines.push(`DTSTART;VALUE=DATE:${d8(k)}`, `DTEND;VALUE=DATE:${d8(dk(n))}`); }
     lines.push(`SUMMARY:${escI(title)}`); if (place) lines.push(`LOCATION:${escI(place)}`); if (note) lines.push(`DESCRIPTION:${escI(note)}`);
@@ -2403,7 +2403,7 @@ function downloadBackup(file) {
    Backup, restore and Hevy import
    ========================================================= */
 const BACKUP_KEYS = ['unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','hidden','order'];
-function backup() { const o = {app:'lift-log', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
+function backup() { const o = {app:'hibi', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
 function restoreFrom(text) {
   let d;
   try { d = JSON.parse(text); if (!d || !Array.isArray(d.history)) throw 0; } catch (e) { toast('That is not a Hibi backup.'); return; }
