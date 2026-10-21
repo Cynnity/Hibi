@@ -4,6 +4,9 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.1.1 — "Touch-up" (Oct 21)
+- **Fixed the Home Screen icon.** The pink background only covered the top-left corner and the rest showed up white. Now the whole icon is pink behind the sakura.
+
 ## 1.1 — "Wardrobe change" (Oct 21)
 - **Patch notes in the app:** go to Settings, then About, then What's new. They work offline too.
 - **"Hibi was updated" card** on Home after each update, with a button to see what changed.
