@@ -56,6 +56,7 @@ function tick() {
   const cc = $('#cardioClock'); if (cc && S.crun) cc.textContent = clock(runMs(S.crun));
   pomoTick();
   workTick();
+  widgetTick();
   const r = $('#rest');
   if (!S.timer) { r.hidden = true; return; }
   const left = restLeft();
@@ -111,6 +112,8 @@ const ACT = {
     const end = Date.now();
     S.history.push({id:a.id, start:end - runMs(a), end, cat:a.cat, tpl:a.tpl || null, muscles:a.muscles, exercises:ex});
     if (a.tpl && S.tpl.some(t => t.id === a.tpl)) S.next = tplAfter(a.tpl);
+    { const mins = runMs(a) / 6e4, sets = ex.reduce((t, e) => t + (e.k ? 0 : e.sets.length), 0), vol = volOf({exercises:ex.filter(e => !e.k)});
+      if (mins < 10 && sets >= 3) sxBump('speed'); if (sets && vol < 100 && !ex.some(e => e.k)) sxBump('tiny'); }
     S.active = null; S.timer = null;
     toast(prs.length ? `🏆 New PR: ${prs.join(', ')}!` : `Workout saved. ${ex.every(e => e.k) ? 'Cardio logged.' : plural(ex.reduce((t, e) => t + e.sets.length, 0), 'set') + ' logged.'}`);
   },
@@ -119,7 +122,7 @@ const ACT = {
   restPlus: () => { if (!S.timer) return false; if (S.timer.paused != null) S.timer.paused += 15000; S.timer.end += 15000; S.timer.total += 15; },
   restSkip: () => { S.timer = null; },
   restPause: () => { const t = S.timer; if (!t) return false; if (t.paused != null) { t.end = Date.now() + t.paused; t.paused = null; } else t.paused = Math.max(0, t.end - Date.now()); tick(); },
-  pauseWorkout: () => { togglePause(S.active); toast(S.active.pausedAt ? 'Workout paused.' : 'Back to it!'); },
+  pauseWorkout: () => { if (S.active.pausedAt && Date.now() - S.active.pausedAt > 30 * 6e4) sxBump('longPause'); togglePause(S.active); toast(S.active.pausedAt ? 'Workout paused.' : 'Back to it!'); },
   cardioPause: () => { togglePause(S.crun); },
   applyHint: d => {
     const ex = S.active.exercises[+d.x], h = hintFor(ex.name); if (!h) return false;
@@ -155,7 +158,7 @@ const ACT = {
   openPlates: () => { UI.plates = {w:''}; },
   plates: d => { const ex = S.active.exercises[+d.x], s = ex.sets.find(x => !x.done) || ex.sets[ex.sets.length - 1]; UI.plates = {w:s ? s.w : ''}; },
   plateQuick: d => { UI.plates.w = d.w; },
-  closeSheet: () => { UI.plates = null; UI.clog = null; },
+  closeSheet: () => { UI.plates = null; UI.clog = null; UI.wAdd = false; },
   noop: () => false,
 
   filterCat: d => { S.cf = d.c; },
@@ -215,7 +218,7 @@ const ACT = {
   },
   deleteEntry: d => { S.j = S.j.filter(e => e.d !== d.d); if (d.d === today()) JD = null; },
 
-  theme: d => { S.theme = d.k; applyTheme(); if (!S.themesUsed.includes(d.k)) S.themesUsed.push(d.k); },
+  theme: d => { S.theme = d.k; applyTheme(); if (!S.themesUsed.includes(d.k)) S.themesUsed.push(d.k); const td = today(); if (S.sx.thD !== td) { S.sx.thD = td; S.sx.thN = 0; } S.sx.thN++; if (d.k === 'miku') sxBump('miku'); },
   shareBackup: () => {
     const file = new File([JSON.stringify(backup())], `hibi-backup-${today()}.json`, {type:'application/json'});
     if (navigator.canShare && navigator.canShare({files:[file]})) {

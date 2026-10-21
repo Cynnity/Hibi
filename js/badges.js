@@ -7,7 +7,7 @@ Object.assign(ICON, {trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1.5A3 3 0 0 
 MODES.home.nav.splice(1, 0, ['hbadges', 'Badges', 'trophy']);
 Object.assign(TAB_INFO, {hbadges:{g:'hbadges', t:'Badges'}});
 Object.assign(GROUPS, {hbadges:['hbadges']});
-const BADGE_CATS = [['gym','🏋️','Gym'],['cardio','🏃','Cardio'],['daily','📓','Daily'],['school','🎓','School'],['work','💼','Work'],['japan','🗾','Japan'],
+const BADGE_CATS = [['secret','🤫','Secret'],['gym','🏋️','Gym'],['cardio','🏃','Cardio'],['daily','📓','Daily'],['school','🎓','School'],['work','💼','Work'],['japan','🗾','Japan'],
   ['media','📚','Shows & Books'],['games','🎮','Games'],['save','💰','Savings'],['hibi','🌸','Hibi']];
 const BADGE_CAT_OF = {cardio10:'cardio', stairs:'cardio', t1230:'cardio', stack:'daily', creat:'daily', jr7:'daily', bw7:'daily', photo:'daily'};
 const badgeCat = b => b[6] || BADGE_CAT_OF[b[0]] || 'gym';
@@ -68,7 +68,26 @@ BADGES.push(
   ['htheme','🎨','Fashionista','Try 5 themes','fun',s => [s.themes, 5],'hibi'],
   ['hface','🙂','Face Reveal','Turn on Face ID unlock','fun',s => [s.face, 1],'hibi'],
   ['hmusic','🎧','Aux Cord','Connect stats.fm','fun',s => [s.music, 1],'hibi'],
-  ['hall','🌸','Everything App','Use 6 different modes','real',s => [s.modes, 6],'hibi']
+  ['hall','🌸','Everything App','Use 6 different modes','real',s => [s.modes, 6],'hibi'],
+  // Secret badges: hidden until you find them
+  ['x-petal','🌸','Petal Pusher','Tap the Hibi logo 10 times. It tickles.','secret',s => [s.x.logo || 0, 10],'secret'],
+  ['x-39','💙','Thank You (39)','Switch to the Miku theme. 39 sounds like "thank you" in Japanese.','secret',s => [s.x.miku || 0, 1],'secret'],
+  ['x-am3','🫠','3AM Thoughts','Open Hibi between 3 and 4 in the morning. Go to sleep.','secret',s => [s.x.am3 || 0, 1],'secret'],
+  ['x-wish','🌠','Make a Wish','Open Hibi at exactly 11:11','secret',s => [s.x.wish || 0, 1],'secret'],
+  ['x-newyear','🎆','New Year, Same Me','Open Hibi on New Year\'s Day','secret',s => [s.x.newyear || 0, 1],'secret'],
+  ['x-clingy','🥺','Clingy','Open Hibi 7 days in a row','secret',s => [s.openRun, 7],'secret'],
+  ['x-who','🕵️','Who Are You?','Get the passcode wrong 3 times','secret',s => [s.x.pinWrong || 0, 3],'secret'],
+  ['x-indecisive','🎨',"Can't Decide",'Switch themes 10 times in one day','secret',s => [s.x.thN || 0, 10],'secret'],
+  ['x-eyes','😴','Just Resting My Eyes','Pause a workout for over 30 minutes','secret',s => [s.x.longPause || 0, 1],'secret'],
+  ['x-speed','⚡','Any% Speedrun','Finish a workout of 3+ sets in under 10 minutes','secret',s => [s.x.speed || 0, 1],'secret'],
+  ['x-tiny','🪶','Warm-Up Counts, Right?','Finish a workout that lifted under 100 total','secret',s => [s.x.tiny || 0, 1],'secret'],
+  ['x-closing','🌃','Closing Shift','Clock out after midnight','secret',s => [s.x.lateShift || 0, 1],'secret'],
+  ['x-falsealarm','🚨','False Alarm','Cancel a shift you clocked in for','secret',s => [s.x.cancelShift || 0, 1],'secret'],
+  ['x-distracted','🐿️','Squirrel!','Skip 5 focus rounds','secret',s => [s.x.skipFocus || 0, 5],'secret'],
+  ['x-brutal','🔪','Brutal','Rate a game or show a 1 out of 10','secret',s => [s.rated1, 1],'secret'],
+  ['x-peak','🗻','Everything Is Peak','Rate 5 games or shows a 10','secret',s => [s.rated10, 5],'secret'],
+  ['x-backlog','♾️','The Backlog Is Endless','Have 50 games in Want to play','secret',s => [s.gPlan, 50],'secret'],
+  ['x-designer','🛋️','Interior Designer','Put 10 widgets on your Home screen','secret',s => [s.widgets, 10],'secret']
 );
 // Extra numbers for the badges above, added to the gym stats
 function statsMore() {
@@ -83,7 +102,7 @@ function statsMore() {
   const sh = shiftsSplit(), wk = {};
   sh.forEach(s => { const k = weekStart(keyDate(s.d).getTime()); wk[k] = (wk[k] || 0) + s.mins; });
   o.wkShifts = sh.length; o.wkHours = sh.reduce((t, s) => t + s.mins, 0) / 60; o.wkWeek = Math.max(0, ...Object.values(wk)) / 60;
-  o.wkOT = sh.some(s => s.ot > 0) ? 1 : 0; o.wkBonus = S.wk.bonus.length;
+  o.wkOT = sh.some(s => s.ot > 0) ? 1 : 0; o.wkBonus = S.wk.bonus.length + S.wk.rbonus.length;
   o.wkPaid = S.wk.rate && sh.length && periodFor(sh[0].d).pay <= today() ? 1 : 0;
   const J = S.jp; o.jpPrep = J.prep.length && J.prep.every(p => p.done) ? 1 : 0; o.jpPack = J.pack.length && J.pack.every(p => p.done) ? 1 : 0;
   o.jpDays = tripDays().filter(d => d <= today()).length; o.jpJ = Object.values(J.journal || {}).filter(x => x && (x.text || x.best)).length;
@@ -97,22 +116,29 @@ function statsMore() {
   o.dbx = dbx; o.wrapped = Object.keys(S.wrapSeen).length && S.wrapViewed ? 1 : 0; o.themes = (S.themesUsed || []).length; o.face = S.faceId ? 1 : 0; o.music = S.mu.artists.length ? 1 : 0;
   const used = [S.history.length, o.kDone + S.sc.classes.length, o.wkShifts, J.items.length + J.flights.length, M.length, G.length, S.sv.tx.length].filter(Boolean).length;
   o.modes = used;
+  o.x = S.sx;
+  const ds = [...new Set(S.sx.opens)].sort(); let run = 0; o.openRun = 0;
+  ds.forEach((x, i) => { run = i && Math.round((keyDate(x) - keyDate(ds[i - 1])) / 864e5) === 1 ? run + 1 : 1; o.openRun = Math.max(o.openRun, run); });
+  const R = [...S.md.items, ...S.gm.items].map(x => x.rating || 0); o.rated1 = R.filter(r => r === 1).length; o.rated10 = R.filter(r => r >= 10).length;
+  o.widgets = S.home && S.home.w ? S.home.w.length : 0;
   return o;
 }
 function viewBadges() {
   const s = stats(), n = BADGES.filter(b => S.bd[b[0]]).length, f = S.bf || 'all';
   const card = ([id, em, name, desc, kind, fn]) => {
     const [c, g] = fn(s), on = !!S.bd[id];
+    if (kind === 'secret' && !on) return `<div class="badge lock secret"><div class="em" aria-hidden="true">❓</div><b>???</b><span>Secret badge. Keep exploring.</span></div>`;
     return `<div class="badge${on ? '' : ' lock'}${kind === 'fun' ? ' fun' : ''}"><div class="em" aria-hidden="true">${em}</div><b>${esc(name)}</b><span>${esc(desc)}</span>
       ${on ? `<span>Unlocked ${fmtMD(new Date(S.bd[id]))}</span>` : `<div class="meter" role="progressbar" aria-label="${esc(name)} progress" aria-valuenow="${Math.floor(Math.min(c, g))}" aria-valuemax="${g}"><i style="width:${Math.min(100, c / g * 100)}%"></i></div>`}</div>`;
   };
   const order = L => L.slice().sort((a, b) => (S.bd[b[0]] ? 1 : 0) - (S.bd[a[0]] ? 1 : 0) || (() => { const [ca, ga] = a[5](s), [cb, gb] = b[5](s); return cb / gb - ca / ga; })());
-  const cats = BADGE_CATS.map(([k, em, l]) => [k, em, l, BADGES.filter(b => badgeCat(b) === k)]).filter(x => x[3].length);
+  const cats = [...BADGE_CATS.slice(1), BADGE_CATS[0]].map(([k, em, l]) => [k, em, l, BADGES.filter(b => badgeCat(b) === k)]).filter(x => x[3].length);
   return `<section class="card"><div class="row"><h2>Collection</h2><b>${n} / ${BADGES.length}</b></div><div class="meter"><i style="width:${n / BADGES.length * 100}%"></i></div>
       <div class="chips mt">${chip('All', f === 'all', 'data-act="badgeF" data-f="all"')}${cats.map(([k, em, l, L]) => chip(`${em} ${l} ${L.filter(b => S.bd[b[0]]).length}/${L.length}`, f === k, `data-act="badgeF" data-f="${k}"`)).join('')}</div></section>
     ${cats.filter(c => f === 'all' || c[0] === f).map(([k, em, l, L]) => `<h2 class="sec">${em} ${esc(l)} <span class="small muted">${L.filter(b => S.bd[b[0]]).length} of ${L.length}</span></h2>
       <div class="badges">${order(L).map(card).join('')}</div>`).join('')}
-    <p class="note">Fun badges have a dashed border. Locked badges show how close you are.</p>`;
+    <p class="note">Fun badges have a dashed border. Locked badges show how close you are. Secret badges stay hidden until you find them.</p>`;
 }
 Object.assign(XVIEWS, {hbadges:viewBadges});
-Object.assign(XACT, {badgeF: d => { S.bf = d.f; }});
+Object.assign(XACT, {badgeF: d => { S.bf = d.f; },
+  logoTap: () => { sxBump('logo'); const n = S.sx.logo; if ([3, 7].includes(n)) toast(n === 3 ? '🌸 Hehe.' : '🌸 Okay, that tickles.'); checkBadges(); saveRaw(); if (n >= 10 && n < 12) render(); return false; }});

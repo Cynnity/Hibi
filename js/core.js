@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '1.9';
+const APP_VERSION = '2.0';
 
 /* =========================================================
    Constants and reference data
@@ -60,7 +60,7 @@ const THEMES = [
   ['sakura','Sakura','#F0467F','#2BB8D0'],['midnight','Midnight','#8B6CFF','#141B2D'],['ocean','Ocean','#0A86AA','#F2A541'],
   ['forest','Forest','#86D993','#1F2B22'],['sunset','Sunset','#E8590C','#B5179E'],['mono','Mono','#141414','#F3F3F1'],
   ['ink','Ink','#FFFFFF','#000000'],['matcha','Matcha','#4F8A3C','#D98E73'],['aqua','Aqua','#16A9A3','#E0457B'],
-  ['neon','Neon','#FF2E88','#00E5FF'],['royal','Royal','#F2C14E','#0E1530']];
+  ['neon','Neon','#FF2E88','#00E5FF'],['royal','Royal','#F2C14E','#0E1530'],['miku','Miku','#39C5BB','#E4508C']];
 
 const TAB_INFO = {
   workout:{g:'workout',t:'Workout'},
@@ -112,6 +112,8 @@ function saveCalendar(text, filename, count) {
 }
 const icsEsc = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 const icsWrap = (events, name) => ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//Hibi//${name}//EN`, 'CALSCALE:GREGORIAN', ...events, 'END:VCALENDAR'].join('\r\n');
+// Bumps a secret-badge counter
+const sxBump = (k, n) => { S.sx[k] = (S.sx[k] || 0) + (n || 1); };
 const weekStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
 const chip = (text, on, attrs) => `<button class="chip${on ? ' on' : ''}" aria-pressed="${!!on}" ${attrs}>${esc(text)}</button>`;
 
@@ -152,11 +154,14 @@ function normalize(s) {
   normalizeMu(s);
   normalizePomo(s);
   normalizeWk(s);
+  if (typeof normalizeHome === 'function') normalizeHome(s);   // widgets.js loads after the state, so it also runs this itself
   if (!Array.isArray(s.alog)) s.alog = [];
   { const cut = Date.now() - 800 * 864e5; s.alog = s.alog.filter(a => Array.isArray(a) && a[0] > cut); }
   if (!s.wrapSeen || typeof s.wrapSeen !== 'object') s.wrapSeen = {};
   if (!s.wrapSince) s.wrapSince = Date.now();
-  if (!Array.isArray(s.themesUsed)) s.themesUsed = [s.theme || 'sakura'];   // Wrapped only opens on its own for periods that end after this
+  if (!Array.isArray(s.themesUsed)) s.themesUsed = [s.theme || 'sakura'];
+  if (!s.sx || typeof s.sx !== 'object') s.sx = {};   // counters for secret badges
+  if (!Array.isArray(s.sx.opens)) s.sx.opens = [];   // Wrapped only opens on its own for periods that end after this
   normalizeSv(s);
   normalizeExtra(s);
   return s;

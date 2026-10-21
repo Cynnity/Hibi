@@ -11,7 +11,7 @@ const WK_FREQ = [['weekly','Every week',7], ['biweekly','Every 2 weeks',14], ['s
 function normalizeWk(s) {
   if (!s.wk || typeof s.wk !== 'object') s.wk = {};
   const w = s.wk;
-  for (const k of ['shifts', 'bonus']) if (!Array.isArray(w[k])) w[k] = [];
+  for (const k of ['shifts', 'bonus', 'rbonus']) if (!Array.isArray(w[k])) w[k] = [];
   if (typeof w.rate !== 'number') w.rate = 0; if (typeof w.tax !== 'number') w.tax = 0;
   if (typeof w.ot !== 'boolean') w.ot = true; if (!WK_FREQ.some(f => f[0] === w.freq)) w.freq = 'biweekly';
   if (typeof w.pay !== 'string') w.pay = ''; if (typeof w.lag !== 'number') w.lag = 0;
@@ -42,8 +42,30 @@ function shiftsSplit() {
     const ot = S.wk.ot ? Math.max(0, Math.min(m, before + m - 2400)) : 0; return Object.assign({}, s, {mins:m, reg:m - ot, ot}); });
 }
 const shRate = s => num(s.rate) || S.wk.rate;
+// Repeating bonuses, turned into the bonuses that land in a pay period
+const RB_EVERY = [['pay', 'Every paycheck'], ['month', 'Once a month'], ['week', 'Every week']];
+function rbonusIn(P) {
+  const out = [];
+  S.wk.rbonus.forEach(r => {
+    const ok = k => k >= r.from && (!r.until || k <= r.until);
+    if (r.every === 'pay') { if (ok(P.pay)) out.push({id:r.id + '@' + P.pay, d:P.pay, amt:r.amt, note:r.note, rec:r.id}); return; }
+    for (let k = P.from; k <= P.to; k = addDays(k, 1)) {
+      const d = keyDate(k);
+      const hit = r.every === 'week' ? d.getDay() === keyDate(r.from).getDay() : d.getDate() === Math.min(+r.from.slice(8), new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate());
+      if (hit && ok(k)) out.push({id:r.id + '@' + k, d:k, amt:r.amt, note:r.note, rec:r.id});
+    }
+  });
+  return out;
+}
+// Repeating bonuses between two times (used by recaps)
+function wkRecurringBetween(R) {
+  if (!S.wk.rbonus.length) return [];
+  const out = [], seen = new Set(); let k = dk(new Date(R.from)); const end = dk(new Date(R.to - 1));
+  for (let i = 0; i < 40 && k <= end; i++) { const P = periodFor(k); rbonusIn(P).forEach(b => { if (!seen.has(b.id) && inR(keyDate(b.d).getTime(), R)) { seen.add(b.id); out.push(b); } }); k = addDays(P.to, 1); }
+  return out;
+}
 function payFor(P, split) {
-  const sh = (split || shiftsSplit()).filter(s => s.d >= P.from && s.d <= P.to), bo = S.wk.bonus.filter(b => b.d >= P.from && b.d <= P.to);
+  const sh = (split || shiftsSplit()).filter(s => s.d >= P.from && s.d <= P.to), bo = [...S.wk.bonus.filter(b => b.d >= P.from && b.d <= P.to), ...rbonusIn(P)];
   const reg = sh.reduce((t, s) => t + s.reg, 0), ot = sh.reduce((t, s) => t + s.ot, 0);
   const regPay = sh.reduce((t, s) => t + s.reg / 60 * shRate(s), 0), otPay = sh.reduce((t, s) => t + s.ot / 60 * shRate(s) * 1.5, 0), bonus = bo.reduce((t, b) => t + num(b.amt), 0);
   const gross = regPay + otPay + bonus, tax = gross * S.wk.tax / 100;
@@ -104,12 +126,16 @@ function viewWShifts() {
         <input class="input" name="note" placeholder="Note (optional), like opening shift" value="${fval(ed, 'note')}" aria-label="Note">
         <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add shift'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form></details>
     <details class="card" ${det('wkBonus')}><summary class="sum"><h2>Add a bonus</h2><span class="small muted">Bonuses, commission or anything extra on a paycheck</span></summary>
-      <form data-form="bonus" class="stack"><div class="ff"><label>Date<input class="input" type="date" name="d" value="${today()}"></label><label>Amount<input class="input" name="amt" inputmode="decimal" placeholder="$0"></label></div>
+      <form data-form="bonus" class="stack"><div class="ff"><label>Date (or when it starts)<input class="input" type="date" name="d" value="${today()}"></label><label>Amount<input class="input" name="amt" inputmode="decimal" placeholder="$0"></label></div>
+        <label>Repeats<select class="input" name="every">${opt('', "Doesn't repeat", '')}${RB_EVERY.map(([k, l]) => opt(k, l, '')).join('')}</select></label>
         <input class="input" name="note" placeholder="What it was for (optional)" aria-label="What it was for"><button class="btn" type="submit">Add bonus</button></form></details>
+    ${S.wk.rbonus.length ? `<section class="card"><h2>Repeating bonuses</h2>${S.wk.rbonus.map(r => `<div class="lrow" style="align-items:center"><span style="flex:1;text-align:left;color:var(--ink)">🔁 <b>${cash(num(r.amt))}</b> ${esc((RB_EVERY.find(x => x[0] === r.every) || RB_EVERY[0])[1].toLowerCase())}${r.note ? ' · ' + esc(r.note) : ''}<span class="small muted" style="display:block">Since ${esc(fmtShort(r.from))}${r.until ? `, ended ${esc(fmtShort(r.until))}` : ''}</span></span>
+      ${r.until ? `<button class="link danger" data-act="wkDelRB" data-id="${esc(r.id)}" data-confirm>Delete</button>` : `<button class="link" data-act="wkStopRB" data-id="${esc(r.id)}" data-confirm>Stop</button>`}</div>`).join('')}
+      <p class="note">Stop keeps past paychecks the same and ends the bonus from today. Delete removes it everywhere.</p></section>` : ''}
     ${periods.map((P, i) => { const p = payFor(P, split); if (!p.sh.length && !p.bo.length && i) return '';
       return `<h2 class="gsec">${i ? esc(fmtShort(P.from) + ' to ' + fmtShort(P.to)) : 'This pay period'} <span class="small muted">${hrsTxt(p.mins)}, payday ${esc(fmtShort(P.pay))}</span></h2>
         <section class="card">${p.sh.length ? p.sh.slice().reverse().map(shiftRow).join('') : '<p class="note">No shifts yet.</p>'}
-        ${p.bo.map(b => `<div class="lrow" style="align-items:center"><span style="flex:1;text-align:left;color:var(--ink)">🎉 <b>Bonus</b>${b.note ? ': ' + esc(b.note) : ''} <span class="small muted">${esc(fmtShort(b.d))}</span></span><span>${cash(num(b.amt))}</span><button class="link danger" data-act="wkDelBonus" data-id="${esc(b.id)}" data-confirm>Delete</button></div>`).join('')}</section>`; }).join('')}`;
+        ${p.bo.map(b => `<div class="lrow" style="align-items:center"><span style="flex:1;text-align:left;color:var(--ink)">${b.rec ? '🔁' : '🎉'} <b>Bonus</b>${b.note ? ': ' + esc(b.note) : ''} <span class="small muted">${esc(fmtShort(b.d))}</span></span><span>${cash(num(b.amt))}</span>${b.rec ? '' : `<button class="link danger" data-act="wkDelBonus" data-id="${esc(b.id)}" data-confirm>Delete</button>`}</div>`).join('')}</section>`; }).join('')}`;
 }
 
 /* ----- Pay ----- */
@@ -167,14 +193,17 @@ Object.assign(MACT, {
     if (c.pausedAt) togglePause(c);
     const st = new Date(c.start), en = new Date(), brk = Math.round((c.pausedMs || 0) / 6e4);
     S.wk.clock = null;
+    if (en.getHours() < 4 && en - st >= 60000) sxBump('lateShift');
     if (en - st < 60000) { toast('That shift was under a minute, so it wasn\'t saved.'); return; }
     const s = {id:'w' + Date.now(), d:dk(st), start:hhmm(st), end:hhmm(en), brk, note:'', rate:S.wk.rate};
     S.wk.shifts.push(s); toast(`Clocked out. ${hrsTxt(shiftMin(s))} logged${wkReady() ? `, about ${cash(shiftMin(s) / 60 * S.wk.rate)} before taxes` : ''}.`);
   },
   payFromWork: d => { const el = $('#payAmt'); if (el) { el.value = d.v; $('#payPrev').innerHTML = payPreview(num(d.v)); } return false; },
-  wkCancel: () => { S.wk.clock = null; toast('Shift canceled.'); },
+  wkCancel: () => { sxBump('cancelShift'); S.wk.clock = null; toast('Shift canceled.'); },
   wkEdit: d => { UI.edit = {kind:'shift', id:d.id}; UI.open.wkForm = true; scrollTo(0, 0); },
   wkDel: d => { S.wk.shifts = S.wk.shifts.filter(s => s.id !== d.id); },
+  wkStopRB: d => { const r = S.wk.rbonus.find(x => x.id === d.id); if (r) { r.until = addDays(today(), -1) < r.from ? r.from : addDays(today(), -1); toast('Repeating bonus stopped.'); } },
+  wkDelRB: d => { S.wk.rbonus = S.wk.rbonus.filter(x => x.id !== d.id); },
   wkDelBonus: d => { S.wk.bonus = S.wk.bonus.filter(b => b.id !== d.id); },
 });
 Object.assign(SAVE, {
@@ -185,7 +214,10 @@ Object.assign(SAVE, {
     if (ed) { Object.assign(ed, rec); toast('Shift updated.'); } else { S.wk.shifts.push(Object.assign(rec, {id:'w' + Date.now(), rate:S.wk.rate})); toast(`Shift added: ${hrsTxt(shiftMin(rec))}.`); }
     UI.open.wkForm = false;
   },
-  bonus: o => { const amt = num(o.amt); if (!o.d || !(amt > 0)) { toast('Add the date and amount.'); return false; } S.wk.bonus.push({id:'b' + Date.now(), d:o.d, amt, note:o.note || ''}); toast(`Bonus of ${cash(amt)} added. Nice!`); UI.open.wkBonus = false; },
+  bonus: o => { const amt = num(o.amt); if (!o.d || !(amt > 0)) { toast('Add the date and amount.'); return false; }
+    if (o.every) { S.wk.rbonus.push({id:'r' + Date.now(), from:o.d, every:o.every, amt, note:o.note || '', until:''}); toast(`Repeating bonus of ${cash(amt)} added, ${(RB_EVERY.find(x => x[0] === o.every) || RB_EVERY[0])[1].toLowerCase()}.`); }
+    else { S.wk.bonus.push({id:'b' + Date.now(), d:o.d, amt, note:o.note || ''}); toast(`Bonus of ${cash(amt)} added. Nice!`); }
+    UI.open.wkBonus = false; },
   wkset: o => {
     const w = S.wk, oldRate = w.rate;
     w.rate = Math.max(0, num(o.rate)); w.tax = Math.max(0, Math.min(60, num(o.tax))); w.freq = o.freq || 'biweekly'; w.pay = o.pay || ''; w.lag = Math.max(0, Math.round(num(o.lag))); w.ot = o.ot === 'on';

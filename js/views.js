@@ -312,7 +312,7 @@ ${S.mode === 'home' ? musicSettings() : S.mode === 'school' ? '' : S.mode === 'g
 ${S.mode === 'gym' ? `    <section class="card"><h2>Import from Hevy</h2>
       <p class="note">In Hevy, go to Settings, then Export &amp; Import Data, then Export Workouts. Pick that CSV file here. Warm-up sets are skipped and workouts you already have are ignored.</p>
       <label class="btn ghost file-btn mt">Choose Hevy CSV<input type="file" accept=".csv,text/csv,text/plain" data-file="hevy" aria-label="Import Hevy CSV"></label></section>` : ''}
-    <section class="card"><div class="mhead">${HIBI_LOGO}<div><h2>Hibi</h2><span class="small muted">Everyday life, all in one place. Version ${APP_VERSION}</span></div></div>
+    <section class="card"><div class="mhead"><span data-act="logoTap" style="cursor:pointer;display:flex">${HIBI_LOGO}</span><div><h2>Hibi</h2><span class="small muted">Everyday life, all in one place. Version ${APP_VERSION}</span></div></div>
       <button class="btn ghost block mt" data-act="openNotes">What's new: patch notes</button>
       <p class="note">When you upload a new version to GitHub, the app gets it the next time it opens with internet and shows a Reload button.</p></section>`;
 }

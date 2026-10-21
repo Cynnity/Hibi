@@ -24,6 +24,9 @@ async function muRefresh(manual) {
   muBusy = true;
   try {
     const [a, t] = await Promise.all([sfmGet('/top/artists?range=weeks&limit=5'), sfmGet('/top/tracks?range=weeks&limit=5')]);
+    // Time listened. stats.fm may only share this for Plus members or imported history, so it's optional.
+    try { const st = await sfmGet('/streams/stats?range=weeks'), it = st.item || st.items || st; S.mu.ms = num(it.durationMs); S.mu.count = num(it.count); S.mu.timeErr = S.mu.ms ? '' : 'stats.fm only shares this with Plus or imported history'; }
+    catch (e) { S.mu.ms = 0; S.mu.timeErr = 'stats.fm only shares this with Plus or imported history'; }
     S.mu.artists = (a.items || []).map(x => ({name:(x.artist && x.artist.name) || '', img:sfmImg(x.artist), streams:x.streams || 0})).filter(x => x.name);
     S.mu.tracks = (t.items || []).map(x => ({name:(x.track && x.track.name) || '', artist:((x.track && x.track.artists) || []).map(y => y.name).join(', '), img:sfmImg(x.track), streams:x.streams || 0})).filter(x => x.name);
     S.mu.at = Date.now(); S.mu.err = '';
@@ -34,7 +37,7 @@ async function muRefresh(manual) {
     S.mu.at = Date.now() - 5 * 36e5;   // try again in about an hour
     if (manual) toast(S.mu.err);
   }
-  muBusy = false; saveRaw(); if (S.tab === 'hhome' || S.tab === 'settings') render();
+  muBusy = false; saveRaw(); if ((S.tab === 'hhome' && !UI.homeEdit) || S.tab === 'settings') render();
 }
 function musicCard() {
   if (!S.mu.user) return '';

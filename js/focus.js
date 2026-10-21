@@ -80,5 +80,5 @@ Object.assign(XACT, {
   pomoStart: () => { const p = S.pomo, r = p.run; if (r && r.paused != null) { r.end = Date.now() + r.paused; r.paused = null; } else if (!r) p.run = {end:Date.now() + pomoLen(p.phase), paused:null}; },
   pomoPause: () => { const r = S.pomo.run; if (!r) return false; r.paused = Math.max(0, r.end - Date.now()); },
   pomoReset: () => { S.pomo.run = null; S.pomo.phase = 'focus'; S.pomo.done = 0; },
-  pomoSkip: () => { pomoAdvance(false); },
+  pomoSkip: () => { if (S.pomo.phase === 'focus') sxBump('skipFocus'); pomoAdvance(false); },
 });

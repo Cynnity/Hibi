@@ -91,6 +91,7 @@ function plateResult() {
 }
 function sheetHtml() {
   if (UI.wrap) return wrapHtml();
+  if (UI.wAdd) return widgetSheet();
   if (UI.notes) return notesSheet();
   if (UI.clog) return cardioSheet();
   if (!UI.plates) return '';
@@ -266,5 +267,6 @@ const BADGES = [
 function checkBadges() {
   const s = stats(), fresh = [];
   for (const b of BADGES) { if (S.bd[b[0]]) continue; const [c, g] = b[5](s); if (c >= g) { S.bd[b[0]] = Date.now(); fresh.push(b); } }
-  if (fresh.length) setTimeout(() => toast(fresh.length > 2 ? `${fresh.length} badges unlocked!` : `${fresh.map(b => b[1]).join(' ')} Badge unlocked: ${fresh.map(b => b[2]).join(', ')}`), 900);
+  const sec = fresh.filter(b => b[4] === 'secret');
+  if (fresh.length) setTimeout(() => toast(sec.length ? `🤫 Secret badge unlocked: ${sec.map(b => b[1] + ' ' + b[2]).join(', ')}` : fresh.length > 2 ? `${fresh.length} badges unlocked!` : `${fresh.map(b => b[1]).join(' ')} Badge unlocked: ${fresh.map(b => b[2]).join(', ')}`), 900);
 }

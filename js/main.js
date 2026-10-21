@@ -10,6 +10,10 @@ if (locked && S.faceId) setTimeout(() => { if (locked && FID_OK) faceUnlock(true
 setInterval(tick, 250);
 loadPhotos();
 if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);
+// Secret badge counters for opening the app
+{ const n = new Date(), d = today(); if (!S.sx.opens.includes(d)) { S.sx.opens.push(d); S.sx.opens = S.sx.opens.slice(-60); }
+  if (n.getHours() === 3) sxBump('am3'); if (n.getHours() === 11 && n.getMinutes() === 11) sxBump('wish'); if (n.getMonth() === 0 && n.getDate() === 1) sxBump('newyear');
+  checkBadges(); saveRaw(); }
 Crash.booted = true;
 setTimeout(wrapCheck, 900);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(wrapCheck, 600); });

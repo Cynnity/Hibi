@@ -53,7 +53,7 @@ function recap(P) {
   o.saved = Math.round(T.reduce((t, x) => t + num(x.amt), 0) * 100) / 100; o.deposits = T.length;
   o.tasks = S.sc.tasks.filter(t => t.done && t.doneAt && inR(t.doneAt, P)).length;
   const WS = shiftsSplit().filter(s => dIn(s.d, P)); o.workMin = WS.reduce((t, s) => t + s.mins, 0); o.shifts = WS.length;
-  o.earned = WS.reduce((t, s) => t + s.reg / 60 * shRate(s) + s.ot / 60 * shRate(s) * 1.5, 0) + S.wk.bonus.filter(b => dIn(b.d, P)).reduce((t, b) => t + num(b.amt), 0);
+  o.earned = WS.reduce((t, s) => t + s.reg / 60 * shRate(s) + s.ot / 60 * shRate(s) * 1.5, 0) + [...S.wk.bonus.filter(b => dIn(b.d, P)), ...wkRecurringBetween(P)].reduce((t, b) => t + num(b.amt), 0);
   const FL = S.pomo.log.filter(x => inR(x[0], P)); o.focusN = FL.length; o.focusMin = FL.reduce((t, x) => t + x[1], 0);
   const J = S.j.filter(e => dIn(e.d, P)), moods = {}; J.forEach(e => { if (e.m) moods[e.m] = (moods[e.m] || 0) + 1; });
   o.journal = J.length; const tmo = topKey(moods); o.mood = tmo ? MOODS[+tmo[0] - 1] : null;

@@ -183,46 +183,6 @@ function jpSaved() {
 }
 
 /* ----- Home ----- */
-function viewHome() {
-  const h = new Date().getHours(), cards = [];
-  if (modeVisible('gym')) {
-    const t = nextTpl(), n = S.history.filter(w => w.end >= weekStart(Date.now())).length, last = S.history[S.history.length - 1];
-    cards.push(`<section class="card"><div class="row"><h2>🏋️ Gym</h2><button class="link" data-act="mode" data-k="gym">Open</button></div>
-      <p class="note">${plural(n, 'workout')} this week${last ? `. Last one ${esc(fmtLong(last.end))}` : ''}.</p>
-      ${S.active ? '<button class="btn block mt" data-act="homeGym">Continue your workout</button>' : t ? `<button class="btn block mt" data-act="homeTpl" data-id="${esc(t.id)}">Start ${esc(t.name)}</button>` : ''}</section>`);
-  }
-  if (modeVisible('school')) {
-    const due = kOpenSorted().slice(0, 3), todays = nowTermClasses().filter(c => (c.days || '').includes(dayLetter(new Date()))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-    cards.push(`<section class="card"><div class="row"><h2>🎓 School</h2><button class="link" data-act="mode" data-k="school">Open</button></div>
-      ${todays.length ? `<p class="note">Classes today: ${todays.map(c => `<b>${esc(c.name)}</b>${c.time ? ' ' + classTime(c) : ''}`).join(', ')}</p>` : ''}
-      ${due.length ? due.map(kRow).join('') : '<p class="note">Nothing due. Nice.</p>'}</section>`);
-  }
-  if (modeVisible('japan')) {
-    const days = tripDays(), t = today(), J = S.jp;
-    const line = !days.length ? 'Set your trip dates.' : t < J.start ? `<b>${Math.round((keyDate(J.start) - keyDate(t)) / 864e5)} days</b> until Japan` : t > J.end ? 'Trip complete. Welcome back!' : `<b>Day ${days.indexOf(t) + 1}</b> of ${days.length} in Japan`;
-    const next = t < J.start ? prepSorted().filter(p => !p.done).slice(0, 2) : [];
-    cards.push(`<section class="card"><div class="row"><h2>🗾 Japan</h2><button class="link" data-act="mode" data-k="japan">Open</button></div><p class="note">${line}</p>${next.map(prepRow).join('')}</section>`);
-  }
-  if (modeVisible('media')) {
-    const now = S.md.items.filter(m => live(m) && m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
-    cards.push(`<section class="card"><div class="row"><h2>📚 Watching and reading</h2><button class="link" data-act="mode" data-k="media">Open</button></div>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
-  }
-  if (modeVisible('work')) { const c = workHome(); if (c) cards.push(c); }
-  if (modeVisible('games')) {
-    const now = S.gm.items.filter(g => live(g) && g.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
-    cards.push(`<section class="card"><div class="row"><h2>🎮 Playing</h2><button class="link" data-act="mode" data-k="games">Open</button></div>${now.length ? now.map(gNowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
-  }
-  if (modeVisible('save')) {
-    const gs = S.sv.goals.filter(g => live(g) && !svDone(g) && num(g.target)).sort((a, b) => svSaved(b) / num(b.target) - svSaved(a) / num(a.target)).slice(0, 2);
-    cards.push(`<section class="card"><div class="row"><h2>💰 Savings</h2><button class="link" data-act="mode" data-k="save">Open</button></div>
-      ${gs.length ? gs.map(g => `<div class="crow"><div class="row"><b>${esc(g.em || '💰')} ${esc(g.name)}</b><span>${usd(svSaved(g))} of ${usd(num(g.target))}</span></div><div class="cbar"><i style="width:${Math.min(100, svSaved(g) / num(g.target) * 100)}%"></i></div></div>`).join('') : '<p class="note">No goals in progress.</p>'}</section>`);
-  }
-  const pos = c => { const m = /data-act="mode" data-k="(\w+)"/.exec(c); return m ? S.order.indexOf(m[1]) : 99; };
-  cards.sort((a, b) => pos(a) - pos(b));
-  const upd = S.seenVer !== APP_VERSION ? `<section class="card" style="border-color:var(--accent)"><h2>Hibi was updated to ${APP_VERSION}</h2><div class="btns mt"><button class="btn sm" data-act="openNotes">See what's new</button><button class="btn sm ghost" data-act="seenUpdate">Dismiss</button></div></section>` : '';
-  return `${upd}<p class="lead">${h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}, Cynn.</p>${weekCard()}${cards.join('')}${musicCard()}${wrapCard()}`;
-}
-
 /* ----- Passcode ----- */
 let locked = false, hiddenAt = 0, pinBuf = '', PINF = null;
 async function hashPin(p) {
@@ -269,7 +229,7 @@ async function pinKey(k) {
   pinBuf += k; drawLock(); if (pinBuf.length < 4) return;
   const entered = pinBuf; pinBuf = '';
   const bad = m => { drawLock(m); try { navigator.vibrate && navigator.vibrate(150); } catch (e) {} };
-  if (locked) { if (await hashPin(entered) === S.pin) { locked = false; drawLock(); setTimeout(wrapCheck, 300); } else bad('Wrong passcode. Try again.'); return; }
+  if (locked) { if (await hashPin(entered) === S.pin) { locked = false; drawLock(); setTimeout(wrapCheck, 300); } else { sxBump('pinWrong'); save(); bad('Wrong passcode. Try again.'); } return; }
   if (PINF.step === 'current') {
     if (await hashPin(entered) !== S.pin) return bad("That isn't your current passcode.");
     if (PINF.then === 'off') { S.pin = ''; S.faceId = ''; PINF = null; save(); drawLock(); render(); toast('Passcode turned off.'); return; }
@@ -303,7 +263,7 @@ function settingsCommon() {
 }
 
 /* ----- Actions and forms ----- */
-const XVIEWS = {hhome:viewHome, kdue:viewKDue, kclass:viewKClass, knotes:viewKNotes};
+const XVIEWS = {kdue:viewKDue, kclass:viewKClass, knotes:viewKNotes};
 const XACT = {
   homeTpl: d => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; ACT.startTpl(d); go('workout'); },
   faceOn: () => { faceSetup(); return false; },

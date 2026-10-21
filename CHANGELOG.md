@@ -4,6 +4,20 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.0 — "Customization arc" (Oct 21)
+- **Home is now made of widgets.** Tap **✏️ Customize Home** at the bottom to add, remove, move and resize them, like iPhone widgets. Small ones sit two to a row, and wide ones take the full width.
+  - **23 widgets** to pick from, including:
+    - **Gym:** Gym, Cardio, Supplements (check them off right on Home), Body weight, Journal
+    - **School:** Next due, Next class, Focus timer
+    - **Japan:** countdown, Tokyo time
+    - **Everything else:** Watching (with a +1 button), Playing, Up next, Savings goal, Payday and clock in, Badges, Wrapped and the weekly recap
+    - **Music from stats.fm:** Time listened, Top artist, Top song, Top artists and On repeat
+  - Tap a small widget to jump straight to that part of the app.
+  - You can turn the greeting off or change the name in it, and Reset puts the default layout back.
+- **Repeating bonuses** in Work. When you add a bonus, pick "Every paycheck", "Once a month" or "Every week". They're counted in every paycheck estimate. Stop one to end it from today while keeping past paychecks the same.
+- **New Miku theme 💙.** Teal and pink with a music-note and sound-wave background. Pick it in Settings → Theme.
+- **18 secret badges 🤫.** They show up as ??? until you find them, and some are just silly. There are 112 badges in total now.
+
 ## 1.9 — "Grind season" (Oct 21)
 - **New Work mode 💼.** Track your hours and estimate your pay:
   - **Clock in and out** with one tap, with a live timer and a Break button. Or log shifts by hand.

@@ -60,6 +60,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.dataset.bind === 'hgreet') { S.home.greet = t.checked; save(); return; }
   if (t.dataset.bind === 'modevis') {
     const k = t.dataset.k; S.hidden = S.hidden.filter(x => x !== k); if (!t.checked) S.hidden.push(k);
     toast(t.checked ? `${MODES[k].label} is showing.` : `${MODES[k].label} is hidden.`); save(); render(); return;
@@ -67,6 +68,7 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'svfreq') { S.sv.freq = t.value; save(); render(); return; }
   if (t.dataset.bind === 'mstatus') { const m = mFind(t.dataset.id); if (m) { const was = m.status; m.status = t.value; m.updated = Date.now(); if (t.value === 'done' && was !== 'done') { m.finished = Date.now(); if (m.total) m.prog = Math.max(m.prog || 0, m.total); } afterChange(); } return; }
   if (t.dataset.bind === 'msort') { S.md.sort = t.value; save(); render(); return; }
+  if (t.dataset.bind === 'hname') { S.home.name = t.value.trim().slice(0, 30); save(); return; }
   if (t.dataset.bind === 'suptime') { const x = S.sup.find(q => q.id === t.dataset.id); if (x) { x.time = t.value; save(); } return; }
   if (t.dataset.bind === 'pomo') { S.pomo[t.dataset.k] = +t.value; save(); render(); return; }
   if (t.dataset.bind === 'pomoClass') { S.pomo.c = t.value; save(); return; }
