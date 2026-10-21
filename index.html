@@ -1023,9 +1023,9 @@ function viewMNow() {
   const I = S.md.items, dow = new Date().getDay();
   if (!airTried && Date.now() - (S.md.airAt || 0) > 3 * 36e5) { airTried = true; setTimeout(refreshAiring, 0); }
   if (!I.length) return emptyCard('Nothing here yet', 'Add a show, anime, manga or book and it shows up here.', 'Add one', 'data-act="go" data-to="madd"');
-  const now = I.filter(m => m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  const now = I.filter(m => live(m) && m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const airsToday = m => m.next && dk(new Date(m.next.at)) === today();
-  const outToday = now.filter(m => (hasDay(m) && +m.day === dow) || airsToday(m)), plan = I.filter(m => m.status === 'plan').sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 4);
+  const outToday = now.filter(m => (hasDay(m) && +m.day === dow) || airsToday(m)), plan = I.filter(m => live(m) && m.status === 'plan').sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 4);
   return `${outToday.length ? `<section class="card"><h2>New today</h2><p class="note">Today: ${outToday.map(m => `<b>${esc(m.title)}</b>${airsToday(m) ? ` (Ep ${m.next.ep} at ${new Date(m.next.at).toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'})})` : ''}`).join(', ')}.</p></section>` : ''}
     <section class="card"><h2>Continue</h2>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress. Start something from your Want to start list.</p>'}</section>
     ${plan.length ? `<section class="card"><div class="row"><h2>Want to start</h2><button class="link" data-act="mFilter" data-s="plan">See all</button></div>
@@ -1033,7 +1033,7 @@ function viewMNow() {
 }
 function mdList() {
   const fs = S.md.fs, ft = S.md.ft, q = norm(MQ), so = S.md.sort;
-  const L = S.md.items.filter(m => (fs === 'all' || m.status === fs) && (ft === 'all' || m.type === ft) && (!q || [m.title, m.notes, m.platform].some(v => norm(v || '').includes(q))));
+  const L = S.md.items.filter(m => (fs === 'arch' ? !!m.archived : !m.archived && (fs === 'all' || m.status === fs)) && (ft === 'all' || m.type === ft) && (!q || [m.title, m.notes, m.platform].some(v => norm(v || '').includes(q))));
   L.sort(so === 'title' ? (a, b) => a.title.localeCompare(b.title) : so === 'rating' ? (a, b) => (b.rating || 0) - (a.rating || 0) : (a, b) => (b.updated || 0) - (a.updated || 0));
   if (!L.length) return emptyCard(q ? 'No matches' : 'Nothing here yet', q ? 'Try another search.' : 'Add something from the Add tab, or pick a different filter.');
   return L.map(m => `<details class="card" ${det('m-' + m.id)}><summary class="sum"><div class="mhead">${cover(m)}<div><h3>${m.fav ? '❤️ ' : ''}${esc(m.title)}</h3>
@@ -1045,13 +1045,13 @@ function mdList() {
     ${m.platform ? `<p class="small mt">Where: <b>${esc(m.platform)}</b></p>` : ''}${m.season ? `<p class="small">Season or part: <b>${esc(m.season)}</b></p>` : ''}
     ${hasDay(m) ? `<p class="small">New ${unitOf(m)[0].toLowerCase()}s on ${DAYS[+m.day]}</p>` : ''}${m.notes ? `<p class="small muted mt">${esc(m.notes).replace(/\n/g, '<br>')}</p>` : ''}
     <div class="row mt"><button class="link" data-act="mEdit" data-id="${esc(m.id)}">Edit</button><button class="link" data-act="mFav" data-id="${esc(m.id)}">${m.fav ? 'Unfavorite' : 'Favorite'}</button>
-      <button class="link danger" data-act="mDel" data-id="${esc(m.id)}" data-confirm>Delete</button></div></details>`).join('');
+      ${archBtn('media', m)}<button class="link danger" data-act="mDel" data-id="${esc(m.id)}" data-confirm>Delete</button></div></details>`).join('');
 }
 function viewMLib() {
   const I = S.md.items, counts = {}, types = [...new Set(I.map(m => m.type))];
-  I.forEach(m => { counts[m.status] = (counts[m.status] || 0) + 1; });
+  I.filter(live).forEach(m => { counts[m.status] = (counts[m.status] || 0) + 1; });
   return `<input class="input" id="mdSearch" type="search" placeholder="Search titles, notes or where" value="${esc(MQ)}" autocomplete="off" aria-label="Search">
-    <div class="chips mt">${chip(`All ${I.length}`, S.md.fs === 'all', 'data-act="mFilter" data-s="all"')}${MD_ST.map(([k, l]) => chip(`${l} ${counts[k] || 0}`, S.md.fs === k, `data-act="mFilter" data-s="${k}"`)).join('')}</div>
+    <div class="chips mt">${chip(`All ${I.filter(live).length}`, S.md.fs === 'all', 'data-act="mFilter" data-s="all"')}${MD_ST.map(([k, l]) => chip(`${l} ${counts[k] || 0}`, S.md.fs === k, `data-act="mFilter" data-s="${k}"`)).join('')}${I.some(m => m.archived) ? chip(`Archived ${I.filter(m => m.archived).length}`, S.md.fs === 'arch', 'data-act="mFilter" data-s="arch"') : ''}</div>
     ${types.length > 1 ? `<div class="chips mt">${chip('All types', S.md.ft === 'all', 'data-act="mType" data-t="all"')}${types.map(t => chip(typeLabel(t), S.md.ft === t, `data-act="mType" data-t="${t}"`)).join('')}</div>` : ''}
     <div class="row mt mb"><span class="small muted">Sort by</span><select class="input" style="width:auto" data-bind="msort" aria-label="Sort by">${opt('updated', 'Recently updated', S.md.sort)}${opt('title', 'Title', S.md.sort)}${opt('rating', 'Rating', S.md.sort)}</select></div>
     <div id="mdList">${mdList()}</div>`;
@@ -1264,7 +1264,7 @@ function airText(m) {
 }
 
 /* ----- App version and update banner ----- */
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2';
 const HIBI_LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64" style="border-radius:15px;flex:none" aria-hidden="true"> <defs> <linearGradient id="hb-bg" x1="0" y1="0" x2="1" y2="1"> <stop offset="0" stop-color="#FF7AAA"/> <stop offset="0.55" stop-color="#F0467F"/> <stop offset="1" stop-color="#C92E6B"/> </linearGradient> <pattern id="hb-tone" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"> <circle cx="11" cy="11" r="3.2" fill="#FFFFFF"/> </pattern> <radialGradient id="hb-fade" cx="0.88" cy="0.9" r="0.55"> <stop offset="0" stop-color="#fff" stop-opacity="1"/> <stop offset="1" stop-color="#fff" stop-opacity="0"/> </radialGradient> <mask id="hb-toneMask"><rect width="512" height="512" fill="url(#hb-fade)"/></mask> <path id="hb-petal" d="M256 262 C 200 212 182 136 222 92 L 256 120 L 290 92 C 330 136 312 212 256 262 Z"/> </defs> <rect width="512" height="512" fill="url(#hb-bg)"/> <rect width="512" height="512" fill="url(#hb-tone)" opacity="0.22" mask="url(#hb-toneMask)"/> <g transform="translate(0 14)"> <g fill="#2B1B52" transform="translate(9 9)"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g fill="#FFFFFF" stroke="#2B1B52" stroke-width="12" stroke-linejoin="round"> <use href="#hb-petal"/><use href="#hb-petal" transform="rotate(72 256 256)"/><use href="#hb-petal" transform="rotate(144 256 256)"/> <use href="#hb-petal" transform="rotate(216 256 256)"/><use href="#hb-petal" transform="rotate(288 256 256)"/> </g> <g stroke="#FFC2D7" stroke-width="7" stroke-linecap="round"> <path d="M256 238 V 168"/><path d="M256 238 V 168" transform="rotate(72 256 256)"/><path d="M256 238 V 168" transform="rotate(144 256 256)"/> <path d="M256 238 V 168" transform="rotate(216 256 256)"/><path d="M256 238 V 168" transform="rotate(288 256 256)"/> </g> <circle cx="256" cy="256" r="30" fill="#F0467F" stroke="#2B1B52" stroke-width="10"/> <circle cx="246" cy="246" r="8" fill="#FFFFFF"/> </g> <g transform="translate(404 104)"> <path d="M0 -46 C 6 -14 14 -6 46 0 C 14 6 6 14 0 46 C -6 14 -14 6 -46 0 C -14 -6 -6 -14 0 -46 Z" fill="#5CE1F5" stroke="#2B1B52" stroke-width="8" stroke-linejoin="round"/> </g> <g transform="translate(112 410)"> <path d="M0 -22 C 3 -7 7 -3 22 0 C 7 3 3 7 0 22 C -3 7 -7 3 -22 0 C -7 -3 -3 -7 0 -22 Z" fill="#FFFFFF" stroke="#2B1B52" stroke-width="6" stroke-linejoin="round"/> </g> </svg>`;
 let updateReady = false, hadController = false;
 try {
@@ -1343,12 +1343,12 @@ function goalCard(g) {
         <button class="btn" type="submit">Save</button></form>
       ${g.notes ? `<p class="small muted mt">${esc(g.notes).replace(/\n/g, '<br>')}</p>` : ''}
       ${g.link ? `<a class="maplink" style="display:inline-block;margin-top:8px" href="${esc(safeUrl(g.link))}" target="_blank" rel="noopener">Open link</a>` : ''}
-      <div class="row mt"><button class="link" data-act="sEdit" data-id="${esc(g.id)}">Edit goal</button><button class="link danger" data-act="sDel" data-id="${esc(g.id)}" data-confirm>Delete goal</button></div></details></section>`;
+      <div class="row mt"><button class="link" data-act="sEdit" data-id="${esc(g.id)}">Edit goal</button>${archBtn('goal', g)}<button class="link danger" data-act="sDel" data-id="${esc(g.id)}" data-confirm>Delete goal</button></div></details></section>`;
 }
 function viewVGoals() {
   const G = S.sv.goals;
   if (!G.length) return emptyCard('No goals yet', 'Make one for anything you\'re saving up for.', 'Make a goal', 'data-act="go" data-to="vadd"');
-  const active = G.filter(g => !svDone(g)), reached = G.filter(svDone);
+  const LG = G.filter(live), active = LG.filter(g => !svDone(g)), reached = LG.filter(svDone);
   const savedAll = G.reduce((a, g) => a + svSaved(g), 0), targetActive = active.reduce((a, g) => a + num(g.target), 0), savedActive = active.reduce((a, g) => a + svSaved(g), 0);
   const ms = new Date(); ms.setDate(1); const mk = dk(ms);
   const month = S.sv.tx.filter(t => t.d >= mk).reduce((a, t) => a + num(t.amt), 0);
@@ -1359,7 +1359,8 @@ function viewVGoals() {
         <form data-form="payday" class="stack mt"><div class="field"><input class="input" name="amt" id="payAmt" inputmode="decimal" placeholder="Amount to save, in $" aria-label="Amount to save" autocomplete="off"><button class="btn" type="submit">Save</button></div>
         <div id="payPrev"></div><p class="note">It splits by each goal's payday share if you set one. Otherwise it uses what each dated goal needs per paycheck, or splits evenly.</p></form></details>` : ''}</section>
     ${active.map(goalCard).join('')}
-    ${reached.length ? `<h2 class="sec">Reached 🎉</h2>${reached.map(goalCard).join('')}` : ''}`;
+    ${reached.length ? `<h2 class="sec">Reached 🎉</h2>${reached.map(goalCard).join('')}` : ''}
+    ${archSection('goal', 'goals', g => (g.em || '💰') + ' ' + g.name + ', ' + usd(svSaved(g)) + ' saved')}`;
 }
 function viewVAdd() {
   const ed = UI.edit && UI.edit.kind === 'goal' ? svGoal(UI.edit.id) : null, pre = !ed && UI.svPre ? UI.svPre : null, v = ed || pre || {};
@@ -1477,8 +1478,8 @@ function kRow(x) {
     <span>${k[1]} <b>${esc(x.title)}</b><span class="small" style="display:block;${late ? 'color:var(--danger);font-weight:700' : 'color:var(--mute)'}">${c ? `<span class="cdot" style="background:${esc(c.color)}"></span>${esc(c.name)}, ` : ''}${x.due ? (late ? 'was due ' : 'due ') + esc(fmtDay(x.due)) + (x.time ? ' at ' + fmtTime(x.time) : '') : 'no due date'}</span></span>
     <button class="link quiet" data-act="kDel" data-id="${esc(x.id)}" data-confirm aria-label="Delete ${esc(x.title)}">✕</button></div>`;
 }
-const kOpenSorted = () => S.sc.tasks.filter(x => !x.done).sort((a, b) => (a.due || '9').localeCompare(b.due || '9') || (a.time || '').localeCompare(b.time || ''));
-const kClassOpts = cur => opt('', 'No class', cur || '') + S.sc.classes.map(c => opt(c.id, c.name, cur || '')).join('');
+const kOpenSorted = () => S.sc.tasks.filter(x => !x.done && !(kClass(x.c) || {}).archived).sort((a, b) => (a.due || '9').localeCompare(b.due || '9') || (a.time || '').localeCompare(b.time || ''));
+const kClassOpts = cur => opt('', 'No class', cur || '') + S.sc.classes.filter(c => live(c) || c.id === cur).map(c => opt(c.id, c.name, cur || '')).join('');
 function viewKDue() {
   const t = today(), wk = dk(new Date(Date.now() + 7 * 864e5)), open = kOpenSorted(), done = S.sc.tasks.filter(x => x.done).sort((a, b) => (b.due || '').localeCompare(a.due || ''));
   const grp = [['Overdue', open.filter(x => x.due && x.due < t)], ['Today', open.filter(x => x.due === t)], ['This week', open.filter(x => x.due > t && x.due <= wk)], ['Later', open.filter(x => !x.due || x.due > wk)]];
@@ -1494,7 +1495,7 @@ function viewKDue() {
 }
 function viewKClass() {
   const ed = UI.edit && UI.edit.kind === 'kclass' ? kClass(UI.edit.id) : null, col = ed ? ed.color : K_COLORS[S.sc.classes.length % K_COLORS.length];
-  return `${S.sc.classes.map(c => { const g = kGrade(c.id), tasks = S.sc.tasks.filter(t => t.c === c.id), done = tasks.filter(t => t.done);
+  return `${S.sc.classes.filter(live).map(c => { const g = kGrade(c.id), tasks = S.sc.tasks.filter(t => t.c === c.id), done = tasks.filter(t => t.done);
       return `<details class="card" ${det('kc-' + c.id)}><summary class="sum"><div class="mhead"><span class="gem" style="background:${esc(c.color)};color:#fff;font-weight:900">${esc((c.code || c.name).slice(0, 3).toUpperCase())}</span>
         <div><h3>${esc(c.name)}</h3><span class="small muted">${[c.days ? c.days.split('').map(d => (K_DAYS.find(x => x[0] === d) || ['', d])[1]).join(', ') : '', c.time ? fmtTime(c.time) : '', c.room].filter(Boolean).map(esc).join(', ') || 'No schedule set'}</span>
         ${g ? `<span class="small"><b>${g.letter}</b>, ${Math.round(g.pct * 10) / 10}% from ${plural(g.n, 'grade')}</span>` : ''}</div></div></summary>
@@ -1503,7 +1504,8 @@ function viewKClass() {
         ${done.length ? `<span class="label">Grades</span>${done.map(t => `<div class="lrow" style="align-items:center"><span style="flex:1;text-align:left;color:var(--ink)">${kKind(t.kind)[1]} ${esc(t.title)}</span>
           <span style="display:flex;gap:6px;align-items:center;flex:none"><input class="input" style="width:64px;min-height:38px;text-align:center" inputmode="decimal" placeholder="Score" aria-label="Score for ${esc(t.title)}" data-bind="kgrade" data-id="${esc(t.id)}" data-f="score" value="${esc(t.score ?? '')}">/
           <input class="input" style="width:64px;min-height:38px;text-align:center" inputmode="decimal" placeholder="Out of" aria-label="Out of, for ${esc(t.title)}" data-bind="kgrade" data-id="${esc(t.id)}" data-f="max" value="${esc(t.max ?? '')}"></span></div>`).join('')}<p class="note">Check off work in Due, then add the score here. Your grade updates when you leave this screen.</p>` : ''}
-        <div class="row mt"><button class="link" data-act="kEditClass" data-id="${esc(c.id)}">Edit</button><button class="link danger" data-act="kDelClass" data-id="${esc(c.id)}" data-confirm>Delete class</button></div></details>`; }).join('')}
+        <div class="row mt"><button class="link" data-act="kEditClass" data-id="${esc(c.id)}">Edit</button>${archBtn('class', c)}<button class="link danger" data-act="kDelClass" data-id="${esc(c.id)}" data-confirm>Delete class</button></div></details>`; }).join('')}
+    ${archSection('class', 'classes', c => c.name + (c.code ? ', ' + c.code : ''))}
     <details class="card" ${det('kClassForm', !S.sc.classes.length || !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add a class'}</h2></summary>
       <form data-form="kclass" class="stack">
         <div class="ff"><label>Class name<input class="input" name="name" placeholder="DC Circuits" value="${fval(ed, 'name')}"></label><label>Code<input class="input" name="code" placeholder="EET 1015" value="${fval(ed, 'code')}"></label></div>
@@ -1540,7 +1542,7 @@ function svPer(g) {
   return left / Math.max(1, Math.ceil(dd / SV_FREQ[S.sv.freq][0]));
 }
 function payAlloc(total) {
-  const act = S.sv.goals.filter(g => !svDone(g) || num(g.dream) > svSaved(g));
+  const act = S.sv.goals.filter(g => live(g) && (!svDone(g) || num(g.dream) > svSaved(g)));
   if (!act.length || !(total > 0)) return {out:[], rest:total || 0};
   const cap = g => Math.max(0, (num(g.dream) > num(g.target) ? num(g.dream) : num(g.target) || Infinity) - svSaved(g));
   const amt = new Map(act.map(g => [g, 0])), r2 = x => Math.floor(x * 100) / 100;
@@ -1584,7 +1586,7 @@ function viewHome() {
       ${S.active ? '<button class="btn block mt" data-act="homeGym">Continue your workout</button>' : t ? `<button class="btn block mt" data-act="homeTpl" data-id="${esc(t.id)}">Start ${esc(t.name)}</button>` : ''}</section>`);
   }
   if (modeVisible('school')) {
-    const due = kOpenSorted().slice(0, 3), todays = S.sc.classes.filter(c => (c.days || '').includes(dayLetter(new Date()))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    const due = kOpenSorted().slice(0, 3), todays = S.sc.classes.filter(c => live(c) && (c.days || '').includes(dayLetter(new Date()))).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     cards.push(`<section class="card"><div class="row"><h2>🎓 School</h2><button class="link" data-act="mode" data-k="school">Open</button></div>
       ${todays.length ? `<p class="note">Classes today: ${todays.map(c => `<b>${esc(c.name)}</b>${c.time ? ' at ' + fmtTime(c.time) : ''}`).join(', ')}</p>` : ''}
       ${due.length ? due.map(kRow).join('') : '<p class="note">Nothing due. Nice.</p>'}</section>`);
@@ -1596,11 +1598,11 @@ function viewHome() {
     cards.push(`<section class="card"><div class="row"><h2>🗾 Japan</h2><button class="link" data-act="mode" data-k="japan">Open</button></div><p class="note">${line}</p>${next.map(prepRow).join('')}</section>`);
   }
   if (modeVisible('media')) {
-    const now = S.md.items.filter(m => m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
+    const now = S.md.items.filter(m => live(m) && m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
     cards.push(`<section class="card"><div class="row"><h2>📚 Watching and reading</h2><button class="link" data-act="mode" data-k="media">Open</button></div>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
   }
   if (modeVisible('save')) {
-    const gs = S.sv.goals.filter(g => !svDone(g) && num(g.target)).sort((a, b) => svSaved(b) / num(b.target) - svSaved(a) / num(a.target)).slice(0, 2);
+    const gs = S.sv.goals.filter(g => live(g) && !svDone(g) && num(g.target)).sort((a, b) => svSaved(b) / num(b.target) - svSaved(a) / num(a.target)).slice(0, 2);
     cards.push(`<section class="card"><div class="row"><h2>💰 Savings</h2><button class="link" data-act="mode" data-k="save">Open</button></div>
       ${gs.length ? gs.map(g => `<div class="crow"><div class="row"><b>${esc(g.em || '💰')} ${esc(g.name)}</b><span>${usd(svSaved(g))} of ${usd(num(g.target))}</span></div><div class="cbar"><i style="width:${Math.min(100, svSaved(g) / num(g.target) * 100)}%"></i></div></div>`).join('') : '<p class="note">No goals in progress.</p>'}</section>`);
   }
@@ -1741,6 +1743,23 @@ Object.assign(XACT, {
   seenUpdate: () => { S.seenVer = APP_VERSION; },
 });
 
+/* ----- Archive: hide things without deleting them ----- */
+const ARCH = {cat:() => S.cats, ex:() => S.ex, tpl:() => S.tpl, class:() => S.sc.classes, goal:() => S.sv.goals, media:() => S.md.items};
+const live = x => !x.archived;
+const archBtn = (kind, x, style) => `<button class="link" data-act="arch" data-kind="${kind}" data-id="${esc(x.id)}"${style ? ` style="${style}"` : ''}>${x.archived ? 'Restore' : 'Archive'}</button>`;
+function archSection(kind, label, nameOf) {
+  const a = ARCH[kind]().filter(x => x.archived); if (!a.length) return '';
+  return `<details class="card flat" ${det('arch-' + kind)}><summary class="sum"><h2>Archived ${label}</h2><span class="small muted">${a.length} hidden. Restore any time.</span></summary>
+    ${a.map(x => `<div class="lrow" style="align-items:center"><span style="text-align:left;color:var(--ink)">${esc(nameOf(x))}</span>${archBtn(kind, x)}</div>`).join('')}</details>`;
+}
+Object.assign(XACT, {arch: d => {
+  const x = ARCH[d.kind]().find(y => y.id === d.id); if (!x) return false;
+  x.archived = !x.archived;
+  if (d.kind === 'tpl' && x.archived && S.next === x.id) S.next = null;
+  if (d.kind === 'cat' && x.archived && S.cf === x.id) S.cf = 'all';
+  toast(x.archived ? 'Archived. It\'s hidden, not deleted.' : 'Restored.');
+}});
+
 let S = load();
 const UI = {open:{}};           // which <details> are open, survives re-renders
 let Q = '';                      // exercise search
@@ -1754,8 +1773,8 @@ let PH = [];                     // progress photos (IndexedDB)
    ========================================================= */
 const exInfo = name => S.ex.find(e => norm(e.name) === norm(name));
 const catName = id => (S.cats.find(c => c.id === id) || {}).name || 'Workout';
-const tplAfter = id => { const i = S.tpl.findIndex(t => t.id === id); return S.tpl.length ? S.tpl[(i + 1) % S.tpl.length].id : null; };
-const nextTpl = () => S.tpl.find(t => t.id === S.next) || S.tpl[0] || null;
+const tplAfter = id => { const L = S.tpl.filter(t => !t.archived); if (!L.length) return null; const i = L.findIndex(t => t.id === id); return L[(i + 1) % L.length].id; };
+const nextTpl = () => S.tpl.find(t => t.id === S.next && !t.archived) || S.tpl.find(t => !t.archived) || null;
 const topOf = e => Math.max(0, ...e.sets.map(s => num(s.w)));
 const volOf = w => w.exercises.reduce((t, e) => t + e.sets.reduce((u, s) => u + num(s.w) * num(s.r), 0), 0);
 const loggedNames = () => [...new Set(S.history.flatMap(w => w.exercises.map(e => e.name)))].sort((a, b) => a.localeCompare(b));
@@ -2019,7 +2038,7 @@ function subtitle() {
   if (TAB_INFO[S.tab].g[0] === 'j') return jpSubtitle();
   if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
-  if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
+  if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => live(g) && !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
   if (TAB_INFO[S.tab].g[0] === 'm') { const n = S.md.items.filter(m => m.status === 'now').length; return `${n} in progress, ${plural(S.md.items.length, 'title')} in total`; }
   const nowStr = new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   switch (S.tab) {
@@ -2053,13 +2072,13 @@ function viewWorkout() {
       <div class="stats"><div class="stat"><b>${wk.length}</b><span>${wk.length === 1 ? 'workout' : 'workouts'}</span></div>
       <div class="stat"><b>${short(vol)}</b><span>${S.unit} lifted</span></div><div class="stat"><b>${Math.round(mins)}</b><span>minutes</span></div></div>
       <p class="note">${last ? `Last workout ${fmtLong(last.end)}${last.cat ? ', ' + esc(catName(last.cat)) : ''}.` : 'Finish your first workout and it shows up here.'}</p></section>
-    ${S.tpl.length ? `<h2 class="sec">All templates</h2><div class="tiles">${S.tpl.map(t => `<button class="tile" data-act="startTpl" data-id="${esc(t.id)}"><b>${esc(t.name)}</b><span>${plural(t.items.length, 'exercise')}</span><small>${esc(t.items.map(i => i.name).join(', '))}</small></button>`).join('')}</div>` : ''}
-    <h2 class="sec">${S.tpl.length ? 'Or start by category' : 'Start a workout'}</h2>
-    <div class="tiles">${S.cats.map(c => { const n = S.ex.filter(e => e.cats.includes(c.id)).length;
+    ${S.tpl.some(live) ? `<h2 class="sec">All templates</h2><div class="tiles">${S.tpl.filter(live).map(t => `<button class="tile" data-act="startTpl" data-id="${esc(t.id)}"><b>${esc(t.name)}</b><span>${plural(t.items.length, 'exercise')}</span><small>${esc(t.items.map(i => i.name).join(', '))}</small></button>`).join('')}</div>` : ''}
+    <h2 class="sec">${S.tpl.some(live) ? 'Or start by category' : 'Start a workout'}</h2>
+    <div class="tiles">${S.cats.filter(live).map(c => { const n = S.ex.filter(e => live(e) && e.cats.includes(c.id)).length;
       return `<button class="tile" data-act="start" data-cat="${esc(c.id)}"><b>${esc(c.name)}</b><span>${plural(n, 'exercise')}</span></button>`; }).join('')}</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="start">Start empty workout</button><button class="btn ghost" style="flex:1" data-act="openPlates">Plate calculator</button></div>
     ${S.tpl.length ? `<details class="card mt" ${det('manageTpl')}><summary class="sum"><h2>Manage templates</h2><span class="small muted">Rename, reorder or delete. Your rotation follows this order.</span></summary>
-      ${S.tpl.map((t, i) => `<div class="lrow" style="align-items:center"><input class="input" style="min-height:40px" data-bind="tplname" data-id="${esc(t.id)}" value="${esc(t.name)}" aria-label="Template name">${i ? `<button class="link quiet" data-act="tplUp" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">↑ Up</button>` : ''}<button class="link danger" data-act="deleteTpl" data-id="${esc(t.id)}" data-confirm>Delete</button></div>`).join('')}</details>`
+      ${S.tpl.map((t, i) => `<div class="lrow" style="align-items:center"><input class="input" style="min-height:40px" data-bind="tplname" data-id="${esc(t.id)}" value="${esc(t.name)}" aria-label="Template name">${i ? `<button class="link quiet" data-act="tplUp" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">↑ Up</button>` : ''}${archBtn('tpl', t)}<button class="link danger" data-act="deleteTpl" data-id="${esc(t.id)}" data-confirm>Delete</button></div>`).join('')}</details>`
       : `<p class="note">Tip: save any workout as a template from the workout screen or your history, then start it here with one tap.</p>`}
     ${backupDue ? `<div class="card flat mt"><div class="row"><span class="small">It's been over a week since your last backup.</span><button class="btn sm" data-act="go" data-to="settings">Back up</button></div></div>` : ''}`;
 }
@@ -2067,7 +2086,7 @@ function viewSession(a) {
   const done = a.exercises.reduce((t, e) => t + e.sets.filter(s => s.done).length, 0);
   const total = a.exercises.reduce((t, e) => t + e.sets.length, 0);
   const inSession = new Set(a.exercises.map(e => norm(e.name)));
-  const pool = S.ex.filter(e => (!a.cat || e.cats.includes(a.cat)) && !inSession.has(norm(e.name)));
+  const pool = S.ex.filter(e => live(e) && (!a.cat || e.cats.includes(a.cat)) && !inSession.has(norm(e.name)));
   return `<section class="card"><div class="row"><div>
       <span class="small muted"><b>${esc(a.cat ? catName(a.cat) : 'Workout')}</b> in progress</span>
       <div class="clock" id="elapsed">${clock(Date.now() - a.start)}</div>
@@ -2109,27 +2128,27 @@ function exCard(ex, xi) {
 function viewCatalog() {
   const f = S.cf;
   return `<input class="input" id="exSearch" type="search" placeholder="Search by name or muscle" value="${esc(Q)}" autocomplete="off" aria-label="Search exercises">
-    <div class="chips mt mb">${chip('All', f === 'all', 'data-act="filterCat" data-c="all"')}${S.cats.map(c => chip(c.name, f === c.id, `data-act="filterCat" data-c="${esc(c.id)}"`)).join('')}</div>
-    <div id="exList">${exList()}</div>
+    <div class="chips mt mb">${chip('All', f === 'all', 'data-act="filterCat" data-c="all"')}${S.cats.filter(live).map(c => chip(c.name, f === c.id, `data-act="filterCat" data-c="${esc(c.id)}"`)).join('')}</div>
+    <div id="exList">${exList()}</div>${archSection('ex', 'exercises', x => x.name)}
     <details class="card" ${det('newEx')}><summary class="sum"><h2>Create an exercise</h2><span class="small muted">Add your own with muscles and notes</span></summary>
       <input class="input" placeholder="Name" data-bind="nf" data-f="name" value="${esc(NF.name)}" aria-label="Exercise name">
       <textarea class="input mt" style="min-height:80px" placeholder="How to do it, in a sentence or two" data-bind="nf" data-f="how" aria-label="How to do it">${esc(NF.how)}</textarea>
       <span class="label">Muscles</span><div class="chips">${MUSCLES.map(m => chip(m, NF.muscles.includes(m), `data-act="nfMuscle" data-m="${esc(m)}"`)).join('')}</div>
-      <span class="label">Categories</span><div class="chips">${S.cats.map(c => chip(c.name, NF.cats.includes(c.id), `data-act="nfCat" data-c="${esc(c.id)}"`)).join('')}</div>
+      <span class="label">Categories</span><div class="chips">${S.cats.filter(live).map(c => chip(c.name, NF.cats.includes(c.id), `data-act="nfCat" data-c="${esc(c.id)}"`)).join('')}</div>
       <button class="btn block mt" data-act="createEx">Add to library</button></details>
     <details class="card" ${det('cats')}><summary class="sum"><h2>Categories</h2><span class="small muted">${S.cats.length} ${S.cats.length === 1 ? 'category' : 'categories'}</span></summary>
-      ${S.cats.map(c => `<div class="lrow"><b>${esc(c.name)}</b><button class="link danger" data-act="deleteCat" data-c="${esc(c.id)}" data-confirm>Delete</button></div>`).join('')}
+      ${S.cats.map(c => `<div class="lrow" style="align-items:center"><b${c.archived ? ' class="muted"' : ''}>${esc(c.name)}${c.archived ? ' (archived)' : ''}</b>${archBtn('cat', c, 'margin-left:auto')}<button class="link danger" data-act="deleteCat" data-c="${esc(c.id)}" data-confirm>Delete</button></div>`).join('')}
       <div class="field mt"><input class="input" id="newCat" placeholder="New category, like Arms" autocomplete="off" data-enter="addCat" aria-label="New category name"><button class="btn" data-act="addCat">Add</button></div></details>`;
 }
 function exList() {
   const f = S.cf, q = norm(Q);
-  const list = S.ex.filter(e => (f === 'all' || e.cats.includes(f)) && (!q || norm(e.name).includes(q) || e.muscles.some(m => norm(m).includes(q))));
+  const list = S.ex.filter(e => live(e) && (f === 'all' || e.cats.includes(f)) && (!q || norm(e.name).includes(q) || e.muscles.some(m => norm(m).includes(q))));
   if (!list.length) return emptyCard(q ? 'No matches' : 'Nothing here yet', q ? 'Try a different name or muscle.' : 'Open any exercise and tap this category to add it.');
   return list.map(e => `<details class="card" ${det('ex-' + e.id)}><summary class="sum"><h3>${esc(e.name)}</h3><span class="small muted">${e.muscles.length ? esc(e.muscles.join(', ')) : 'No muscles set'}</span></summary>
       <p class="muted">${esc(e.how)}</p>${figure(e.muscles)}${barChart(e.name)}
       <span class="label">Muscles</span><div class="chips">${MUSCLES.map(m => chip(m, e.muscles.includes(m), `data-act="exMuscle" data-id="${esc(e.id)}" data-m="${esc(m)}"`)).join('')}</div>
-      <span class="label">Categories</span><div class="chips">${S.cats.map(c => chip(c.name, e.cats.includes(c.id), `data-act="exCat" data-id="${esc(e.id)}" data-c="${esc(c.id)}"`)).join('') || '<span class="small muted">Create a category first.</span>'}</div>
-      <button class="link danger mt" data-act="deleteEx" data-id="${esc(e.id)}" data-confirm>Delete exercise</button></details>`).join('');
+      <span class="label">Categories</span><div class="chips">${S.cats.filter(c => live(c) || e.cats.includes(c.id)).map(c => chip(c.name, e.cats.includes(c.id), `data-act="exCat" data-id="${esc(e.id)}" data-c="${esc(c.id)}"`)).join('') || '<span class="small muted">Create a category first.</span>'}</div>
+      ${archBtn('ex', e)} <button class="link danger mt" data-act="deleteEx" data-id="${esc(e.id)}" data-confirm>Delete exercise</button></details>`).join('');
 }
 function viewCare() {
   const f = S.cm;

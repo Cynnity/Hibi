@@ -4,6 +4,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.2 — "Spring cleaning" (Oct 21)
+- **Archive instead of delete.** Hide things you're done with without losing them:
+  - **Gym:** workout categories, exercises and templates. Archived templates drop out of the rotation.
+  - **School:** classes from past semesters. Their homework leaves Due and Home.
+  - **Savings:** goals you've finished or put on pause.
+  - **Shows & Books:** any title. There's a new **Archived** filter in Library.
+- Each list has an **Archived** section at the bottom, with **Restore** to bring things back.
+
 ## 1.1.1 — "Touch-up" (Oct 21)
 - **Fixed the Home Screen icon.** The pink background only covered the top-left corner and the rest showed up white. Now the whole icon is pink behind the sakura.
 
