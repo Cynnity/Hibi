@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 
 /* =========================================================
    Constants and reference data
@@ -132,6 +132,7 @@ function normalize(s) {
   if (!THEMES.some(t => t[0] === s.theme)) s.theme = 'sakura';
   normalizeJp(s);
   normalizeMd(s);
+  normalizeGm(s);
   normalizeSv(s);
   normalizeExtra(s);
   return s;

@@ -266,10 +266,10 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 #sheet .panel{width:100%;max-width:600px;background:var(--surface);border-top:2px solid var(--ink);border-radius:20px 20px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 22px);max-height:88vh;overflow:auto;cursor:default}
 .plates-svg{display:block;width:100%;height:auto;margin:16px 0 8px}
 /* ---------- Modes & Japan ---------- */
-.modes{display:flex;gap:8px;margin:0 0 14px;overflow-x:auto}
+.modes{position:relative;display:flex;gap:8px;margin:0 0 14px;overflow-x:auto}
 .modes button{font-size:14px}
 .modes button:not([aria-selected="true"]){padding:0 10px;font-size:18px}
-.modes{gap:6px}
+.modes{position:relative;gap:6px}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .modes button{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--mute);font-weight:700;font-size:14px}
 .modes button[aria-selected="true"]{border-color:var(--ink);background:var(--accent);color:var(--on-accent)}
@@ -317,6 +317,18 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .mrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .mrow>div{flex:1;min-width:0}
 .mrow b{display:block}
+.ring{flex:none;display:inline-block;vertical-align:middle}
+.ring text{font:900 15px "Zen Maru Gothic",sans-serif;fill:var(--ink)}
+.rate-row{display:flex;align-items:center;gap:10px;margin-top:6px}
+.rater{flex:1;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.rater button{min-height:34px;padding:0;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:800;font-size:15px}
+.rater button.in{background:var(--surface-2)}
+.rater button.on{background:var(--accent);border-color:var(--ink);color:var(--on-accent)}
+.cover.wide{width:82px;height:48px}
+.cover.wide.lg{width:176px;height:100px}
+.gsum{display:flex;align-items:center;gap:10px}
+.gsum>div{flex:1;min-width:0}
+.gsec{margin:18px 4px 8px;font:400 18px "Dela Gothic One",sans-serif}
 .stars{display:inline-flex;gap:2px;align-items:center}
 .star{background:none;border:0;padding:2px 3px;font-size:26px;line-height:1;color:var(--line)}
 span.star{font-size:14px;padding:0}

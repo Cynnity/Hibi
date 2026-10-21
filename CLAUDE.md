@@ -13,7 +13,8 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/crash.js` | Crash reports and the "Something went wrong" screen. Loads first. |
 | `js/core.js` | `APP_VERSION`, constants, helpers, load/normalize/save, the mode list |
 | `js/japan.js` | Japan trip mode (also defines `SAVE` and the form handler) |
-| `js/media.js` | Shows & Books mode |
+| `js/media.js` | Shows & Books mode, plus the shared 1 to 10 `ring()` and `rater()` |
+| `js/games.js` | Games mode (search uses RAWG; key is `RAWG_KEY` or `S.gm.key`) |
 | `js/savings.js` | Savings mode |
 | `js/home-school.js` | Update banner, Home, School, hiding/ordering modes, passcode, archive, patch notes |
 | `js/cardio.js` | Cardio machines: fields, logs, charts |

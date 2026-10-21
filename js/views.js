@@ -14,6 +14,7 @@ function subtitle() {
   if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
   if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => live(g) && !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
+  if (['gnow', 'glib', 'gadd', 'gstats'].includes(TAB_INFO[S.tab].g)) { const L = S.gm.items.filter(live), n = L.filter(g => g.status === 'now').length; return `${n} playing, ${plural(L.length, 'game')} in total`; }
   if (TAB_INFO[S.tab].g[0] === 'm') { const n = S.md.items.filter(m => m.status === 'now').length; return `${n} in progress, ${plural(S.md.items.length, 'title')} in total`; }
   const nowStr = new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   switch (S.tab) {
@@ -299,7 +300,7 @@ ${S.mode === 'home' || S.mode === 'school' ? '' : S.mode === 'gym' ? `    <secti
       <label class="setrow"><span>Bar weight</span><select class="input" data-bind="setting" data-k="bar">${barOpts().map(n => `<option value="${n}"${barW() === n ? ' selected' : ''}>${n} ${S.unit}</option>`).join('')}</select></label>
       <p class="note">Hints tell you to add weight once you hit the top of your rep range on every set.</p>
       <p class="note">Changing the unit only changes labels. Numbers you already logged stay as entered.</p></section>
-` : S.mode === 'save' ? svSettings() : S.mode === 'japan' ? `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
+` : S.mode === 'save' ? svSettings() : S.mode === 'games' ? gmSettings() : S.mode === 'japan' ? `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
       <div class="ff"><label>First day<input class="input" type="date" name="start" value="${esc(S.jp.start)}"></label><label>Last day<input class="input" type="date" name="end" value="${esc(S.jp.end)}"></label></div>
       <button class="btn" type="submit">Save dates</button></form>
       <p class="note">Exchange rate: ¥${fmtN(R())} per dollar. Change it in Money, then Converter.</p></section>

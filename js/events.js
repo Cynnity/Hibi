@@ -37,6 +37,7 @@ document.addEventListener('input', e => {
   if (t.id === 'payAmt') { $('#payPrev').innerHTML = payPreview(num(t.value)); return; }
   if (t.dataset.bind === 'kgrade') { const x = S.sc.tasks.find(q => q.id === t.dataset.id); if (x) { x[t.dataset.f] = t.value; save(); } return; }
   if (t.id === 'mdSearch') { MQ = t.value; $('#mdList').innerHTML = mdList(); return; }
+  if (t.id === 'gmSearch') { GQ = t.value; $('#gmList').innerHTML = gList(); return; }
   if (t.dataset.bind === 'jj') { const k = t.dataset.k; S.jp.journal[k] = S.jp.journal[k] || {}; S.jp.journal[k][t.dataset.f] = t.value; save(); return; }
   if (t.dataset.bind === 'jnotes') { S.jp.notes = t.value; save(); return; }
   if (t.id === 'plateW') { UI.plates.w = t.value; $('#plateOut').innerHTML = plateResult(); return; }
@@ -59,6 +60,8 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'svfreq') { S.sv.freq = t.value; save(); render(); return; }
   if (t.dataset.bind === 'mstatus') { const m = mFind(t.dataset.id); if (m) { const was = m.status; m.status = t.value; m.updated = Date.now(); if (t.value === 'done' && was !== 'done') { m.finished = Date.now(); if (m.total) m.prog = Math.max(m.prog || 0, m.total); } afterChange(); } return; }
   if (t.dataset.bind === 'msort') { S.md.sort = t.value; save(); render(); return; }
+  if (t.dataset.bind === 'gsort') { S.gm.sort = t.value; save(); render(); return; }
+  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); if (gDone(g) && !was) { g.finished = Date.now(); toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.`); } afterChange(); } return; }
   if (t.dataset.bind === 'jjday') { S.jp.jsel = t.value; save(); render(); return; }
   if (t.type === 'file') {
     const f = t.files && t.files[0]; const kind = t.dataset.file; t.value = ''; if (!f) return;

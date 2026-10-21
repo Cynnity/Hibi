@@ -189,6 +189,10 @@ function viewHome() {
     const now = S.md.items.filter(m => live(m) && m.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
     cards.push(`<section class="card"><div class="row"><h2>📚 Watching and reading</h2><button class="link" data-act="mode" data-k="media">Open</button></div>${now.length ? now.map(nowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
   }
+  if (modeVisible('games')) {
+    const now = S.gm.items.filter(g => live(g) && g.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 3);
+    cards.push(`<section class="card"><div class="row"><h2>🎮 Playing</h2><button class="link" data-act="mode" data-k="games">Open</button></div>${now.length ? now.map(gNowRow).join('') : '<p class="note">Nothing in progress.</p>'}</section>`);
+  }
   if (modeVisible('save')) {
     const gs = S.sv.goals.filter(g => live(g) && !svDone(g) && num(g.target)).sort((a, b) => svSaved(b) / num(b.target) - svSaved(a) / num(a.target)).slice(0, 2);
     cards.push(`<section class="card"><div class="row"><h2>💰 Savings</h2><button class="link" data-act="mode" data-k="save">Open</button></div>
@@ -332,7 +336,7 @@ Object.assign(XACT, {
 });
 
 /* ----- Archive: hide things without deleting them ----- */
-const ARCH = {cat:() => S.cats, ex:() => S.ex, tpl:() => S.tpl, class:() => S.sc.classes, goal:() => S.sv.goals, media:() => S.md.items};
+const ARCH = {cat:() => S.cats, ex:() => S.ex, tpl:() => S.tpl, class:() => S.sc.classes, goal:() => S.sv.goals, media:() => S.md.items, game:() => S.gm.items};
 const live = x => !x.archived;
 const archBtn = (kind, x, style) => `<button class="link" data-act="arch" data-kind="${kind}" data-id="${esc(x.id)}"${style ? ` style="${style}"` : ''}>${x.archived ? 'Restore' : 'Archive'}</button>`;
 function archSection(kind, label, nameOf) {

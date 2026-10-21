@@ -4,6 +4,17 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.7 — "Player 2 has joined" (Oct 21)
+- **New Games mode 🎮** with Playing, Library, Add and Stats tabs.
+- **Track every game:** Playing, Want to play, On hold, Beaten, 100% and Dropped, plus hours played, what you play it on, genres, notes and favorites.
+- **Game search** finds the cover, genres, platforms and release year (game data from RAWG).
+- **Sort and filter by genre.** Sort by Genre to see your games grouped under headings, or tap a genre to see only those games. You can also sort by rating, hours played, title or release year.
+- **+1 h and +30 min buttons** to log play time. Logging time on a backlog game starts it for you.
+- **Game stats:** hours played, games beaten this year, your average rating, a breakdown by genre and your most-played games.
+- **New 1 to 10 ring rating** everywhere, replacing the stars. Your old Shows & Books ratings were doubled, so 4 stars is now an 8. AniList imports now bring in your 10-point scores.
+- A Playing card on Home.
+- **Fixed:** the mode switcher could push the screen a few pixels sideways.
+
 ## 1.6 — "Behind the scenes" (Oct 21)
 - **Crash reports.** If something breaks, Hibi saves a report of what went wrong. It doesn't include any of your personal data.
 - **Reports go to Dropbox** when it's connected, in a crash-reports folder next to your backups.

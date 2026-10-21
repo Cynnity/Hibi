@@ -25,20 +25,29 @@ function normalizeMd(s) {
   if (!s.md || typeof s.md !== 'object') s.md = {};
   if (!Array.isArray(s.md.items)) s.md.items = [];
   if (!s.md.count || typeof s.md.count !== 'object') s.md.count = {};
+  if (!s.md.r10) { s.md.items.forEach(m => { if (m.rating) m.rating = Math.min(10, Math.round(num(m.rating) * 2)); }); s.md.r10 = 1; }   // stars (1-5) became a 1-10 ring in 1.7
   s.md.fs = s.md.fs || 'all'; s.md.ft = s.md.ft || 'all'; s.md.sort = s.md.sort || 'updated';
 }
 function progText(m) {
   if (m.type === 'movie') return m.status === 'done' ? 'Watched' : 'Not watched yet';
   return `${unitOf(m)[1]} ${m.prog || 0}${m.total ? ` of ${m.total}` : ''}`;
 }
-function stars(m, interactive) {
-  let s = '';
-  for (let i = 1; i <= 5; i++) {
-    const on = (m.rating || 0) >= i;
-    s += interactive ? `<button class="star${on ? ' on' : ''}" data-act="mRate" data-id="${esc(m.id)}" data-v="${i}" aria-label="Rate ${i} out of 5">★</button>` : `<span class="star${on ? ' on' : ''}">★</span>`;
-  }
-  return `<span class="stars"${interactive ? '' : ` role="img" aria-label="${m.rating || 0} out of 5 stars"`}>${s}</span>`;
+/* ----- 1 to 10 ring rating, shared by Shows & Books and Games ----- */
+const ringColor = v => v >= 8 ? 'var(--good)' : v >= 5 ? '#E5A100' : 'var(--danger)';
+function ring(v, size) {
+  v = Math.max(0, Math.min(10, Math.round(num(v)))); size = size || 40;
+  const r = 17, C = 2 * Math.PI * r;
+  return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 40 40" role="img" aria-label="${v ? `Rated ${v} out of 10` : 'Not rated'}">
+    <circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--line)" stroke-width="4"/>
+    ${v ? `<circle cx="20" cy="20" r="${r}" fill="none" stroke="${ringColor(v)}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(C * v / 10).toFixed(2)} ${C.toFixed(2)}" transform="rotate(-90 20 20)"/>` : ''}
+    <text x="20" y="21" text-anchor="middle" dominant-baseline="middle">${v || '–'}</text></svg>`;
 }
+// Tap a number to rate, tap it again to clear.
+function rater(act, id, v) {
+  return `<div class="rate-row">${ring(v, 56)}<div class="rater" role="group" aria-label="Rating out of 10">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i =>
+    `<button class="${i === v ? 'on' : i < v ? 'in' : ''}" data-act="${act}" data-id="${esc(id)}" data-v="${i}" aria-label="Rate ${i} out of 10" aria-pressed="${i === v}">${i}</button>`).join('')}</div></div>`;
+}
+const stars = (m, interactive) => interactive ? rater('mRate', m.id, m.rating || 0) : ring(m.rating, 30);
 function nowRow(m) {
   const pct = m.total ? Math.min(100, (m.prog || 0) / m.total * 100) : 0;
   return `<div class="mrow">${cover(m)}<div><b>${esc(m.title)}</b><span class="small muted">${progText(m)}${m.platform ? ', ' + esc(m.platform) : ''}${hasDay(m) ? `, new on ${DAYS[+m.day].slice(0, 3)}` : ''}</span>${airText(m) ? `<span class="small" style="display:block;color:var(--accent);font-weight:700">${airText(m)}</span>` : ''}
@@ -111,7 +120,7 @@ function viewMStats() {
   const I = S.md.items, y = new Date().getFullYear();
   if (!I.length) return emptyCard('No stats yet', 'Add a few shows or books to see your stats.', 'Add one', 'data-act="go" data-to="madd"');
   const c = s => I.filter(m => m.status === s).length, finY = I.filter(m => m.status === 'done' && m.finished && new Date(m.finished).getFullYear() === y).length;
-  const top = I.filter(m => m.rating >= 4).sort((a, b) => b.rating - a.rating).slice(0, 8), favs = I.filter(m => m.fav);
+  const top = I.filter(m => m.rating >= 8).sort((a, b) => b.rating - a.rating).slice(0, 8), favs = I.filter(m => m.fav);
   const byType = MD_TYPES.map(([k, l]) => [l, I.filter(m => m.type === k).length]).filter(x => x[1]), maxT = Math.max(1, ...byType.map(x => x[1]));
   return `<section class="card"><h2>Overview</h2>
       <div class="stats"><div class="stat"><b>${c('now')}</b><span>in progress</span></div><div class="stat"><b>${finY}</b><span>finished in ${y}</span></div><div class="stat"><b>${c('plan')}</b><span>want to start</span></div></div>
@@ -221,7 +230,7 @@ Object.assign(MACT, {
 /* ----- AniList import and airing times ----- */
 const AL_URL = 'https://graphql.anilist.co';
 const AL_ST = {CURRENT:'now', REPEATING:'now', PLANNING:'plan', PAUSED:'hold', COMPLETED:'done', DROPPED:'drop'};
-const AL_LIST = 'query($u:String,$t:MediaType){MediaListCollection(userName:$u,type:$t){lists{entries{status progress progressVolumes score(format:POINT_5) completedAt{year month day} media{id title{romaji english} format episodes chapters volumes countryOfOrigin coverImage{large medium} nextAiringEpisode{episode airingAt}}}}}}';
+const AL_LIST = 'query($u:String,$t:MediaType){MediaListCollection(userName:$u,type:$t){lists{entries{status progress progressVolumes score(format:POINT_10) completedAt{year month day} media{id title{romaji english} format episodes chapters volumes countryOfOrigin coverImage{large medium} nextAiringEpisode{episode airingAt}}}}}}';
 const alPost = (query, variables) => fetch(AL_URL, {method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body:JSON.stringify({query, variables})}).then(r => r.json());
 async function importAniList(user) {
   const st = () => $('#alStatus');
