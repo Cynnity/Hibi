@@ -90,6 +90,7 @@ function plateResult() {
     <p class="note">Using a ${fmtN(r.bar)} ${S.unit} bar. You can change it in Settings.</p>`;
 }
 function sheetHtml() {
+  if (UI.wrap) return wrapHtml();
   if (UI.notes) return notesSheet();
   if (UI.clog) return cardioSheet();
   if (!UI.plates) return '';

@@ -10,4 +10,6 @@ setInterval(tick, 250);
 loadPhotos();
 if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);
 Crash.booted = true;
+setTimeout(wrapCheck, 900);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(wrapCheck, 600); });
 try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(reg => { document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); }); }).catch(() => {}); } catch (e) {}

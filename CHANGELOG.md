@@ -4,6 +4,17 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 1.8 — "Season finale" (Oct 21)
+- **Hibi Wrapped.** When a month ends, the next time you open Hibi your month in review pops up as tap-through slides, Spotify Wrapped style. In January you get your whole year too.
+  - Slides cover workouts, your heaviest lift and favorite exercise, cardio, hours played and your most-played game, episodes and chapters, money saved, school, journal moods and badges.
+  - Once you're in Japan, a Japan slide shows your days there and what you spent.
+  - Tap the right side to go forward, the left side to go back, or ✕ to close.
+- **Wrapped card on Home** to rewatch any month or year, or see this month so far.
+- Your first one opens on its own on November 1 for October. Older months and 2025 are on the Wrapped card any time.
+- **Weekly recap on Home:** this week's workouts, cardio, hours played, episodes, money saved, homework and journal entries, with a switch to see last week.
+- **Up next in Games:** line up what to play next from your backlog, move games up the list, and tap Start when you begin one. Beating a game reminds you what's next.
+- Hibi now keeps a small log of when you add episodes, chapters and play time, so recaps know when it happened. It starts counting today.
+
 ## 1.7.1 — "Press start" (Oct 21)
 - **Game search is on.** Hibi now has its own RAWG key built in, so search works right away, even after a restore or on another device.
 

@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '1.7.1';
+const APP_VERSION = '1.8';
 
 /* =========================================================
    Constants and reference data
@@ -96,6 +96,9 @@ function clock(ms, roundUp) {
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); s %= 60;
   return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
+// Activity log for things that only keep running totals (episodes, chapters, game hours), so recaps know when they happened.
+// Each entry: [time, kind, amount, item id]
+const logAct = (k, n, id) => { if (n) S.alog.push([Date.now(), k, n, id || '']); };
 const weekStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
 const chip = (text, on, attrs) => `<button class="chip${on ? ' on' : ''}" aria-pressed="${!!on}" ${attrs}>${esc(text)}</button>`;
 
@@ -133,6 +136,10 @@ function normalize(s) {
   normalizeJp(s);
   normalizeMd(s);
   normalizeGm(s);
+  if (!Array.isArray(s.alog)) s.alog = [];
+  { const cut = Date.now() - 800 * 864e5; s.alog = s.alog.filter(a => Array.isArray(a) && a[0] > cut); }
+  if (!s.wrapSeen || typeof s.wrapSeen !== 'object') s.wrapSeen = {};
+  if (!s.wrapSince) s.wrapSince = Date.now();   // Wrapped only opens on its own for periods that end after this
   normalizeSv(s);
   normalizeExtra(s);
   return s;

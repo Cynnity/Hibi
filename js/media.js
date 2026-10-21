@@ -135,11 +135,11 @@ function finishMedia(m) { m.status = 'done'; m.finished = Date.now(); UI.open['m
 const MACT = {
   mInc: d => {
     const m = mFind(d.id); if (!m) return false;
-    m.prog = (m.prog || 0) + 1; m.updated = Date.now(); S.md.count[m.unit] = (S.md.count[m.unit] || 0) + 1;
+    m.prog = (m.prog || 0) + 1; m.updated = Date.now(); S.md.count[m.unit] = (S.md.count[m.unit] || 0) + 1; logAct(m.unit, 1, m.id);
     if (m.status === 'plan' || m.status === 'hold' || m.status === 'drop') m.status = 'now';
     if (m.total && m.prog >= m.total && m.status !== 'done') finishMedia(m);
   },
-  mDec: d => { const m = mFind(d.id); if (!m || !m.prog) return false; m.prog--; m.updated = Date.now(); S.md.count[m.unit] = Math.max(0, (S.md.count[m.unit] || 0) - 1); },
+  mDec: d => { const m = mFind(d.id); if (!m || !m.prog) return false; m.prog--; m.updated = Date.now(); S.md.count[m.unit] = Math.max(0, (S.md.count[m.unit] || 0) - 1); logAct(m.unit, -1, m.id); },
   mDone: d => { const m = mFind(d.id); if (!m) return false; m.prog = 1; m.total = 1; m.updated = Date.now(); finishMedia(m); },
   mStart: d => { const m = mFind(d.id); if (!m) return false; m.status = 'now'; m.updated = Date.now(); toast(`Started ${m.title}.`); },
   mRate: d => { const m = mFind(d.id); if (!m) return false; m.rating = m.rating === +d.v ? 0 : +d.v; },

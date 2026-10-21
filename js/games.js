@@ -20,12 +20,18 @@ const gDone = g => g.status === 'done' || g.status === 'full';
 const gCover = (g, lg) => cover(g, 'wide' + (lg ? ' lg' : ''));
 const hrs = h => { h = num(h); return h ? `${fmtN(Math.round(h * 10) / 10)} h` : ''; };
 let GQ = '', GRES = [];
+// Up next: an ordered list of backlog games to play next
+const gQueued = g => S.gm.queue.includes(g.id);
+const gUpNext = () => S.gm.queue.map(gFind).filter(g => g && live(g));
+function gUnqueue(g) { if (g.status !== 'plan' && g.status !== 'hold') S.gm.queue = S.gm.queue.filter(id => id !== g.id); }
 function normalizeGm(s) {
   if (!s.gm || typeof s.gm !== 'object') s.gm = {};
   if (!Array.isArray(s.gm.items)) s.gm.items = [];
   s.gm.items.forEach(g => { if (!Array.isArray(g.genres)) g.genres = []; if (!Array.isArray(g.plats)) g.plats = []; });
   s.gm.fs = s.gm.fs || 'all'; s.gm.fg = s.gm.fg || 'all'; s.gm.sort = s.gm.sort || 'updated';
   if (typeof s.gm.key !== 'string') s.gm.key = '';
+  if (!Array.isArray(s.gm.queue)) s.gm.queue = [];
+  s.gm.queue = s.gm.queue.filter(id => s.gm.items.some(g => g.id === id && !g.archived && (g.status === 'plan' || g.status === 'hold')));
 }
 const allGenres = () => { const have = [...new Set(S.gm.items.flatMap(g => g.genres))]; return [...have, ...GM_GENRES.filter(x => !have.includes(x))]; };
 
@@ -44,6 +50,7 @@ function gCard(g) {
     ${g.genres.length ? `<p class="small mt">Genres: <b>${esc(g.genres.join(', '))}</b></p>` : ''}
     ${g.plat ? `<p class="small">Playing on: <b>${esc(g.plat)}</b></p>` : ''}${g.year ? `<p class="small">Released: <b>${esc(g.year)}</b></p>` : ''}
     ${g.notes ? `<p class="small muted mt">${esc(g.notes).replace(/\n/g, '<br>')}</p>` : ''}
+    ${g.status === 'plan' || g.status === 'hold' ? `<button class="btn sm ${gQueued(g) ? 'ghost' : ''} mt" data-act="gQ" data-id="${esc(g.id)}">${gQueued(g) ? `In Up next (#${S.gm.queue.indexOf(g.id) + 1}). Remove` : '+ Add to Up next'}</button>` : ''}
     <div class="row mt"><button class="link" data-act="gEdit" data-id="${esc(g.id)}">Edit</button><button class="link" data-act="gFav" data-id="${esc(g.id)}">${g.fav ? 'Unfavorite' : 'Favorite'}</button>
       ${archBtn('game', g)}<button class="link danger" data-act="gDel" data-id="${esc(g.id)}" data-confirm>Delete</button></div></details>`;
 }
@@ -53,11 +60,15 @@ function viewGNow() {
   const I = S.gm.items.filter(live);
   if (!I.length) return emptyCard('No games yet', 'Add what you\'re playing, what you\'ve beaten and what\'s in your backlog.', 'Add a game', 'data-act="go" data-to="gadd"');
   const now = I.filter(g => g.status === 'now').sort((a, b) => (b.updated || 0) - (a.updated || 0));
-  const plan = I.filter(g => g.status === 'plan').sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 4);
+  const Q = gUpNext(), plan = I.filter(g => g.status === 'plan' && !gQueued(g)).sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 4);
   const recent = I.filter(gDone).sort((a, b) => (b.finished || 0) - (a.finished || 0)).slice(0, 3);
   return `<section class="card"><h2>Playing now</h2>${now.length ? now.map(gNowRow).join('') : '<p class="note">Nothing in progress. Start something from your backlog.</p>'}</section>
+    ${Q.length ? `<section class="card"><h2>Up next</h2><p class="note">Your order for what to play next. Tap Start when you begin one.</p>
+      ${Q.map((g, i) => `<div class="mrow"><b class="qn">${i + 1}</b>${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span>
+        <span class="row qacts" style="justify-content:flex-start;gap:14px;margin-top:4px">${i ? `<button class="link quiet" data-act="gQUp" data-id="${esc(g.id)}" aria-label="Move ${esc(g.title)} up">↑ Up</button>` : ''}<button class="link quiet" data-act="gQ" data-id="${esc(g.id)}">Remove</button></span></div>
+        <button class="btn sm${i ? ' ghost' : ''}" data-act="gStart" data-id="${esc(g.id)}">Start</button></div>`).join('')}</section>` : ''}
     ${plan.length ? `<section class="card"><div class="row"><h2>Want to play</h2><button class="link" data-act="gFilter" data-s="plan">See all</button></div>
-      ${plan.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span></div><button class="btn sm ghost" data-act="gStart" data-id="${esc(g.id)}">Start</button></div>`).join('')}</section>` : ''}
+      ${plan.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span></div><button class="btn sm ghost" data-act="gQ" data-id="${esc(g.id)}">+ Up next</button></div>`).join('')}</section>` : ''}
     ${recent.length ? `<section class="card"><h2>Recently beaten</h2>${recent.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${[gmSt(g.status), hrs(g.hours)].filter(Boolean).join(', ')}</span></div>${g.rating ? ring(g.rating, 36) : `<button class="link" data-act="gOpen" data-id="${esc(g.id)}">Rate</button>`}</div>`).join('')}</section>` : ''}`;
 }
 
@@ -159,11 +170,15 @@ const gFormGenres = () => { const f = $('form[data-form="game"]'); const v = f ?
 /* ----- Actions ----- */
 function gTouch(g) { g.updated = Date.now(); }
 Object.assign(MACT, {
-  gHrs: d => { const g = gFind(d.id); if (!g) return false; g.hours = Math.max(0, Math.round((num(g.hours) + num(d.h)) * 10) / 10); if (num(d.h) > 0 && (g.status === 'plan' || g.status === 'hold')) g.status = 'now'; gTouch(g); },
+  gHrs: d => { const g = gFind(d.id); if (!g) return false; const was = num(g.hours); g.hours = Math.max(0, Math.round((was + num(d.h)) * 10) / 10); logAct('gh', Math.round((g.hours - was) * 10) / 10, g.id); if (num(d.h) > 0 && (g.status === 'plan' || g.status === 'hold')) g.status = 'now'; gTouch(g); },
   gRate: d => { const g = gFind(d.id); if (!g) return false; g.rating = g.rating === +d.v ? 0 : +d.v; },
-  gStart: d => { const g = gFind(d.id); if (!g) return false; g.status = 'now'; gTouch(g); toast(`Started ${g.title}. Have fun!`); },
+  gStart: d => { const g = gFind(d.id); if (!g) return false; g.status = 'now'; gTouch(g); gUnqueue(g); toast(`Started ${g.title}. Have fun!`); },
+  gQ: d => { const g = gFind(d.id); if (!g) return false;
+    if (gQueued(g)) { S.gm.queue = S.gm.queue.filter(id => id !== g.id); toast(`Took ${g.title} off Up next.`); }
+    else { if (g.status !== 'hold') g.status = 'plan'; S.gm.queue.push(g.id); toast(`${g.title} is #${S.gm.queue.length} in Up next.`); } },
+  gQUp: d => { const q = S.gm.queue, i = q.indexOf(d.id); if (i > 0) [q[i - 1], q[i]] = [q[i], q[i - 1]]; },
   gFav: d => { const g = gFind(d.id); if (!g) return false; g.fav = !g.fav; },
-  gDel: d => { S.gm.items = S.gm.items.filter(g => g.id !== d.id); },
+  gDel: d => { S.gm.items = S.gm.items.filter(g => g.id !== d.id); S.gm.queue = S.gm.queue.filter(id => id !== d.id); },
   gEdit: d => { UI.edit = {kind:'game', id:d.id}; go('gadd'); },
   gOpen: d => { UI.open['g-' + d.id] = true; S.gm.fs = 'all'; go('glib'); },
   gCancel: () => { UI.edit = null; go('glib'); },
@@ -201,7 +216,7 @@ Object.assign(SAVE, {
     const rec = {title:o.title, status:o.status || 'now', hours:Math.max(0, Math.round(num(o.hours) * 10) / 10), plat:o.plat || '', year:o.year || '',
       genres:o.genres ? o.genres.split('|').filter(Boolean) : [], plats:o.plats ? o.plats.split('|').filter(Boolean) : [], img:o.img || '', src:o.src || '', notes:o.notes || '', fav:o.fav === 'on', updated:Date.now()};
     const ed = UI.edit && UI.edit.kind === 'game' ? gFind(UI.edit.id) : null;
-    if (ed) { if (gDone(rec) && !gDone(ed)) rec.finished = Date.now(); Object.assign(ed, rec); toast('Updated.'); go('glib'); }
+    if (ed) { if (gDone(rec) && !gDone(ed)) rec.finished = Date.now(); Object.assign(ed, rec); gUnqueue(ed); toast('Updated.'); go('glib'); }
     else {
       if (S.gm.items.some(g => norm(g.title) === norm(rec.title) && !g.archived)) { toast(`${rec.title} is already in your games.`); return false; }
       Object.assign(rec, {id:'g' + Date.now(), added:Date.now(), rating:0}); if (gDone(rec)) rec.finished = Date.now();

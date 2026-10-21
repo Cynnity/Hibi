@@ -61,7 +61,7 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'mstatus') { const m = mFind(t.dataset.id); if (m) { const was = m.status; m.status = t.value; m.updated = Date.now(); if (t.value === 'done' && was !== 'done') { m.finished = Date.now(); if (m.total) m.prog = Math.max(m.prog || 0, m.total); } afterChange(); } return; }
   if (t.dataset.bind === 'msort') { S.md.sort = t.value; save(); render(); return; }
   if (t.dataset.bind === 'gsort') { S.gm.sort = t.value; save(); render(); return; }
-  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); if (gDone(g) && !was) { g.finished = Date.now(); toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.`); } afterChange(); } return; }
+  if (t.dataset.bind === 'gstatus') { const g = gFind(t.dataset.id); if (g) { const was = gDone(g); g.status = t.value; g.updated = Date.now(); gUnqueue(g); if (gDone(g) && !was) { g.finished = Date.now(); const nx = gUpNext()[0]; toast(`${t.value === 'full' ? '100%' : 'Beaten'}: ${g.title}! Give it a rating.${nx ? ` Up next: ${nx.title}.` : ''}`); } afterChange(); } return; }
   if (t.dataset.bind === 'jjday') { S.jp.jsel = t.value; save(); render(); return; }
   if (t.type === 'file') {
     const f = t.files && t.files[0]; const kind = t.dataset.file; t.value = ''; if (!f) return;

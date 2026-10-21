@@ -21,6 +21,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/state.js` | `let S = load()` and other live state. Runs once everything above is defined. |
 | `js/gym.js` | Lifting helpers, progression hints, plates, body diagram, charts, badges |
 | `js/views.js` | Gym screens and the Settings screen |
+| `js/recap.js` | Weekly recap on Home and Monthly/Yearly Wrapped slides. Uses `S.alog` (activity log of episodes, chapters and game hours) and `S.wrapSeen`. |
 | `js/app.js` | `render()`, toasts, timers, Gym actions |
 | `js/data.js` | Backup files, restore, Hevy import, photos (IndexedDB), themes |
 | `js/events.js` | Tap, input and keyboard handling |

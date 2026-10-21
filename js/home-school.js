@@ -201,7 +201,7 @@ function viewHome() {
   const pos = c => { const m = /data-act="mode" data-k="(\w+)"/.exec(c); return m ? S.order.indexOf(m[1]) : 99; };
   cards.sort((a, b) => pos(a) - pos(b));
   const upd = S.seenVer !== APP_VERSION ? `<section class="card" style="border-color:var(--accent)"><h2>Hibi was updated to ${APP_VERSION}</h2><div class="btns mt"><button class="btn sm" data-act="openNotes">See what's new</button><button class="btn sm ghost" data-act="seenUpdate">Dismiss</button></div></section>` : '';
-  return `${upd}<p class="lead">${h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}, Cynn.</p>${cards.join('')}`;
+  return `${upd}<p class="lead">${h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}, Cynn.</p>${weekCard()}${cards.join('')}${wrapCard()}`;
 }
 
 /* ----- Passcode ----- */
@@ -227,7 +227,7 @@ async function pinKey(k) {
   pinBuf += k; drawLock(); if (pinBuf.length < 4) return;
   const entered = pinBuf; pinBuf = '';
   const bad = m => { drawLock(m); try { navigator.vibrate && navigator.vibrate(150); } catch (e) {} };
-  if (locked) { if (await hashPin(entered) === S.pin) { locked = false; drawLock(); } else bad('Wrong passcode. Try again.'); return; }
+  if (locked) { if (await hashPin(entered) === S.pin) { locked = false; drawLock(); setTimeout(wrapCheck, 300); } else bad('Wrong passcode. Try again.'); return; }
   if (PINF.step === 'current') {
     if (await hashPin(entered) !== S.pin) return bad("That isn't your current passcode.");
     if (PINF.then === 'off') { S.pin = ''; PINF = null; save(); drawLock(); render(); toast('Passcode turned off.'); return; }
@@ -264,7 +264,7 @@ const XACT = {
   homeTpl: d => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; ACT.startTpl(d); go('workout'); },
   modeMove: d => { const o = S.order, i = o.indexOf(d.k), j = i + (+d.n); if (i < 0 || j < 0 || j >= o.length) return false; [o[i], o[j]] = [o[j], o[i]]; },
   homeGym: () => { S.lastMode[S.mode] = S.tab; S.mode = 'gym'; go('workout'); },
-  kToggle: d => { const x = S.sc.tasks.find(t => t.id === d.id); if (!x) return false; x.done = !x.done; if (x.done) toast(`Done: ${x.title}`); },
+  kToggle: d => { const x = S.sc.tasks.find(t => t.id === d.id); if (!x) return false; x.done = !x.done; x.doneAt = x.done ? Date.now() : 0; if (x.done) toast(`Done: ${x.title}`); },
   kDel: d => { S.sc.tasks = S.sc.tasks.filter(t => t.id !== d.id); },
   kEditClass: d => { UI.edit = {kind:'kclass', id:d.id}; UI.open.kClassForm = true; },
   kDelClass: d => { S.sc.classes = S.sc.classes.filter(c => c.id !== d.id); S.sc.tasks.forEach(t => { if (t.c === d.id) t.c = ''; }); S.sc.notes.forEach(n => { if (n.c === d.id) n.c = ''; }); },
