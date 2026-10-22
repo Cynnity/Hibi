@@ -23,7 +23,7 @@ BADGES.push(
   ['k25','📚','Assignment Grinder','Finish 25 assignments','real',s => [s.kDone, 25],'school'],
   ['k100','🎓','Academic Weapon','Finish 100 assignments','real',s => [s.kDone, 100],'school'],
   ['kA','🅰️','Straight A','Have a class averaging an A','real',s => [s.kA, 1],'school'],
-  ['f1','🍅','Focus Mode','Finish your first focus round','real',s => [s.fN, 1],'school'],
+  ['f1','🎯','Focus Mode','Finish your first focus round','real',s => [s.fN, 1],'school'],
   ['f10h','🧠','Deep Work','Focus for 10 hours in total','real',s => [s.fMin / 60, 10],'school'],
   ['f4','🔥','Locked In (Study Edition)','Finish 4 focus rounds in one day','fun',s => [s.fDay, 4],'school'],
   ['fnight','🌙','All-Nighter','Finish a focus round between midnight and 4am','fun',s => [s.fLate, 1],'school'],

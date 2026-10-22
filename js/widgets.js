@@ -42,10 +42,10 @@ const WIDGETS = {
       const cur = L.find(c => c.time <= hm && c.end && c.end > hm), nx = L.find(c => c.time > hm);
       return cur ? small('🏫', 'In class now', `<span class="wd-txt">${esc(cur.name)}</span>`, `until ${fmtTime(cur.end)}${cur.room ? ' · ' + esc(cur.room) : ''}`)
         : nx ? small('🏫', 'Next class', `<span class="wd-txt">${esc(nx.name)}</span>`, `${classTime(nx)}${nx.room ? ' · ' + esc(nx.room) : ''}`) : small('🏫', 'Classes', '😌', L.length ? 'Done for today' : 'No classes today'); }},
-  focus:{n:'Focus timer', em:'🍅', d:'Pomodoro timer and focus time today', mode:'school', sizes:['s'], tap:goTo('school', 'kfocus'),
+  focus:{n:'Focus timer', em:'🎯', d:'Pomodoro timer and focus time today', mode:'school', sizes:['s'], tap:goTo('school', 'kfocus'),
     s:() => { const st = focusStats(), r = S.pomo.run;
       return r ? small(PHASES[S.pomo.phase][1], PHASES[S.pomo.phase][0], `<span id="pomoW">${clock(pomoLeft(), true)}</span>`, r.paused != null ? 'Paused' : 'Running')
-        : small('🍅', 'Focus', st.min, `min today · ${plural(st.n, 'round')}`, '', '<button class="btn sm wd-btn" data-act="wPomo">▶ Start focus</button>'); }},
+        : small('🎯', 'Focus', st.min, `min today · ${plural(st.n, 'round')}`, '', '<button class="btn sm wd-btn" data-act="wPomo">▶ Start focus</button>'); }},
   japan:{n:'Japan trip', em:'🗾', d:'Countdown and your pre-trip to-do list', mode:'japan', sizes:['m', 's'], tap:goTo('japan', 'jplan'),
     m:() => { const days = tripDays(), t = today(), J = S.jp;
       const line = !days.length ? 'Set your trip dates.' : t < J.start ? `<b>${Math.round((keyDate(J.start) - keyDate(t)) / 864e5)} days</b> until Japan` : t > J.end ? 'Trip complete. Welcome back!' : `<b>Day ${days.indexOf(t) + 1}</b> of ${days.length} in Japan`;

@@ -69,7 +69,7 @@ function weekCard() {
   const cur = weekStart(Date.now()), last = UI.wk === 'last', P = periodOf('week', last ? cur - 7 * DAY_MS : cur), o = recap(P);
   const tiles = [[o.workouts, o.workouts === 1 ? 'workout' : 'workouts', '🏋️'], [o.cardioMin, 'cardio min', '🏃'], [o.gStarted.length, o.gStarted.length === 1 ? 'game started' : 'games started', '🎮'], [o.beaten.length, o.beaten.length === 1 ? 'game beaten' : 'games beaten', '🏁'],
     [o.ep, o.ep === 1 ? 'episode' : 'episodes', '📺'], [o.ch, o.ch === 1 ? 'chapter' : 'chapters', '📖'], [o.pages, 'pages', '📚'], [o.saved ? usd(o.saved) : 0, 'saved', '💰'],
-    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? usd(Math.round(o.earned)) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🍅'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
+    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? usd(Math.round(o.earned)) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🎯'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
   const hi = [o.prs ? `🏆 ${plural(o.prs, 'new PR')}` : '', ...o.beaten.slice(0, 2).map(g => `🎮 Beat ${g.title}`), ...o.finished.slice(0, 2).map(m => `✅ Finished ${m.title}`),
     ...o.badges.slice(0, 2).map(b => `${b[1]} ${b[2]}`)].filter(Boolean);
   return `<section class="card"><div class="row"><h2>${last ? 'Last week' : 'This week'}</h2>
@@ -119,7 +119,7 @@ function wrapSlides(kind, key) {
   if (o.saved) add({em:'💰', eye:'Savings', big:usd(o.saved), unit:'saved', text:`Across ${plural(o.deposits, 'deposit')}. Future you says thanks.`});
   if (o.jpDays) add({em:'🗾', eye:'Japan', big:fmtN(o.jpDays), unit:o.jpDays === 1 ? 'day in Japan' : 'days in Japan', text:o.jpSpent ? `${usd(o.jpSpent)} spent on the trip.` : 'A trip to remember.'});
   if (o.tasks || o.focusN) add({em:'🎓', eye:'School', big:fmtN(o.tasks || r1(o.focusMin / 60)), unit:o.tasks ? (o.tasks === 1 ? 'assignment done' : 'assignments done') : 'hours of focus', text:'One step closer to that degree.',
-    x:[o.tasks && o.focusN ? `🍅 ${fmtN(r1(o.focusMin / 60))} hours of focus across ${plural(o.focusN, 'round')}` : '']});
+    x:[o.tasks && o.focusN ? `🎯 ${fmtN(r1(o.focusMin / 60))} hours of focus across ${plural(o.focusN, 'round')}` : '']});
   if (o.journal) add({em:o.mood ? o.mood[0] : '📝', eye:'Journal', big:fmtN(o.journal), unit:o.journal === 1 ? 'entry' : 'entries', text:o.mood ? `Most days felt ${o.mood[1].toLowerCase()}.` : ''});
   if (o.badges.length) add({em:'🏅', eye:'Badges unlocked', big:fmtN(o.badges.length), unit:o.badges.length === 1 ? 'badge' : 'badges', x:o.badges.slice(0, 6).map(b => `${b[1]} ${b[2]}`)});
   const sum = [[o.workouts, 'workouts'], [o.cardioMin, 'cardio min'], [o.beaten.length, 'games beaten'], [o.ep || o.ch, o.ep ? 'episodes' : 'chapters'], [o.saved ? usd(o.saved) : 0, 'saved'], [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked'], [o.tasks, 'assignments'], [o.gStarted.length, 'games started'], [o.finished.length, 'titles finished']].filter(x => x[0]).slice(0, 6);

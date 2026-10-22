@@ -13,7 +13,7 @@ function subtitle() {
   if (TAB_INFO[S.tab].g[0] === 'j') return jpSubtitle();
   if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   if (['wtoday', 'wshifts', 'wpay'].includes(S.tab)) return workSubtitle();
-  if (S.tab === 'kfocus') { const st = focusStats(); return st.n ? `${plural(st.n, 'focus round')} today` : 'Pomodoro timer'; }
+  if (S.tab === 'kfocus') { const st = focusStats(); return st.n ? `${plural(st.n, 'focus round')} today` : 'Focus timer'; }
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
   if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => live(g) && !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
   if (['gnow', 'glib', 'gadd', 'gstats'].includes(TAB_INFO[S.tab].g)) { const L = S.gm.items.filter(live), n = L.filter(g => g.status === 'now').length; return `${n} playing, ${plural(L.length, 'game')} in total`; }

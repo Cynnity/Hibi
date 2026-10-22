@@ -4,6 +4,15 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.3 — "Focus up" (Oct 21)
+- **Cleaner Focus timer.** The countdown now fits neatly inside the ring.
+- **Goodbye tomato 🍅, hello 🎯.** (Pomodoro is Italian for tomato, named after the inventor's tomato-shaped kitchen timer. Fun fact, but it was confusing.)
+- **Change times right on the timer** with − and + buttons for focus and break. Or tap a preset: Classic 25/5, Deep work 50/10, Quick 15/3 or Marathon 90/20.
+- **Pick the mode yourself:** tap Focus, Break or Long break at the top before you start.
+- **Any length you want:** Timer settings lets you type exact minutes for focus, breaks and how many rounds until a long break.
+- **Daily focus goal.** Set how much you want to study each day (2 hours to start) and watch the progress bar fill up. Set it to 0 to turn it off.
+- Each focus round now logs the length it actually ran.
+
 ## 2.2 — "Suggestion box" (Oct 21)
 - **💡 Ideas for Hibi.** A quick list at the top of every Settings page for jotting down ideas and fixes as they come to you. Each idea remembers which mode you were in.
 - **Copy all** puts them in a numbered list ready to paste to Claude. Tick them off once they're sent. Sent ideas move to their own list so nothing gets lost.

@@ -373,9 +373,21 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .mu-art{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 4px;text-align:center}
 .mu-art img,.mu-ph{display:grid;place-items:center;width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;border:2px solid var(--ink);background:var(--surface-2);font:400 28px "Dela Gothic One",sans-serif;color:var(--mute)}
 .mu-art b{display:block;margin-top:6px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pomo-ring{width:min(240px,70vw);height:auto;display:block;margin:4px auto 6px}
-.pomo-ring text{font:400 46px "Dela Gothic One",sans-serif;fill:var(--ink);font-variant-numeric:tabular-nums}
-.pomo-ring text.ph{font:800 16px "Zen Maru Gothic",sans-serif;fill:var(--mute)}
+.pomo-wrap{position:relative;width:min(232px,62vw);aspect-ratio:1;margin:6px auto 8px}
+.pomo-wrap svg{position:absolute;inset:0;width:100%;height:100%}
+.pomo-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pomo-face b{font:900 clamp(36px,11.5vw,50px)/1 "Zen Maru Gothic",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink)}
+.pomo-face span{font-weight:800;font-size:15px;color:var(--mute)}
+.pomo-phases{justify-content:center;flex-wrap:nowrap;gap:6px;margin-bottom:6px}
+.pomo-phases .chip{padding:0 11px;font-size:13.5px;min-height:34px;white-space:nowrap}
+.pomo-steps{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pomo-step{background:var(--surface-2);border-radius:14px;padding:8px 6px}
+.pomo-step>span{display:block;font-size:12.5px;font-weight:800;color:var(--mute)}
+.pomo-step>div{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px}
+.pomo-step b{min-width:62px;font-size:20px;font-variant-numeric:tabular-nums}
+.pomo-step b small{font-size:12px;color:var(--mute)}
+.pomo-step .btn.sm{width:36px;min-height:36px;padding:0;font-size:20px}
+.pomo-step .btn[disabled],.chip[disabled]{opacity:.4}
 .badge.fun{border-style:dashed}
 .wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
 .wd-slot{min-width:0}.wd-slot.m{grid-column:1/-1}

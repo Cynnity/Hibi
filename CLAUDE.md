@@ -42,7 +42,7 @@ Cynn wants a record of everything that changes. For every change you ship, in th
 
 1. **Add an entry to the top of `CHANGELOG.md`.** Include the version, a short fun episode-style title in quotes, the date, and plain-language bullets about what changed for him. Follow the style of the entries already there.
 2. **Bump `APP_VERSION`** at the top of `js/core.js`. Use 1.1 → 1.2 for features and 1.1 → 1.1.1 for small fixes. The version must match the new CHANGELOG entry.
-3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.2`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
+3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.3`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
 
 The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also shows a "Hibi was updated" card on Home whenever `APP_VERSION` changes.
 
