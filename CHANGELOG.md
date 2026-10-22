@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.4.2 — "Backup squad" (Oct 21)
+- **Anime and manga search has more backups.** If AniList doesn't answer, Hibi tries MyAnimeList, then Kitsu, then TVmaze (anime TV series only) until one works. A note tells you which one the results came from.
+- **No more getting stuck on "Searching".** Each source gets a few seconds before Hibi moves on to the next, and it shows which one it's trying.
+- **If every source fails,** Hibi saves a crash report saying exactly what each one replied. Copy it from Settings → Crash reports and send it to Claude.
+
 ## 2.4.1 — "Plot armor" (Oct 21)
 - **Fixed:** anime and manga search said "needs internet" even when you were online. AniList, where those searches come from, sometimes switches off its API during outages, and Hibi was blaming your internet for it.
 - **Backup search:** when AniList isn't answering, Hibi now searches MyAnimeList instead and tells you which one the results came from.
