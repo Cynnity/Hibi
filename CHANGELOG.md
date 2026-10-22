@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.5.2 — "Lost in time zones" (Oct 22)
+- **Fixed:** on your flight home, the Plan screen showed you landing in Seattle before you'd even checked out in Tokyo. Flying east over the date line means you land at 9:40 AM after taking off at 5:25 PM on the same day, and Hibi was sorting by the clock instead of by what actually happens first.
+- Each day's plans are now in the real order: check out, last plans in Tokyo, take off, land in Seattle, layover, fly to Orlando, land.
+- Flight times that aren't Japan time now show their time zone right under the time, like "Pacific time" or "Eastern time". The day says "Times are Japan time unless marked" when that happens.
+- The Today card in Japan mode follows the same order and labels.
+
 ## 2.5.1 — "Stay in your lane" (Oct 22)
 - **Fixed:** in Japan › Money, the "per day left" box ran off the edge of the Overview card. The three boxes now always fit, and they show whole dollars (like $2,227 and $154 a day) so the numbers stay big and easy to read. The big "left of your budget" number still shows cents.
 - **Checked every screen in every mode** on iPhone sizes from the smallest to the biggest, with big numbers filled in. The same problem turned up in a few more places, now fixed:

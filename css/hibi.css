@@ -290,6 +290,7 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .cd.sel i{background:var(--on-accent)}
 .ev{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .ev-t{flex:none;width:70px;font-size:13px;font-weight:700;color:var(--mute);padding-top:2px}
+.ev-t small{display:block;font-size:11px;font-weight:700;color:var(--accent);margin-top:2px}
 .ev-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ev-b a,.card a.maplink{color:var(--accent);text-decoration:none;font-weight:700;font-size:14px}
 .ev-a{display:flex;flex-direction:column;align-items:flex-end}

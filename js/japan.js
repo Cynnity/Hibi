@@ -153,15 +153,18 @@ function journeys() {
 function dayEvents(k) {
   const ev = S.jp.items.filter(i => i.d === k).map(i => Object.assign({}, i, {kind:'item'}));
   S.jp.flights.forEach(f => {
-    if (f.dep && f.dep.slice(0, 10) === k) ev.push({auto:true, time:f.dep.slice(11, 16), title:`✈️ Flight ${f.from} → ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
-    if (f.arr && f.arr.slice(0, 10) === k) ev.push({auto:true, time:f.arr.slice(11, 16), title:`🛬 Land in ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
+    if (f.dep && f.dep.slice(0, 10) === k) ev.push({auto:true, time:f.dep.slice(11, 16), at:fDep(f), tz:fTzFrom(f), title:`✈️ Flight ${f.from} → ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
+    if (f.arr && f.arr.slice(0, 10) === k) ev.push({auto:true, time:f.arr.slice(11, 16), at:fArr(f), tz:fTzTo(f), title:`🛬 Land in ${f.to}`, note:[f.airline, f.num].filter(Boolean).join(' ')});
   });
-  journeys().forEach(j => j.lays.forEach(l => { if (l.from.arr && l.from.arr.slice(0, 10) === k) ev.push({auto:true, time:l.from.arr.slice(11, 16) + ':01', title:`⏳ Layover in ${l.at}: ${durTxt(l.ms)}`, note:`Next: ${l.to.from} → ${l.to.to}${l.to.dep ? ' at ' + fmtTime(l.to.dep.slice(11, 16)) : ''}`}); }));
+  journeys().forEach(j => j.lays.forEach(l => { if (l.from.arr && l.from.arr.slice(0, 10) === k) ev.push({auto:true, time:l.from.arr.slice(11, 16), at:fArr(l.from) + 1, tz:fTzTo(l.from), title:`⏳ Layover in ${l.at}: ${durTxt(l.ms)}`, note:`Next: ${l.to.from} → ${l.to.to}${l.to.dep ? ' at ' + fmtTime(l.to.dep.slice(11, 16)) : ''}`}); }));
   S.jp.stays.forEach(s => {
     if (s.ci === k) ev.push({auto:true, time:s.cit, title:`🏠 Check in: ${s.name}`, place:s.address});
     if (s.co === k) ev.push({auto:true, time:s.cot, title:`🧳 Check out: ${s.name}`, place:s.address});
   });
-  return ev.sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+  // Sort by the real moment things happen, so a flight home that "lands before it leaves" on the clock still shows in order.
+  // Plans and hotel times are in Japan time; flights are in their airport's time.
+  ev.forEach(e => { if (!e.tz) e.tz = 'Asia/Tokyo'; if (!(e.at >= 0)) e.at = e.time ? zoned(k + 'T' + e.time, e.tz) : Infinity; if (e.tz !== 'Asia/Tokyo') e.zone = tzName(e.tz) + ' time'; });
+  return ev.sort((a, b) => a.at - b.at);
 }
 function calendar() {
   const trip = new Set(tripDays()), s = keyDate(S.jp.start), base = new Date(s.getFullYear(), s.getMonth() + (UI.jmo || 0), 1);
@@ -179,12 +182,12 @@ function viewJPlan() {
   const days = tripDays(), t = today();
   if (!S.jp.sel) S.jp.sel = days.includes(t) ? t : (days[0] || t);
   const k = S.jp.sel, idx = days.indexOf(k), ev = dayEvents(k), ed = editing('item');
-  const evRow = e => `<div class="ev${e.auto ? ' auto' : ''}"><span class="ev-t">${e.time ? fmtTime(e.time) : 'Any time'}</span>
+  const evRow = e => `<div class="ev${e.auto ? ' auto' : ''}"><span class="ev-t">${e.time ? fmtTime(e.time) : 'Any time'}${e.zone && e.time ? `<small>${esc(e.zone)}</small>` : ''}</span>
     <div class="ev-b"><b>${e.auto ? '' : catEm(e.cat) + ' '}${esc(e.title)}</b>${e.place ? `<a href="${mapsLink(e.place)}" target="_blank" rel="noopener">📍 ${esc(e.place)}</a>` : ''}
     ${e.note ? `<span class="small muted">${esc(e.note)}</span>` : ''}${e.cost ? `<span class="small">${both(e.cost, e.cur)}</span>` : ''}</div>
     ${e.auto ? '' : `<div class="ev-a"><button class="link" data-act="jEdit" data-kind="item" data-id="${esc(e.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="item" data-id="${esc(e.id)}" data-confirm>Delete</button></div>`}</div>`;
   return `${countdownCard()}${todayCard()}${calendar()}
-    <section class="card"><h2>${esc(fmtDay(k))}</h2><span class="small muted">${idx >= 0 ? `Day ${idx + 1} of ${days.length}` : 'Outside your trip dates'}</span>
+    <section class="card"><h2>${esc(fmtDay(k))}</h2><span class="small muted">${idx >= 0 ? `Day ${idx + 1} of ${days.length}` : 'Outside your trip dates'}${ev.some(e => e.zone) ? ' · Times are Japan time unless marked' : ''}</span>
       ${ev.length ? ev.map(evRow).join('') : '<p class="note">Nothing planned yet. Flights and check-ins show up here on their own.</p>'}
       <details class="mt" ${det('jAdd', !!ed)}><summary class="link">${ed ? 'Edit plan' : '+ Add a plan to this day'}</summary>
         <form data-form="item" class="stack"><input type="hidden" name="d" value="${esc(ed ? ed.d : k)}">
@@ -406,7 +409,7 @@ function todayCard() {
   if (t > J.end) return '';
   const ev = dayEvents(t), stay = J.stays.find(s => s.ci && s.co && t >= s.ci && t < s.co);
   return `<section class="card"><h2>Today</h2>
-    ${ev.length ? ev.map(e => `<div class="lrow"><span class="muted" style="flex:none;width:72px">${e.time ? fmtTime(e.time) : 'Any time'}</span><span style="text-align:left;flex:1;color:var(--ink)">${esc(e.title)}</span></div>`).join('') : '<p class="note">Nothing planned. A free day.</p>'}
+    ${ev.length ? ev.map(e => `<div class="lrow"><span class="muted" style="flex:none;width:72px">${e.time ? fmtTime(e.time) : 'Any time'}${e.zone && e.time ? `<small style="display:block;font-size:11px;color:var(--accent)">${esc(e.zone)}</small>` : ''}</span><span style="text-align:left;flex:1;color:var(--ink)">${esc(e.title)}</span></div>`).join('') : '<p class="note">Nothing planned. A free day.</p>'}
     ${stay ? `<span class="label">Tonight</span><b>${esc(stay.name)}</b>${stay.address ? `<a class="maplink" style="display:block" href="${mapsLink(stay.address)}" target="_blank" rel="noopener">📍 ${esc(stay.address)}</a>` : ''}
       ${stay.entry ? `<p class="small mt">Getting in: <b>${esc(stay.entry)}</b></p>` : ''}${stay.wifi ? `<p class="small">Wi-Fi: <b>${esc(stay.wifi)}</b></p>` : ''}` : ''}
     <span class="label">Quick convert</span><div class="field"><input class="input" id="cvJ" inputmode="decimal" placeholder="¥" aria-label="Yen" autocomplete="off"><input class="input" id="cvU" inputmode="decimal" placeholder="$" aria-label="US dollars" autocomplete="off"></div></section>`;
