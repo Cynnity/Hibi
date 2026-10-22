@@ -2,7 +2,24 @@
 
 Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happened in one late night (October 20–21, 2026).
 
+**How the version numbers work:**
+- **Big number (2.0, 3.0):** a huge update that changes how Hibi feels.
+- **Middle number (2.3 → 2.4):** new features.
+- **Last number (2.4 → 2.4.1):** small fixes and tweaks.
+
 ---
+
+## 2.4 — "Subscription season" (Oct 21)
+- **New Subscriptions tab in Savings 🔁.** Add each subscription by hand with its price, how often it charges (monthly, yearly, weekly, every 3 or 6 months) and its next charge date.
+  - **Totals:** what you pay a month and a year, plus your biggest costs.
+  - **Quick picks** for common ones like Netflix, Spotify, Crunchyroll, Game Pass and iCloud+. They fill in the name and emoji so you just add the price.
+  - **Heads-up on Home:** a 🔔 "Renewing soon" card shows up when one renews in the next few days (3 days to start, adjustable). Tap "Got it" to dismiss it until the next charge.
+  - **Free trials:** mark one as a trial and Hibi warns you before it starts charging.
+  - **Mark canceled** keeps it in your list without counting it in your totals. 🎉
+  - **Add renewals to Calendar** for repeating events with an alert the day before.
+  - A new **Subscriptions widget** for Home.
+- **Open to Home.** Hibi now starts on Home when you open it, including when you come back after 5 minutes or more. Turn it off in Home → Settings → Opening and animations.
+- **New version numbers.** Small fixes now get a third number (like 2.4.1) and new features bump the middle one. The old 0.9.1 to 0.9.5 were renamed 0.10 to 0.14, since each one added real features. There's a short guide at the top of these notes.
 
 ## 2.3 — "Focus up" (Oct 21)
 - **Cleaner Focus timer.** The countdown now fits neatly inside the ring.
@@ -168,7 +185,7 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 - **Fixed:** the Home Screen icon showing a plain "H." Some extra code at the top of the page was hiding the icon from Safari.
 - Backups are now saved as `hibi-backup-(date).json`.
 
-## 0.9.5 — "Party assembled" (Oct 21)
+## 0.14 — "Party assembled" (Oct 21)
 - **Home screen:** one card per mode, showing your next workout, classes and homework due, the Japan countdown, what you're watching and reading, and your closest savings goals.
 - **School mode:** homework, exams, quizzes, labs and projects grouped into Overdue, Today, This week and Later. Also class schedules, grades with letter averages, and searchable notes (starting with a Quick reference for Ohm's law, power, resistors and the resistor color code).
 - **Passcode lock:** a 4-digit code when the app opens and after a minute in the background.
@@ -176,24 +193,24 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 - **Savings upgrades:** split your paycheck across goals, set a "dream amount" above your minimum, and link goals to the Japan budget.
 - The mode switcher went compact: icons only, plus the full name of the mode you're in.
 
-## 0.9.4 — "Bank arc" (Oct 21)
+## 0.13 — "Bank arc" (Oct 21)
 - **Savings mode:** goals with icons, targets and dates. Quick +$5 to +$100 buttons, plus "save $X per paycheck" plans and an estimate of when you'll finish at your current pace.
 - History with a chart of what you saved each month.
 - Ideas to start from: Ado VIP tickets, an art commission, the Arkansas wedding trip, a Corolla SE and an emergency fund.
 - 🎉 when a goal is reached.
 
-## 0.9.3 — "Simulcast" (Oct 21)
+## 0.12 — "Simulcast" (Oct 21)
 - **Import from AniList** using just your username, including statuses, progress, scores, covers and finish dates.
 - **Airing times:** "Ep 7 in 5 hours" and "3 new episodes out" on the Now tab.
 - **Settings split by mode:** each mode only shows the settings that apply to it.
 - The app version is now shown in Settings.
 
-## 0.9.2 — "Cover art" (Oct 21)
+## 0.11 — "Cover art" (Oct 21)
 - **Search for covers and details** from AniList (anime, manga, manhwa, light novels), TVmaze (TV shows) and Open Library (books).
 - Picking a result fills in the cover, type and total episodes or chapters.
 - Colored letter tiles appear when there's no cover.
 
-## 0.9.1 — "Watchlist" (Oct 21)
+## 0.10 — "Watchlist" (Oct 21)
 - **Shows & Books mode:** In progress, Want to start, On hold, Finished and Dropped.
 - **Now tab** with +1 Ep and +1 Ch buttons. Titles finish on their own when you hit the last episode or chapter.
 - Ratings, favorites, release days, where to watch, notes, search, filters and stats.

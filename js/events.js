@@ -71,6 +71,7 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'hname') { S.home.name = t.value.trim().slice(0, 30); save(); return; }
   if (t.dataset.bind === 'suptime') { const x = S.sup.find(q => q.id === t.dataset.id); if (x) { x.time = t.value; save(); } return; }
   if (t.dataset.bind === 'pomo') { S.pomo[t.dataset.k] = +t.value; save(); render(); return; }
+  if (t.dataset.bind === 'subRemind') { S.subRemind = +t.value; save(); render(); return; }
   if (t.dataset.bind === 'pomoNum') { const k = t.dataset.k, max = {focus:180, short:60, long:90, every:12, goal:720}[k] || 180, min = k === 'goal' ? 0 : 1; const v = Math.round(num(t.value)); if (t.value === '' || isNaN(v)) return; S.pomo[k] = Math.max(min, Math.min(max, v)); save(); render(); return; }
   if (t.dataset.bind === 'pomoClass') { S.pomo.c = t.value; save(); return; }
   if (t.dataset.bind === 'gsort') { S.gm.sort = t.value; save(); render(); return; }

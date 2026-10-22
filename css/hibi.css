@@ -413,6 +413,11 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .wd-edit span{display:flex;flex-wrap:wrap;gap:6px}
 .wd-edit .btn.sm{min-height:32px;padding:0 10px;font-size:13px}
 .badge.secret{border-style:dotted}
+.sub-em{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:var(--surface-2);border:2px solid var(--ink)}
+.sub-price{flex:none;text-align:right;font-size:17px}.sub-price small{font-size:12px;color:var(--mute);font-weight:700}
+.sub-price.soon{color:var(--accent)}
+.chip-mini{display:inline-block;font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px;background:var(--accent-2);color:#fff;vertical-align:middle}
+.sub-alert{border-color:var(--accent);background:linear-gradient(135deg,var(--surface),var(--surface-2))}
 .gsec{margin:18px 4px 8px;font:400 18px "Dela Gothic One",sans-serif}
 .stars{display:inline-flex;gap:2px;align-items:center}
 .star{background:none;border:0;padding:2px 3px;font-size:26px;line-height:1;color:var(--line)}

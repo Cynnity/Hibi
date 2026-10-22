@@ -113,6 +113,7 @@ function normalizeHome(s) {
   else s.home.w = s.home.w.filter(w => w && WIDGETS[w.t]).map(w => Object.assign(w, {z:WIDGETS[w.t].sizes.includes(w.z) ? w.z : WIDGETS[w.t].sizes[0]}));
   if (typeof s.home.greet !== 'boolean') s.home.greet = true;
   if (typeof s.home.name !== 'string') s.home.name = 'Cynn';
+  if (typeof s.home.startHome !== 'boolean') s.home.startHome = true;
 }
 const wVisible = w => !WIDGETS[w.t].mode || modeVisible(WIDGETS[w.t].mode);
 function drawWidget(w, i, edit) {
@@ -127,7 +128,7 @@ function viewHomeW() {
   const h = new Date().getHours(), edit = !!UI.homeEdit, L = S.home.w.map((w, i) => [w, i]).filter(([w]) => edit || wVisible(w));
   const upd = S.seenVer !== APP_VERSION ? `<section class="card" style="border-color:var(--accent)"><h2>Hibi was updated to ${APP_VERSION}</h2><div class="btns mt"><button class="btn sm" data-act="openNotes">See what's new</button><button class="btn sm ghost" data-act="seenUpdate">Dismiss</button></div></section>` : '';
   const greet = S.home.greet ? `<p class="lead">${h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}${S.home.name ? ', ' + esc(S.home.name) : ''}.</p>` : '';
-  return `${upd}${edit ? `<section class="card" style="border-color:var(--accent)"><h2>Customize Home</h2><p class="note">Move, resize or remove widgets, and add new ones. Small widgets sit two to a row.</p>
+  return `${upd}${edit ? '' : subAlert()}${edit ? `<section class="card" style="border-color:var(--accent)"><h2>Customize Home</h2><p class="note">Move, resize or remove widgets, and add new ones. Small widgets sit two to a row.</p>
       <label class="setrow"><span>Show greeting</span><input type="checkbox" data-bind="hgreet"${S.home.greet ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
       <label class="setrow"><span>Name in greeting</span><input class="input" style="width:50%" data-bind="hname" value="${esc(S.home.name)}" placeholder="Your name" aria-label="Name in greeting"></label>
       <div class="btns mt"><button class="btn" style="flex:1" data-act="wAddOpen">+ Add widget</button><button class="btn ghost" data-act="wDone">Done</button></div></section>` : greet}

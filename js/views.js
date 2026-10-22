@@ -15,6 +15,7 @@ function subtitle() {
   if (['wtoday', 'wshifts', 'wpay'].includes(S.tab)) return workSubtitle();
   if (S.tab === 'kfocus') { const st = focusStats(); return st.n ? `${plural(st.n, 'focus round')} today` : 'Focus timer'; }
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
+  if (S.tab === 'vsubs') { const T = subTotals(); return T.n ? `${cash2(T.m)} a month, ${T.n} active` : 'Track what you pay for'; }
   if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => live(g) && !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
   if (['gnow', 'glib', 'gadd', 'gstats'].includes(TAB_INFO[S.tab].g)) { const L = S.gm.items.filter(live), n = L.filter(g => g.status === 'now').length; return `${n} playing, ${plural(L.length, 'game')} in total`; }
   if (TAB_INFO[S.tab].g[0] === 'm') { const n = S.md.items.filter(m => m.status === 'now').length; return `${n} in progress, ${plural(S.md.items.length, 'title')} in total`; }
