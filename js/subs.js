@@ -53,7 +53,7 @@ function viewVSubs() {
   const ed = UI.edit && UI.edit.kind === 'sub' ? S.subs.find(x => x.id === UI.edit.id) : null, pick = UI.subPick || null;
   const big = subLive().slice().sort((a, b) => subMonthly(b) - subMonthly(a)).slice(0, 5), maxM = Math.max(1, ...big.map(subMonthly));
   return `<section class="card"><h2>Your subscriptions</h2>
-      <div class="stats"><div class="stat"><b>${cash2(T.m)}</b><span>a month</span></div><div class="stat"><b>$${short(Math.round(T.y))}</b><span>a year</span></div><div class="stat"><b>${T.n}</b><span>active</span></div></div>
+      <div class="stats"><div class="stat"><b>${T.m >= 100 ? cash0(T.m) : cash2(T.m)}</b><span>a month</span></div><div class="stat"><b>$${short(Math.round(T.y))}</b><span>a year</span></div><div class="stat"><b>${T.n}</b><span>active</span></div></div>
       ${L.length ? `<p class="note">Next up: <b>${esc(L[0].name)}</b>, ${cash2(num(L[0].price))} ${esc(subWhen(subNext(L[0])))}.</p>` : '<p class="note">Add your subscriptions below to see your totals and get reminders.</p>'}</section>
     ${L.map(subCard).join('')}
     ${big.length > 1 ? `<section class="card"><h2>Biggest costs</h2>${big.map(x => `<div class="crow"><div class="row"><b>${esc(x.em || '💳')} ${esc(x.name)}</b><span>${cash2(subMonthly(x))}/mo</span></div><div class="cbar"><i style="width:${subMonthly(x) / maxM * 100}%"></i></div></div>`).join('')}</section>` : ''}

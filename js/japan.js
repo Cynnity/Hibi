@@ -46,6 +46,8 @@ const catEm = c => (JP_CATS.find(x => x[0] === c) || JP_CATS[6])[1];
 const catLabel = c => (JP_CATS.find(x => x[0] === c) || JP_CATS[6])[2];
 const R = () => (S.jp.rate && S.jp.rate.v) || 150;
 const toUSD = (a, cur) => cur === 'JPY' ? num(a) / R() : num(a);
+// Whole dollars, for small stat boxes where cents don't fit
+const cash0 = a => (a < 0 ? '−$' : '$') + (Math.abs(a) >= 1e4 ? short(Math.abs(a)) : Math.round(Math.abs(a)).toLocaleString());
 const money = (a, cur) => cur === 'JPY' ? '¥' + Math.round(a).toLocaleString() : '$' + (Math.round(a * 100) / 100).toLocaleString(undefined, {maximumFractionDigits:2});
 const both = (a, cur) => cur === 'JPY' ? `${money(a, 'JPY')} <span class="muted">(${money(a / R(), 'USD')})</span>` : `${money(a, 'USD')} <span class="muted">(${money(a * R(), 'JPY')})</span>`;
 const fmtTime = t => { if (!t) return ''; let [h, m] = t.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(m)} ${ap}`; };
@@ -215,8 +217,8 @@ function viewJMoney() {
   return `<section class="card"><h2>Overview</h2>
       ${B ? `<div class="trend"><b>${money(left, 'USD')}</b><span>${left >= 0 ? 'left' : 'over'} of your ${money(B, 'USD')} budget</span></div>
         <div class="meter"><i style="width:${Math.min(100, used / B * 100)}%${left < 0 ? ';background:var(--danger)' : ''}"></i></div>` : '<p class="note">Set a total budget below to track what you have left.</p>'}
-      <div class="stats"><div class="stat"><b>${money(booked, 'USD')}</b><span>booked</span></div><div class="stat"><b>${money(spent, 'USD')}</b><span>spent</span></div>
-        <div class="stat"><b>${B && daysLeft ? money(Math.max(0, left) / daysLeft, 'USD') : '–'}</b><span>per day left</span></div></div>
+      <div class="stats"><div class="stat"><b>${cash0(booked)}</b><span>booked</span></div><div class="stat"><b>${cash0(spent)}</b><span>spent</span></div>
+        <div class="stat"><b>${B && daysLeft ? cash0(Math.max(0, left) / daysLeft) : '–'}</b><span>per day left</span></div></div>
       ${jpSaved()}${planned ? `<p class="note">Your itinerary has ${money(planned, 'USD')} in planned costs. They count once you log them as spending.</p>` : ''}
       <details class="mt" ${det('jBudget', !B)}><summary class="link">${B ? 'Change budget' : 'Set budget'}</summary>
         <form data-form="budget" class="field mt"><input class="input" name="budget" inputmode="decimal" placeholder="Total budget in US dollars" value="${B || ''}" aria-label="Total budget in US dollars"><button class="btn" type="submit">Save</button></form></details></section>

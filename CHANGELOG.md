@@ -9,6 +9,17 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.5.1 — "Stay in your lane" (Oct 22)
+- **Fixed:** in Japan › Money, the "per day left" box ran off the edge of the Overview card. The three boxes now always fit, and they show whole dollars (like $2,227 and $154 a day) so the numbers stay big and easy to read. The big "left of your budget" number still shows cents.
+- **Checked every screen in every mode** on iPhone sizes from the smallest to the biggest, with big numbers filled in. The same problem turned up in a few more places, now fixed:
+  - **Savings › Goals:** the "saved in total" and "this month" boxes went off screen once you passed $10,000. Big amounts now show as $13k.
+  - **Home › This week:** the "saved" and "earned" boxes spilled out the same way.
+  - **Home widgets:** big dollar amounts shrink to fit their widget instead of getting cut off.
+  - **Japan › Info:** the "Last day" date box stuck out past the card a little.
+  - **School › Focus:** on smaller iPhones, the Break + button got pushed off the screen.
+  - **Savings › Subs:** a monthly total of $100 or more now shows whole dollars so it fits.
+- If a number is ever still too long for its box, Hibi now shrinks it to fit rather than letting it spill out.
+
 ## 2.5 — "Jet lag protocol" (Oct 22)
 - **Airport time zones.** Hibi now knows the time zone for most airports, including every US hub and all of Japan's. Each flight shows:
   - which time zone its times are in, like "Departs, Eastern time" or "Arrives, Japan time"

@@ -17,8 +17,19 @@ function drawApp() {
   $('#sheetRoot').innerHTML = sheetHtml();
   { const mb = $('.modes'), sel = mb && mb.querySelector('[aria-selected="true"]'); if (sel && (sel.offsetLeft + sel.offsetWidth > mb.clientWidth + mb.scrollLeft || sel.offsetLeft < mb.scrollLeft)) mb.scrollLeft = Math.max(0, sel.offsetLeft - 16); }
   $('#nav').innerHTML = MODES[S.mode].nav.map(([ng, label, ic]) => `<button data-nav="${ng}"${ng === g ? ' aria-current="page"' : ''}><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg></span>${label}</button>`).join('');
-  tick();
+  tick(); fitText();
 }
+// Shrinks big numbers that are too wide for their box, so nothing spills past a card
+function fitText(root) {
+  (root || document).querySelectorAll('.stat b, .wd-big').forEach(el => {
+    el.style.fontSize = el.style.lineHeight = '';
+    if (el.scrollWidth <= el.clientWidth + 1) return;
+    const cs = getComputedStyle(el), fs = parseFloat(cs.fontSize);
+    el.style.lineHeight = el.getBoundingClientRect().height + 'px';
+    el.style.fontSize = Math.max(11, Math.floor(fs * el.clientWidth / el.scrollWidth * 10) / 10) + 'px';
+  });
+}
+if (document.fonts) { document.fonts.ready.then(() => fitText()); document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', () => fitText()); }
 function go(tab) {
   if (!TAB_INFO[tab]) return;
   S.tab = tab; S.last[TAB_INFO[tab].g] = tab;

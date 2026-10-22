@@ -68,8 +68,8 @@ function recap(P) {
 function weekCard() {
   const cur = weekStart(Date.now()), last = UI.wk === 'last', P = periodOf('week', last ? cur - 7 * DAY_MS : cur), o = recap(P);
   const tiles = [[o.workouts, o.workouts === 1 ? 'workout' : 'workouts', '🏋️'], [o.cardioMin, 'cardio min', '🏃'], [o.gStarted.length, o.gStarted.length === 1 ? 'game started' : 'games started', '🎮'], [o.beaten.length, o.beaten.length === 1 ? 'game beaten' : 'games beaten', '🏁'],
-    [o.ep, o.ep === 1 ? 'episode' : 'episodes', '📺'], [o.ch, o.ch === 1 ? 'chapter' : 'chapters', '📖'], [o.pages, 'pages', '📚'], [o.saved ? usd(o.saved) : 0, 'saved', '💰'],
-    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? usd(Math.round(o.earned)) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🎯'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
+    [o.ep, o.ep === 1 ? 'episode' : 'episodes', '📺'], [o.ch, o.ch === 1 ? 'chapter' : 'chapters', '📖'], [o.pages, 'pages', '📚'], [o.saved ? cash0(o.saved) : 0, 'saved', '💰'],
+    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? cash0(o.earned) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🎯'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
   const hi = [o.prs ? `🏆 ${plural(o.prs, 'new PR')}` : '', ...o.beaten.slice(0, 2).map(g => `🎮 Beat ${g.title}`), ...o.finished.slice(0, 2).map(m => `✅ Finished ${m.title}`),
     ...o.badges.slice(0, 2).map(b => `${b[1]} ${b[2]}`)].filter(Boolean);
   return `<section class="card"><div class="row"><h2>${last ? 'Last week' : 'This week'}</h2>

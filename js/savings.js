@@ -76,7 +76,7 @@ function viewVGoals() {
   const ms = new Date(); ms.setDate(1); const mk = dk(ms);
   const month = S.sv.tx.filter(t => t.d >= mk).reduce((a, t) => a + num(t.amt), 0);
   return `<section class="card"><h2>Overview</h2>
-      <div class="stats"><div class="stat"><b>${usd(savedAll)}</b><span>saved in total</span></div><div class="stat"><b>${month >= 0 ? '+' : '−'}${usd(Math.abs(month))}</b><span>this month</span></div><div class="stat"><b>${active.length}</b><span>${active.length === 1 ? 'goal' : 'goals'} in progress</span></div></div>
+      <div class="stats"><div class="stat"><b>${cash0(savedAll)}</b><span>saved in total</span></div><div class="stat"><b>${month >= 0 ? '+' : '−'}${cash0(Math.abs(month))}</b><span>this month</span></div><div class="stat"><b>${active.length}</b><span>${active.length === 1 ? 'goal' : 'goals'} in progress</span></div></div>
       ${targetActive ? `<div class="meter"><i style="width:${Math.min(100, savedActive / targetActive * 100)}%"></i></div><p class="note">${usd(savedActive)} of ${usd(targetActive)} across your active goals.</p>` : ''}
       ${active.length ? `<details class="mt" ${det('payday')}><summary class="link">💵 Payday: split money across your goals</summary>
         ${wkReady() ? (p => `<p class="note">💼 Next paycheck from Work: about <b>${cash(p.net)}</b> on ${esc(fmtShort(periodFor(today()).pay))}. <button class="link" type="button" data-act="payFromWork" data-v="${Math.round(p.net * 100) / 100}">Use it</button></p>`)(payFor(periodFor(today()))) : ''}
