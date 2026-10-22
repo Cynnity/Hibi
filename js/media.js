@@ -179,6 +179,21 @@ function alType(m) {
   if (m.format === 'MANGA' || m.format === 'ONE_SHOT') return m.countryOfOrigin === 'KR' ? 'manhwa' : 'manga';
   return 'anime';
 }
+// Backup search: MyAnimeList through Jikan (free, no key), used when AniList is down
+async function malSearch(q, kind) {
+  let r;
+  try { r = await fetch(`https://api.jikan.moe/v4/${kind === 'ANIME' ? 'anime' : 'manga'}?limit=8&sfw=true&q=${encodeURIComponent(q)}`); }
+  catch (e) { throw Object.assign(new Error("Couldn't reach AniList or MyAnimeList. They may both be down right now."), {down:true}); }
+  if (!r.ok) throw Object.assign(new Error(`AniList and MyAnimeList aren't answering right now (error ${r.status}).`), {down:true});
+  const d = await r.json();
+  return (d.data || []).map(m => {
+    const ft = m.type || '', t = kind === 'ANIME' ? (ft === 'Movie' ? 'movie' : 'anime') : /manhwa|manhua/i.test(ft) ? 'manhwa' : /novel/i.test(ft) ? 'ln' : 'manga', watch = t === 'anime' || t === 'movie';
+    const yr = m.year || ((m.aired || m.published || {}).prop || {from:{}}).from.year || '';
+    return {title:m.title_english || m.title, alt:m.title_english && m.title !== m.title_english ? m.title : '', type:t,
+      total:(t === 'ln' ? m.volumes : watch ? m.episodes : m.chapters) || 0, unit:t === 'ln' ? 'vol' : watch ? 'ep' : 'ch',
+      img:(m.images && m.images.jpg && (m.images.jpg.large_image_url || m.images.jpg.image_url)) || '', year:yr, src:'mal:' + m.mal_id};
+  });
+}
 async function mdSearch(q, type) {
   if (type === 'show') {
     const d = await (await fetch('https://api.tvmaze.com/search/shows?q=' + encodeURIComponent(q))).json();
@@ -190,9 +205,10 @@ async function mdSearch(q, type) {
     return (d.docs || []).map(b => ({title:b.title, alt:(b.author_name || []).slice(0, 2).join(', '), type:'book', total:b.number_of_pages_median || 0, unit:'page',
       img:b.cover_i ? `https://covers.openlibrary.org/b/id/${b.cover_i}-M.jpg` : '', year:b.first_publish_year || '', src:'ol:' + b.key}));
   }
-  const r = await fetch('https://graphql.anilist.co', {method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'},
-    body:JSON.stringify({query:ALQ, variables:{s:q, t:(type === 'anime' || type === 'movie') ? 'ANIME' : 'MANGA'}})});
-  const d = await r.json();
+  const kind = (type === 'anime' || type === 'movie') ? 'ANIME' : 'MANGA';
+  let d;
+  try { d = await alPost(ALQ, {s:q, t:kind}); if (!d.data || !d.data.Page) throw Object.assign(new Error('AniList gave no results'), {down:true}); }
+  catch (e) { if (navigator.onLine === false) throw e; const r = await malSearch(q, kind); r.via = 'MyAnimeList'; r.why = e.message; return r; }
   return ((d.data && d.data.Page && d.data.Page.media) || []).map(m => {
     const t = alType(m), watch = t === 'anime' || t === 'movie';
     return {title:m.title.english || m.title.romaji, alt:m.title.english && m.title.romaji !== m.title.english ? m.title.romaji : '', type:t,
@@ -210,7 +226,13 @@ Object.assign(MACT, {
       box.innerHTML = r.length ? r.map((x, i) => `<button type="button" class="res" data-act="mPick" data-i="${i}">${cover(x)}<span><b>${esc(x.title)}</b>
         <span class="small muted" style="display:block">${[x.alt, typeLabel(x.type), x.year, x.total ? `${x.total} ${MD_UNITS[x.unit][0].toLowerCase()}s` : ''].filter(Boolean).map(v => esc(v)).join(', ')}</span></span></button>`).join('')
         : '<p class="note">No matches. Try a different spelling or another type, or fill it in by hand.</p>';
-    }).catch(() => { box.innerHTML = '<p class="note">Search needs internet. You can still fill it in by hand.</p>'; });
+      if (r.via && r.length) box.insertAdjacentHTML('afterbegin', `<p class="note">AniList isn't answering right now, so these results are from ${esc(r.via)}.</p>`);
+    }).catch(e => {
+      const net = e instanceof TypeError || (e && e.down);
+      const msg = navigator.onLine === false ? "You're offline. You can still fill it in by hand." : e && e.down ? `${esc(e.message)} You can still fill it in by hand.` : net ? "Couldn't reach the search service. It may be down, so try again later or fill it in by hand." : "Search didn't work this time. Try again, or fill it in by hand.";
+      if (!net && navigator.onLine !== false) try { Crash.record(e, 'search'); } catch (x) {}
+      box.innerHTML = `<p class="note">${msg}</p>`;
+    });
     return false;
   },
   mPick: d => {
@@ -231,7 +253,19 @@ Object.assign(MACT, {
 const AL_URL = 'https://graphql.anilist.co';
 const AL_ST = {CURRENT:'now', REPEATING:'now', PLANNING:'plan', PAUSED:'hold', COMPLETED:'done', DROPPED:'drop'};
 const AL_LIST = 'query($u:String,$t:MediaType){MediaListCollection(userName:$u,type:$t){lists{entries{status progress progressVolumes score(format:POINT_10) completedAt{year month day} media{id title{romaji english} format episodes chapters volumes countryOfOrigin coverImage{large medium} nextAiringEpisode{episode airingAt}}}}}}';
-const alPost = (query, variables) => fetch(AL_URL, {method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body:JSON.stringify({query, variables})}).then(r => r.json());
+// Talks to AniList and turns its outages into clear messages instead of "no internet"
+async function alPost(query, variables) {
+  let r;
+  try { r = await fetch(AL_URL, {method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body:JSON.stringify({query, variables})}); }
+  catch (e) { throw Object.assign(new Error(navigator.onLine === false ? "You're offline." : "Couldn't reach AniList. It may be down right now."), {down:true}); }
+  let d = null; try { d = JSON.parse(await r.text()); } catch (e) {}
+  if (!d) throw Object.assign(new Error(`AniList isn't answering right now (error ${r.status}).`), {down:true});
+  if (!r.ok && !(d.errors && d.errors.length && r.status < 500 && r.status !== 403 && r.status !== 429)) {
+    const m = d.errors && d.errors[0] && d.errors[0].message || '';
+    throw Object.assign(new Error(r.status === 429 ? 'AniList says too many requests. Wait a minute and try again.' : /disabled|stability|maintenance/i.test(m) ? 'AniList has turned its API off for now because of problems on their end.' : `AniList isn't working right now (error ${r.status}).`), {down:true});
+  }
+  return d;
+}
 async function importAniList(user) {
   const st = () => $('#alStatus');
   if (st()) st().textContent = 'Importing your lists';
@@ -268,7 +302,7 @@ async function importAniList(user) {
     S.md.airAt = Date.now(); save(); render();
     toast(`AniList: ${plural(added, 'new title')}, ${updated} updated.`);
   } catch (e) {
-    const msg = e && e.message && !/fetch|network|load failed/i.test(e.message) ? e.message : 'Importing needs internet. Try again when you are online.';
+    const msg = e && e.message && !/^(failed to fetch|load failed|networkerror)/i.test(e.message) ? e.message : navigator.onLine === false ? "You're offline. Try again when you're online." : "Couldn't reach AniList. It may be down right now, so try again later.";
     if (st()) st().textContent = msg; toast(msg);
   }
 }

@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.4.1 — "Plot armor" (Oct 21)
+- **Fixed:** anime and manga search said "needs internet" even when you were online. AniList, where those searches come from, sometimes switches off its API during outages, and Hibi was blaming your internet for it.
+- **Backup search:** when AniList isn't answering, Hibi now searches MyAnimeList instead and tells you which one the results came from.
+- **Clearer messages:** if a search service is down, Hibi says so instead of saying you're offline. The same goes for the AniList import.
+- Online lookups (searches, stats.fm and so on) now always get fresh results instead of sometimes showing a saved copy from earlier.
+
 ## 2.4 — "Subscription season" (Oct 21)
 - **New Subscriptions tab in Savings 🔁.** Add each subscription by hand with its price, how often it charges (monthly, yearly, weekly, every 3 or 6 months) and its next charge date.
   - **Totals:** what you pay a month and a year, plus your biggest costs.

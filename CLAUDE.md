@@ -13,7 +13,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/crash.js` | Crash reports and the "Something went wrong" screen. Loads first. |
 | `js/core.js` | `APP_VERSION`, constants, helpers, load/normalize/save, the mode list |
 | `js/japan.js` | Japan trip mode (also defines `SAVE` and the form handler) |
-| `js/media.js` | Shows & Books mode, plus the shared 1 to 10 `ring()` and `rater()` |
+| `js/media.js` | Shows & Books mode (anime/manga search uses AniList, falling back to MyAnimeList via Jikan when AniList is down), plus the shared 1 to 10 `ring()` and `rater()` |
 | `js/games.js` | Games mode (no hours; search uses RAWG, key is `RAWG_KEY` or `S.gm.key`), Up next queue |
 | `js/savings.js` | Savings mode |
 | `js/work.js` | Work mode: clock in/out, shifts, bonuses, pay periods, overtime and tax estimates (`S.wk`) |
@@ -43,7 +43,7 @@ Cynn wants a record of everything that changes. For every change you ship, in th
 
 1. **Add an entry to the top of `CHANGELOG.md`.** Include the version, a short fun episode-style title in quotes, the date, and plain-language bullets about what changed for him. Follow the style of the entries already there.
 2. **Bump `APP_VERSION`** at the top of `js/core.js`. Cynn wants this scheme: the middle number for new features (2.4 → 2.5), the last number for small fixes, tweaks and polish (2.4 → 2.4.1, 2.4.2), and the first number only for huge updates (3.0). Never reuse or lower a version that has shipped. The version must match the new CHANGELOG entry.
-3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.4`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
+3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.4.1`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
 
 The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also shows a "Hibi was updated" card on Home whenever `APP_VERSION` changes.
 
