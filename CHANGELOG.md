@@ -9,6 +9,18 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.5 — "Jet lag protocol" (Oct 22)
+- **Airport time zones.** Hibi now knows the time zone for most airports, including every US hub and all of Japan's. Each flight shows:
+  - which time zone its times are in, like "Departs, Eastern time" or "Arrives, Japan time"
+  - how long you're actually in the air
+  - what time you land in Eastern time, like "That's Tue, Jan 12, 1:00 AM Eastern time"
+  - your total travel time for each direction
+- **Fixed:** with a round trip of 4 flights, the flight home got split up and put in the wrong order. Flying back from Tokyo, you "land" earlier on the clock than you left, which confused Hibi. It now sorts flights by their real times, so "Flying home: HND → DFW → MCO" stays together with the right layover.
+- **One price for one booking.** Booked a round trip as one ticket? Give all the flights the same confirmation code. Your budget counts the price once instead of once per flight, and the flight with the price shows "Price for all 4 flights".
+- **Unknown airport?** Hibi tells you and lets you pick the time zone in the flight form.
+- **Calendar export** now puts flights and layovers at their exact real times.
+- **"Add a connecting flight"** now also fills in the airline, confirmation code and the time you landed.
+
 ## 2.4.2 — "Backup squad" (Oct 21)
 - **Anime and manga search has more backups.** If AniList doesn't answer, Hibi tries MyAnimeList, then Kitsu, then TVmaze (anime TV series only) until one works. A note tells you which one the results came from.
 - **No more getting stuck on "Searching".** Each source gets a few seconds before Hibi moves on to the next, and it shows which one it's trying.

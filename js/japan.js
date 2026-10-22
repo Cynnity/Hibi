@@ -92,18 +92,60 @@ function countdownCard() {
 const JP_AIRPORTS = ['HND','NRT','KIX','ITM','NGO','CTS','FUK','OKA','KOJ','HIJ','SDJ'];
 const dtMs = v => { if (!v) return NaN; const [d, t] = v.split('T'), [y, m, dd] = d.split('-').map(Number), [h, mi] = (t || '0:0').split(':').map(Number); return new Date(y, m - 1, dd, h, mi).getTime(); };
 const durTxt = ms => { const m = Math.round(ms / 6e4), h = Math.floor(m / 60); return h ? `${h} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`; };
+/* ----- Airport time zones: each flight time is local to its airport, so Hibi works out the real times ----- */
+const AIRPORT_TZ = (() => { const o = {}, add = (tz, codes) => codes.split(' ').forEach(c => { o[c] = tz; });
+  add('America/New_York', 'MCO SFB FLL MIA TPA PBI JAX RSW SRQ PIE DAB MLB TLH ATL CLT JFK EWR LGA BOS IAD DCA BWI PHL DTW CLE PIT RDU CVG IND CMH BUF ALB BDL PVD RIC ORF SAV CHS MYR BNA');
+  add('America/Chicago', 'DFW DAL IAH HOU AUS SAT ORD MDW MSP STL MCI MSY MEM MKE OKC TUL OMA BHM ELP LIT');
+  add('America/Denver', 'DEN SLC ABQ BOI'); add('America/Phoenix', 'PHX TUS'); add('America/Los_Angeles', 'LAX SFO SJC OAK SAN SEA PDX LAS SMF BUR ONT SNA LGB');
+  add('America/Anchorage', 'ANC'); add('Pacific/Honolulu', 'HNL OGG KOA LIH'); add('Asia/Tokyo', 'HND NRT KIX ITM NGO CTS FUK OKA KOJ HIJ SDJ UKB KMJ');
+  add('Asia/Seoul', 'ICN GMP PUS'); add('Asia/Shanghai', 'PEK PKX PVG SHA CAN SZX'); add('Asia/Hong_Kong', 'HKG'); add('Asia/Taipei', 'TPE TSA'); add('Asia/Manila', 'MNL');
+  add('Asia/Singapore', 'SIN'); add('Asia/Bangkok', 'BKK DMK'); add('Asia/Dubai', 'DXB'); add('Asia/Qatar', 'DOH'); add('Europe/London', 'LHR LGW'); add('Europe/Paris', 'CDG ORY');
+  add('Europe/Berlin', 'FRA MUC'); add('Europe/Amsterdam', 'AMS'); add('Europe/Istanbul', 'IST'); add('America/Toronto', 'YYZ YUL'); add('America/Vancouver', 'YVR');
+  add('America/Mexico_City', 'MEX'); add('America/Cancun', 'CUN'); add('America/Puerto_Rico', 'SJU'); add('Australia/Sydney', 'SYD'); return o; })();
+const TZ_CHOICES = [['America/New_York', 'Eastern'], ['America/Chicago', 'Central'], ['America/Denver', 'Mountain'], ['America/Phoenix', 'Arizona'], ['America/Los_Angeles', 'Pacific'],
+  ['America/Anchorage', 'Alaska'], ['Pacific/Honolulu', 'Hawaii'], ['Asia/Tokyo', 'Japan'], ['Asia/Seoul', 'Korea'], ['Asia/Shanghai', 'China'], ['Asia/Taipei', 'Taiwan'], ['Asia/Hong_Kong', 'Hong Kong'],
+  ['Asia/Manila', 'Philippines'], ['Asia/Singapore', 'Singapore'], ['Asia/Bangkok', 'Thailand'], ['Asia/Dubai', 'Dubai'], ['Asia/Qatar', 'Qatar'], ['Europe/London', 'UK'], ['Europe/Paris', 'France'],
+  ['Europe/Berlin', 'Germany'], ['Europe/Amsterdam', 'Netherlands'], ['Europe/Istanbul', 'Turkey'], ['America/Toronto', 'Toronto'], ['America/Vancouver', 'Vancouver'], ['America/Mexico_City', 'Mexico City'],
+  ['America/Cancun', 'Cancún'], ['America/Puerto_Rico', 'Puerto Rico'], ['Australia/Sydney', 'Sydney']];
+const homeTz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'; } catch (e) { return 'America/New_York'; } };
+const tzName = tz => (TZ_CHOICES.find(x => x[0] === tz) || [0, (tz || '').split('/').pop().replace(/_/g, ' ')])[1];
+const apTz = (code, pick) => pick || AIRPORT_TZ[(code || '').toUpperCase().trim()] || '';
+// Minutes a time zone is ahead of UTC at a given moment (handles daylight saving)
+function tzOff(tz, ms) {
+  const p = new Intl.DateTimeFormat('en-US', {timeZone:tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'}).formatToParts(new Date(ms));
+  const g = t => +(p.find(x => x.type === t) || {value:0}).value;
+  return (Date.UTC(g('year'), g('month') - 1, g('day'), g('hour') % 24, g('minute'), g('second')) - Math.floor(ms / 1000) * 1000) / 6e4;
+}
+// "YYYY-MM-DDTHH:MM" on the clock in a time zone, as a real moment in time
+function zoned(v, tz) {
+  if (!v) return NaN; if (!tz) return dtMs(v);
+  const [d, t] = v.split('T'), [y, m, dd] = d.split('-').map(Number), [h, mi] = (t || '0:0').split(':').map(Number), guess = Date.UTC(y, m - 1, dd, h, mi);
+  try { const ms = guess - tzOff(tz, guess) * 6e4; return guess - tzOff(tz, ms) * 6e4; } catch (e) { return dtMs(v); }
+}
+const fTzFrom = f => apTz(f.from, f.tzFrom), fTzTo = f => apTz(f.to, f.tzTo);
+const fDep = f => zoned(f.dep, fTzFrom(f)), fArr = f => zoned(f.arr, fTzTo(f));
+const inTz = (ms, tz) => { try { return new Date(ms).toLocaleString(undefined, {timeZone:tz, weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}); } catch (e) { return ''; } };
+// One price per booking: flights with the same confirmation code are counted once (the price entered on any of them)
+function flightBookings() {
+  const B = {};
+  S.jp.flights.forEach(f => { const k = f.conf ? 'c:' + norm(f.conf) : 'f:' + f.id, b = B[k] = B[k] || {legs:[], usd:0, f:null}; b.legs.push(f);
+    const c = toUSD(f.cost, f.cur); if (c > b.usd) { b.usd = c; b.f = f; } });
+  return Object.values(B);
+}
+const flightsUSD = () => flightBookings().reduce((t, b) => t + b.usd, 0);
 function journeys() {
-  const F = S.jp.flights.slice().sort((a, b) => (a.dep || '').localeCompare(b.dep || '')), out = [];
+  const F = S.jp.flights.slice().sort((a, b) => (fDep(a) || 9e15) - (fDep(b) || 9e15)), out = [];
   F.forEach(f => {
     const j = out[out.length - 1], prev = j && j.legs[j.legs.length - 1];
-    // Same airport, and the next flight leaves within a day of landing (both times are local to that airport)
-    const gap = prev ? dtMs(f.dep) - dtMs(prev.arr) : NaN;
+    // Same airport, and the next flight leaves within a day of landing (real times, so crossing time zones works)
+    const gap = prev ? fDep(f) - fArr(prev) : NaN;
     if (prev && prev.to === f.from && gap >= 0 && gap <= 24 * 36e5) { j.lays.push({at:f.from, ms:gap, from:prev, to:f}); j.legs.push(f); }
     else out.push({legs:[f], lays:[]});
   });
   out.forEach(j => { const a = j.legs[0].from, b = j.legs[j.legs.length - 1].to;
     j.title = JP_AIRPORTS.includes(b) && !JP_AIRPORTS.includes(a) ? 'Flying to Japan' : JP_AIRPORTS.includes(a) && !JP_AIRPORTS.includes(b) ? 'Flying home' : 'Flight';
-    j.route = [a, ...j.legs.map(l => l.to)].join(' → '); });
+    j.route = [a, ...j.legs.map(l => l.to)].join(' → ');
+    const t0 = fDep(j.legs[0]), t1 = fArr(j.legs[j.legs.length - 1]); j.total = t1 > t0 ? t1 - t0 : 0; });
   return out;
 }
 function dayEvents(k) {
@@ -152,15 +194,15 @@ function viewJPlan() {
           <textarea class="input" name="note" style="min-height:70px" placeholder="Notes, like book tickets ahead" aria-label="Notes">${fval(ed, 'note')}</textarea>
           ${formActions('item')}</form></details></section>
     <button class="btn ghost block" data-act="jIcs">Add plans to iPhone Calendar</button>
-    <p class="note">Adds your plans, check-ins and check-outs in Tokyo time. Flights aren't included because their times depend on each airport's time zone.</p>`;
+    <p class="note">Adds your plans, check-ins and check-outs in Tokyo time, plus your flights and layovers at their real times.</p>`;
 }
 function jTotals() {
   const J = S.jp;
-  const booked = J.flights.reduce((t, f) => t + toUSD(f.cost, f.cur), 0) + J.stays.reduce((t, s) => t + toUSD(s.cost, s.cur), 0);
+  const booked = flightsUSD() + J.stays.reduce((t, s) => t + toUSD(s.cost, s.cur), 0);
   const spent = J.exp.reduce((t, x) => t + toUSD(x.amount, x.cur), 0);
   const planned = J.items.reduce((t, i) => t + toUSD(i.cost, i.cur), 0);
   const cats = {};
-  J.flights.forEach(f => cats.flights = (cats.flights || 0) + toUSD(f.cost, f.cur));
+  if (flightsUSD()) cats.flights = flightsUSD();
   J.stays.forEach(s => cats.stay = (cats.stay || 0) + toUSD(s.cost, s.cur));
   J.exp.forEach(x => cats[x.cat || 'other'] = (cats[x.cat || 'other'] || 0) + toUSD(x.amount, x.cur));
   return {booked, spent, planned, cats};
@@ -218,25 +260,35 @@ function viewJConv() {
 function viewJFlights() {
   const ed = editing('flight'), F = S.jp.flights, JN = journeys(), pre = !ed && UI.fpre ? UI.fpre : null;
   const row = (l, v) => v ? `<div class="lrow"><span class="muted">${l}</span><span>${v}</span></div>` : '';
-  const leg = f => `<section class="card"><span class="small muted">${esc([f.airline, f.num].filter(Boolean).join(' ') || 'Flight')}</span>
+  const BK = flightBookings(), home = homeTz();
+  const leg = f => { const tf = fTzFrom(f), tt = fTzTo(f), d0 = fDep(f), d1 = fArr(f), dur = tf && tt && d1 > d0 ? d1 - d0 : 0;
+    const b = BK.find(x => x.legs.includes(f)), shared = b && b.legs.length > 1;
+    const costRow = b && b.f === f && b.usd ? row(shared ? `Price for all ${b.legs.length} flights` : 'Cost', both(f.cost, f.cur) + (shared ? '<small>One booking, counted once</small>' : '')) : shared && b.usd ? row('Cost', `Part of booking ${esc(f.conf)}`) : row('Cost', f.cost ? both(f.cost, f.cur) : '');
+    return `<section class="card"><span class="small muted">${esc([f.airline, f.num].filter(Boolean).join(' ') || 'Flight')}</span>
       <h2 style="font-size:24px;margin-top:2px">${esc(f.from)} → ${esc(f.to)}</h2>
-      <div class="pair"><div><span>Departs</span><b>${esc(fmtDT(f.dep))}</b></div><div><span>Arrives</span><b>${esc(fmtDT(f.arr))}</b></div></div>
+      <div class="pair"><div><span>Departs${tf ? ', ' + esc(tzName(tf)) + ' time' : ''}</span><b>${esc(fmtDT(f.dep))}</b></div><div><span>Arrives${tt ? ', ' + esc(tzName(tt)) + ' time' : ''}</span><b>${esc(fmtDT(f.arr))}</b>
+        ${tt && f.arr && tt !== home && d1 ? `<small class="muted" style="display:block;margin-top:2px">That's ${esc(inTz(d1, home))} ${esc(tzName(home))} time</small>` : ''}</div></div>
+      ${dur ? `<p class="small muted mt">✈️ ${esc(durTxt(dur))} in the air</p>` : ''}
+      ${(!tf && f.from) || (!tt && f.to) ? `<p class="small mt" style="color:var(--danger)">Hibi doesn't know the time zone for ${esc([!tf ? f.from : '', !tt ? f.to : ''].filter(Boolean).join(' or '))}. Tap Edit and pick it, so layovers and flight times come out right.</p>` : ''}
       <div class="mt">${f.conf ? `<div class="lrow"><span class="muted">Confirmation</span><span><b>${esc(f.conf)}</b> <button class="link" data-act="copy" data-v="${esc(f.conf)}">Copy</button></span></div>` : ''}
-      ${row('Seat', esc(f.seat))}${row('Cost', f.cost ? both(f.cost, f.cur) : '')}${row('Notes', esc(f.notes))}</div>
-      <div class="row mt"><button class="link" data-act="jEdit" data-kind="flight" data-id="${esc(f.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="flight" data-id="${esc(f.id)}" data-confirm>Delete</button></div></section>`;
-  return `${JN.map(j => `<h2 class="gsec">${j.title === 'Flying to Japan' ? '🛫' : j.title === 'Flying home' ? '🏠' : '✈️'} ${esc(j.title)} <span class="small muted">${esc(j.route)}${j.legs.length > 1 ? `, ${j.legs.length} flights` : ''}</span></h2>
+      ${row('Seat', esc(f.seat))}${costRow}${row('Notes', esc(f.notes))}</div>
+      <div class="row mt"><button class="link" data-act="jEdit" data-kind="flight" data-id="${esc(f.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="flight" data-id="${esc(f.id)}" data-confirm>Delete</button></div></section>`; };
+  return `${JN.map(j => `<h2 class="gsec">${j.title === 'Flying to Japan' ? '🛫' : j.title === 'Flying home' ? '🏠' : '✈️'} ${esc(j.title)} <span class="small muted">${esc(j.route)}${j.legs.length > 1 ? `, ${j.legs.length} flights` : ''}${j.total ? `, ${esc(durTxt(j.total))} total` : ''}</span></h2>
       ${j.legs.map((f, i) => (i ? `<div class="layover">⏳ Layover in <b>${esc(j.lays[i - 1].at)}</b>: ${esc(durTxt(j.lays[i - 1].ms))}${j.lays[i - 1].ms < 60 * 6e4 ? ' <b style="color:var(--danger)">(tight)</b>' : ''}</div>` : '') + leg(f)).join('')}
-      ${j.title !== 'Flight' ? '' : `<button class="btn ghost block" style="margin:-4px 0 14px" data-act="jConnect" data-to="${esc(j.legs[j.legs.length - 1].to)}" data-dep="${esc((j.legs[j.legs.length - 1].arr || '').slice(0, 10))}">+ Add a connecting flight from ${esc(j.legs[j.legs.length - 1].to)}</button>`}`).join('')}
+      ${j.title !== 'Flight' ? '' : `<button class="btn ghost block" style="margin:-4px 0 14px" data-act="jConnect" data-to="${esc(j.legs[j.legs.length - 1].to)}" data-dep="${esc(j.legs[j.legs.length - 1].arr || '')}" data-conf="${esc(j.legs[j.legs.length - 1].conf || '')}" data-air="${esc(j.legs[j.legs.length - 1].airline || '')}">+ Add a connecting flight from ${esc(j.legs[j.legs.length - 1].to)}</button>`}`).join('')}
     <details class="card" ${det('jFlightForm', !F.length || !!ed || !!pre)}><summary class="sum"><h2>${ed ? 'Edit flight' : 'Add a flight'}</h2><span class="small muted">Shows up on your itinerary automatically</span></summary>
       <form data-form="flight" class="stack">
         <div class="ff"><label>From<input class="input" name="from" placeholder="MCO" value="${pre ? esc(pre.from) : fval(ed, 'from')}"></label><label>To<input class="input" name="to" placeholder="HND" value="${fval(ed, 'to')}"></label>
-          <label>Airline<input class="input" name="airline" placeholder="Airline" value="${fval(ed, 'airline')}"></label><label>Flight number<input class="input" name="num" placeholder="NH 113" value="${fval(ed, 'num')}"></label></div>
-        <div class="ff one"><label>Departs (local time)<input class="input" type="datetime-local" name="dep" value="${pre && pre.dep ? esc(pre.dep + 'T') : fval(ed, 'dep')}"></label><label>Arrives (local time)<input class="input" type="datetime-local" name="arr" value="${fval(ed, 'arr')}"></label></div>
-        <div class="ff"><label>Confirmation<input class="input" name="conf" value="${fval(ed, 'conf')}"></label><label>Seat<input class="input" name="seat" value="${fval(ed, 'seat')}"></label></div>
+          <label>Airline<input class="input" name="airline" placeholder="Airline" value="${pre && pre.air ? esc(pre.air) : fval(ed, 'airline')}"></label><label>Flight number<input class="input" name="num" placeholder="NH 113" value="${fval(ed, 'num')}"></label></div>
+        <div class="ff one"><label>Departs (local time)<input class="input" type="datetime-local" name="dep" value="${pre && pre.dep ? esc(pre.dep) : fval(ed, 'dep')}"></label><label>Arrives (local time)<input class="input" type="datetime-local" name="arr" value="${fval(ed, 'arr')}"></label></div>
+        <div class="ff"><label>From time zone<select class="input" name="tzFrom">${opt('', 'Automatic', ed ? ed.tzFrom || '' : '')}${TZ_CHOICES.map(([k, l]) => opt(k, l, ed ? ed.tzFrom || '' : '')).join('')}</select></label>
+          <label>To time zone<select class="input" name="tzTo">${opt('', 'Automatic', ed ? ed.tzTo || '' : '')}${TZ_CHOICES.map(([k, l]) => opt(k, l, ed ? ed.tzTo || '' : '')).join('')}</select></label></div>
+        <div class="ff"><label>Confirmation<input class="input" name="conf" value="${pre && pre.conf ? esc(pre.conf) : fval(ed, 'conf')}"></label><label>Seat<input class="input" name="seat" value="${fval(ed, 'seat')}"></label></div>
         <div class="field"><input class="input" name="cost" inputmode="decimal" placeholder="Cost" value="${ed && ed.cost ? ed.cost : ''}" aria-label="Cost">${curSel(ed && ed.cur, 'USD')}</div>
         <textarea class="input" name="notes" style="min-height:70px" placeholder="Notes, like baggage allowance" aria-label="Notes">${fval(ed, 'notes')}</textarea>
         ${formActions('flight')}</form></details>
-    <p class="note">Add each flight separately, including connections. Flights that leave from the airport you just landed at within a day are grouped together, with the layover time worked out for you. Use each airport's local time.</p>
+    <p class="note">Add each flight separately, including connections, using each airport's local time. Hibi knows the time zone for most airports, so it works out real flight times, layovers and when you land back home. If it doesn't know one, pick it in the form.</p>
+    <p class="note"><b>Booked one ticket for several flights, like a round trip?</b> Give every flight the same confirmation code and put the price on just one of them. Hibi counts each booking once in your budget.</p>
     <p class="note">Tokyo is 14 hours ahead of Florida in winter, so you'll land on a later date than it feels like.</p>`;
 }
 function viewJStays() {
@@ -406,12 +458,14 @@ function icsFile() {
     lines.push('END:VEVENT'); ev.push(lines.join('\r\n'));
   };
   J.items.forEach(i => add(i.id, i.d, i.time, i.title, i.place, i.note));
-  // Flights use "floating" local times, so they show at the airport's clock time
+  // Flights use real times when the airport's time zone is known, otherwise "floating" airport clock times
   const fl = v => v ? v.replace(/[-:]/g, '').slice(0, 13) + '00' : '';
-  journeys().forEach(j => { j.legs.forEach(f => { if (!f.dep) return; const lines = ['BEGIN:VEVENT', `UID:${f.id}-flight@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${fl(f.dep)}`, `DTEND:${fl(f.arr && dtMs(f.arr) > dtMs(f.dep) ? f.arr : f.dep)}`,
-      `SUMMARY:${escI(`✈️ ${f.from} → ${f.to}${f.num ? ' (' + f.num + ')' : ''}`)}`, `DESCRIPTION:${escI([f.airline, f.conf ? 'Confirmation ' + f.conf : '', f.seat ? 'Seat ' + f.seat : '', 'Times are local to each airport.'].filter(Boolean).join('\n'))}`,
+  const utc = ms => new Date(ms).toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+  const at = (v, tz) => tz && v ? utc(zoned(v, tz)) : fl(v);
+  journeys().forEach(j => { j.legs.forEach(f => { if (!f.dep) return; const lines = ['BEGIN:VEVENT', `UID:${f.id}-flight@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${at(f.dep, fTzFrom(f))}`, `DTEND:${f.arr && (fTzFrom(f) && fTzTo(f) ? fArr(f) > fDep(f) : dtMs(f.arr) > dtMs(f.dep)) ? at(f.arr, fTzTo(f)) : at(f.dep, fTzFrom(f))}`,
+      `SUMMARY:${escI(`✈️ ${f.from} → ${f.to}${f.num ? ' (' + f.num + ')' : ''}`)}`, `DESCRIPTION:${escI([f.airline, f.conf ? 'Confirmation ' + f.conf : '', f.seat ? 'Seat ' + f.seat : '', fTzFrom(f) && fTzTo(f) ? '' : 'Times are local to each airport.'].filter(Boolean).join('\n'))}`,
       'BEGIN:VALARM', 'TRIGGER:-PT3H', 'ACTION:DISPLAY', `DESCRIPTION:${escI(`Flight ${f.from} → ${f.to} in 3 hours`)}`, 'END:VALARM', 'END:VEVENT']; ev.push(lines.join('\r\n')); });
-    j.lays.forEach(l => { if (!l.from.arr || !l.to.dep) return; ev.push(['BEGIN:VEVENT', `UID:${l.to.id}-layover@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${fl(l.from.arr)}`, `DTEND:${fl(l.to.dep)}`, `SUMMARY:${escI(`⏳ Layover in ${l.at} (${durTxt(l.ms)})`)}`, 'TRANSP:TRANSPARENT', 'END:VEVENT'].join('\r\n')); }); });
+    j.lays.forEach(l => { if (!l.from.arr || !l.to.dep) return; ev.push(['BEGIN:VEVENT', `UID:${l.to.id}-layover@hibi`, `DTSTAMP:${stamp}`, `DTSTART:${at(l.from.arr, fTzTo(l.from))}`, `DTEND:${at(l.to.dep, fTzFrom(l.to))}`, `SUMMARY:${escI(`⏳ Layover in ${l.at} (${durTxt(l.ms)})`)}`, 'TRANSP:TRANSPARENT', 'END:VEVENT'].join('\r\n')); }); });
   J.stays.forEach(s => { if (s.ci) add(s.id + '-in', s.ci, s.cit, `Check in: ${s.name}`, s.address, s.entry); if (s.co) add(s.id + '-out', s.co, s.cot, `Check out: ${s.name}`, s.address, ''); });
   const tz = ['BEGIN:VTIMEZONE', 'TZID:Asia/Tokyo', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900', 'TZNAME:JST', 'END:STANDARD', 'END:VTIMEZONE'].join('\r\n');
   return {count:ev.length, text:['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Hibi//Japan trip//EN', 'CALSCALE:GREGORIAN', tz, ...ev, 'END:VCALENDAR'].join('\r\n')};
@@ -441,7 +495,7 @@ const JACT = {
     const f = icsFile(); if (!f.count) { toast('Add some plans, flights or stays first.'); return false; }
     saveCalendar(f.text, 'japan-trip.ics', f.count); return false;
   },
-  jConnect: d => { UI.edit = null; UI.fpre = {from:d.to, dep:d.dep}; UI.open.jFlightForm = true; setTimeout(() => { const f = $('form[data-form="flight"]'); if (f) { f.scrollIntoView({behavior:'smooth', block:'start'}); const t = f.elements.namedItem('to'); if (t) t.focus(); } }, 50); },
+  jConnect: d => { UI.edit = null; UI.fpre = {from:d.to, dep:d.dep, conf:d.conf, air:d.air}; UI.open.jFlightForm = true; setTimeout(() => { const f = $('form[data-form="flight"]'); if (f) { f.scrollIntoView({behavior:'smooth', block:'start'}); const t = f.elements.namedItem('to'); if (t) t.focus(); } }, 50); },
   copy: d => {
     try { navigator.clipboard.writeText(d.v).then(() => toast('Copied.'), () => toast("Couldn't copy here.")); } catch (e) { toast("Couldn't copy here."); }
     return false;
