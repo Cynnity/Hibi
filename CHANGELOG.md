@@ -4,6 +4,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 2.2 — "Suggestion box" (Oct 21)
+- **💡 Ideas for Hibi.** A quick list at the top of every Settings page for jotting down ideas and fixes as they come to you. Each idea remembers which mode you were in.
+- **Copy all** puts them in a numbered list ready to paste to Claude. Tick them off once they're sent. Sent ideas move to their own list so nothing gets lost.
+- **New Ideas widget** for Home that shows how many are waiting. Tap it to jump straight to the list, ready to type.
+
 ## 2.1 — "Opening sequence" (Oct 21)
 - **Welcome animation.** When you open Hibi, the sakura pops in with a burst of petals, then "Hibi" and your greeting appear before it fades into the app. Tap to skip.
 - **Smooth animations everywhere:**

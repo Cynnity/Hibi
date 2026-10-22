@@ -303,7 +303,7 @@ ${S.mode === 'home' ? fxSettings() + musicSettings() : S.mode === 'school' ? '' 
       <p class="note">Bring in your anime and manga lists with your AniList username. Your profile needs to be public. Run it again any time to update progress.</p>
       <form data-form="alimport" class="field mt"><input class="input" name="user" placeholder="AniList username" value="${esc(S.md.al || '')}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="AniList username"><button class="btn" type="submit">Import</button></form>
       <p class="note" id="alStatus" role="status"></p></section>
-`}${settingsCommon()}${dbxCard()}${crashCard()}    <section class="card"><h2>Backup file</h2>
+`}${ideasCard()}${settingsCommon()}${dbxCard()}${crashCard()}    <section class="card"><h2>Backup file</h2>
       <p class="note">Everything lives on this phone, in this browser.${DBX.rt ? ' Dropbox backs it up for you, but you can still save a file by hand.' : ' Save a backup file to your Files app or iCloud Drive now and then.'} Last backup: <b>${S.lb ? fmtMD(new Date(S.lb)) : 'never'}</b>.</p>
       <div class="btns mt"><button class="btn" data-act="shareBackup">Save backup file</button><label class="btn ghost file-btn">Restore from file<input type="file" accept=".json,application/json,text/plain" data-file="restore" aria-label="Restore from a backup file"></label></div>
       <details class="mt" ${det('textBackup')}><summary class="link">Copy or paste backup as text</summary>
