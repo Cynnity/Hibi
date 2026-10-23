@@ -145,7 +145,7 @@ function settingsAbout() {
 
 /* ----- Screen finder ----- */
 const JUMP_KW = {workout:'gym lift train start', catalog:'exercises library', care:'stretch', history:'lifts pr records progress', body:'weight weigh scale photos', today:'supplements creatine vitamins', journal:'mood diary',
-  hhome:'home widgets', hbadges:'badges achievements', kdue:'homework assignments exams due', kclass:'classes grades schedule', knotes:'notes formulas', kstudy:'flashcards quizlet study cards decks test learn match review', kfocus:'pomodoro timer study focus',
+  hhome:'home widgets', hbadges:'badges achievements', kdue:'homework assignments exams due', kclass:'classes grades schedule', knotes:'notes formulas', knb:'notebooks pencil handwriting draw drawing notes record recording lecture audio transcript', kstudy:'flashcards quizlet study cards decks test learn match review', kfocus:'pomodoro timer study focus',
   jplan:'itinerary calendar days', jprep:'to-do todo checklist', jjournal:'trip journal', jmoney:'budget spending money', jconv:'yen dollar exchange convert currency', jflights:'flights plane airline', jstays:'hotel stays', jpack:'packing', jplaces:'places', jgifts:'gifts souvenirs', jphrases:'phrases words', jinfo:'emergency tokyo time',
   hltoday:'water drink hydrate habits', hlhab:'habits streaks routine', hlsleep:'sleep bed rest', lshop:'shopping groceries store', lwish:'wish list wishlist prices deals',
   vgoals:'savings goals money', vadd:'new goal', vhist:'deposits history', vsubs:'subscriptions bills netflix spotify', wtoday:'clock in work shift', wshifts:'shifts hours', wpay:'paycheck pay taxes',

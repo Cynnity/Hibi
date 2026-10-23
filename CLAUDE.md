@@ -24,6 +24,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/health.js` | Health mode: water in fl oz, habits with streaks, sleep (`S.hl`) |
 | `js/lists.js` | Lists mode: shopping list and wish list with price history (`S.ls`) |
 | `js/study.js` | School › Study › Flashcards (`S.fc`): decks imported from text (`fcParse()`: one card per line, `term :: definition`, `# Deck name`), Flashcards, Learn, Test, Match and spaced Review |
+| `js/notebook.js` | School › Study › Notebooks (`S.nb`): Apple Pencil pages (strokes in IndexedDB store `nb`, page units 1000×1414), lecture recording (`REC`, audio chunks in store `rec`), live transcript, synced playback (`PLAY`), PDF export, Dropbox `notebooks/` and `recordings/` |
 | `js/state.js` | `let S = load()` and other live state. Runs once everything above is defined. |
 | `js/gym.js` | Lifting helpers, progression hints, plates, body diagram, charts, badges |
 | `js/badges.js` | Badges for every mode, grouped by category, and the Badges screen. Loads before views.js. |
@@ -48,13 +49,13 @@ Cynn wants a record of everything that changes. For every change you ship, in th
 
 1. **Add an entry to the top of `CHANGELOG.md`.** Include the version, a short fun episode-style title in quotes, the date, and plain-language bullets about what changed for him. Follow the style of the entries already there.
 2. **Bump `APP_VERSION`** at the top of `js/core.js`. Cynn wants this scheme: the middle number for new features (2.4 → 2.5), the last number for small fixes, tweaks and polish (2.4 → 2.4.1, 2.4.2), and the first number only for huge updates (3.0). Never reuse or lower a version that has shipped. The version must match the new CHANGELOG entry.
-3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v3.1.1`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
+3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v3.2`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
 
 The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also shows a "Hibi was updated" card on Home whenever `APP_VERSION` changes.
 
 ## Don't break his data
 
-- Never rename the storage keys: `liftlog:v1` (localStorage), `liftlog` (IndexedDB for photos), the `liftlog:` passcode salt, `liftlog:dbx` (Dropbox sign-in) or `liftlog:crash` (crash reports).
+- Never rename the storage keys: `liftlog:v1` (localStorage), `liftlog` (IndexedDB, version 2: stores `p` photos, `nb` notebook pages, `rec` recordings; only ever add stores), the `liftlog:` passcode salt, `liftlog:dbx` (Dropbox sign-in) or `liftlog:crash` (crash reports).
 - Never rename or remove badge ids in `BADGES`; unlocked badges are stored by id in `S.bd`. Secret badges use kind `'secret'` and stay hidden as ??? until unlocked; their counters live in `S.sx`.
 - Never rename widget ids in `WIDGETS`; his Home layout stores them in `S.home.w`. Changing them wipes his data.
 - Never rename the repository or change the Pages path. A new address is a new app on iPhone, with empty storage.

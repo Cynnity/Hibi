@@ -3,7 +3,7 @@
 /* =========================================================
    Backup, restore and Hevy import
    ========================================================= */
-const BACKUP_KEYS = ['cardioV','cpick','cardio','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','gm','mu','pomo','wk','home','fx','ideas','subs','subRemind','subSeen','alog','wrapSeen','wrapSince','wrapViewed','themesUsed','sx','hidden','order','hl','ls','look','fc'];
+const BACKUP_KEYS = ['cardioV','cpick','cardio','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','gm','mu','pomo','wk','home','fx','ideas','subs','subRemind','subSeen','alog','wrapSeen','wrapSince','wrapViewed','themesUsed','sx','hidden','order','hl','ls','look','fc','nb'];
 function backup() { const o = {app:'hibi', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
 function restoreFrom(text) {
   let d;
@@ -79,8 +79,19 @@ function importHevy(text) {
 /* =========================================================
    Photos (IndexedDB)
    ========================================================= */
-const idb = () => new Promise((ok, no) => { const r = indexedDB.open('liftlog', 1); r.onupgradeneeded = () => r.result.createObjectStore('p', {keyPath:'id'}); r.onsuccess = () => ok(r.result); r.onerror = no; });
-const pdo = (mode, fn) => idb().then(db => new Promise((ok, no) => { const t = db.transaction('p', mode), q = fn(t.objectStore('p')); t.oncomplete = () => ok(q.result); t.onerror = no; }));
+// Version 2 added notebook pages ('nb') and lecture recordings ('rec'). Photos stay in 'p'.
+let idbP = null;
+const idb = () => idbP || (idbP = new Promise((ok, no) => {
+  const r = indexedDB.open('liftlog', 2);
+  r.onupgradeneeded = () => { const db = r.result;
+    if (!db.objectStoreNames.contains('p')) db.createObjectStore('p', {keyPath:'id'});
+    if (!db.objectStoreNames.contains('nb')) db.createObjectStore('nb', {keyPath:'id'});
+    if (!db.objectStoreNames.contains('rec')) db.createObjectStore('rec', {keyPath:'k'}); };
+  r.onsuccess = () => { const db = r.result; db.onversionchange = () => { db.close(); idbP = null; }; ok(db); };
+  r.onerror = () => { idbP = null; no(r.error); }; r.onblocked = () => { idbP = null; no(new Error('blocked')); };
+}));
+const sdo = (store, mode, fn) => idb().then(db => new Promise((ok, no) => { const t = db.transaction(store, mode), q = fn(t.objectStore(store)); t.oncomplete = () => ok(q && q.result); t.onerror = () => no(t.error); t.onabort = () => no(t.error); }));
+const pdo = (mode, fn) => sdo('p', mode, fn);
 const pAll = () => pdo('readonly', s => s.getAll()).catch(() => []);
 const pPut = o => pdo('readwrite', s => s.put(o));
 const pDel = id => pdo('readwrite', s => s.delete(id));

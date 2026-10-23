@@ -9,6 +9,32 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.2 — "Lecture Hall" (Oct 23)
+- **Notebooks with Apple Pencil**, in School › Study › Notebooks. Made to feel like GoodNotes and Notability:
+  - **Pen** with pressure, so lines get thicker as you press harder. Pick from 8 colors (or any color) and 3 sizes.
+  - **Highlighter** that goes under your writing, in 5 colors.
+  - **Eraser** that removes whole strokes.
+  - **Lasso** to circle writing, then drag it somewhere else, recolor it or delete it.
+  - **Hold at the end of a line** to snap it perfectly straight.
+  - **Undo and redo** (⌘Z works with a keyboard too).
+  - **Your palm is ignored.** Only Apple Pencil writes, and your finger scrolls. Turn on "Draw with finger" in ⋯ if you want.
+  - **Paper:** blank, lined, grid, dots or **Cornell** (cues, notes and summary), on white, cream or dark paper. Black ink turns white on dark paper so you can still read it.
+  - **Photo pages:** add a photo or screenshot of a slide as a page and write right on top of it.
+  - Pages scroll like a real notebook. Add as many as you want.
+  - **Export** a whole notebook as a PDF, or one page as an image.
+  - Notebook covers come in 8 colors and can belong to a class.
+- **Record lectures** right inside a notebook with 🎙️:
+  - Pause and resume. A red pill on every screen shows you're still recording, even after you leave the notebook.
+  - **Live transcript:** your iPad's built-in speech recognition writes down what it hears while it records. If it isn't available, the audio still records.
+  - **Your notes sync with the audio:** while a recording plays, writing you hadn't done yet fades out and fills back in as the lecture plays. Tap 🔊, then anything you wrote, to jump to that moment in the lecture.
+  - The player has skip back and forward, speed (0.75× to 2×) and a full transcript you can tap to jump around.
+  - Share the **audio** (.m4a), the **transcript** (.txt) or copy the transcript. Send the transcript or the PDF to Claude and ask for clean notes or a flashcard file.
+  - Audio saves every few seconds, so even if something goes wrong you keep what was recorded.
+  - Keep Hibi open and the screen on while recording. Hibi keeps the screen awake for you, but iPhone and iPad stop web apps from recording once you leave them.
+- **Backed up:** notebook pages, recordings and transcripts go to Dropbox › Apps › your Hibi folder (`notebooks/` and `recordings/`), and come back when you restore.
+- A **Notebook widget** for Home opens your latest notebook, and shows the timer while you're recording.
+- New School badges: First Page, Note Machine, Lecture Mode and Front Row.
+
 ## 3.1.1 — "Big Screen Energy" (Oct 23)
 - **Made for iPad.** Hibi used to show a phone-sized strip in the middle of the iPad screen. Now it uses the space:
   - The page is wider, and Home widgets sit side by side: 4 across on iPad and 6 in landscape.

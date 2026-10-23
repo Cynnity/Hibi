@@ -70,6 +70,7 @@ async function dbxSync(manual) {
       DBX.hash = hash;
     }
     for (const p of newPh) { await dbxUp(`/photos/${p.id}.jpg`, await (await fetch(p.url)).blob()); DBX.photos[p.id] = 1; dbxSave(); }
+    if (typeof nbDbxUp === 'function') await nbDbxUp();
     await dbxCrashUpload();
     DBX.nph = ph.length; DBX.last = Date.now(); DBX.err = ''; S.lb = DBX.last; saveRaw();
     if (manual) toast('Backed up to Dropbox.');
@@ -93,6 +94,7 @@ async function dbxRestore() {
       await pPut({id:+id, d:dk(new Date(+id)), url}); DBX.photos = DBX.photos || {}; DBX.photos[id] = 1; added++;
     }
   } catch (e) { if (e.status !== 409) throw e; }
+  if (typeof nbDbxDown === 'function') await nbDbxDown();
   DBX.hash = hashStr(JSON.stringify(backup())); dbxSave();
   if (added) loadPhotos();
   dbxShow(''); return added;
@@ -101,7 +103,7 @@ function dbxCard() {
   if (!DBX.rt) {
     if (!DBX.url) dbxPrep();
     return `<section class="card"><h2>Dropbox auto backup</h2>
-      <p class="note">Back up everything, including progress photos, to your Dropbox on its own: a few seconds after each change and when you open Hibi. Hibi only sees its own folder in Dropbox › Apps.</p>
+      <p class="note">Back up everything, including progress photos, notebooks and lecture recordings, to your Dropbox on its own: a few seconds after each change and when you open Hibi. Hibi only sees its own folder in Dropbox › Apps.</p>
       <p class="mt"><b>1.</b> Tap below, sign in and tap Allow. Dropbox shows you a code. Copy it.</p>
       ${DBX.url ? `<a class="btn block mt" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="${esc(DBX.url)}" target="_blank" rel="noopener">Open Dropbox</a>` : '<p class="note">Getting ready…</p>'}
       <p class="mt"><b>2.</b> Come back here and paste the code.</p>
