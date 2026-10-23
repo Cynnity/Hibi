@@ -9,7 +9,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | File | What's in it |
 | --- | --- |
 | `index.html` | The page shell and the list of scripts |
-| `css/hibi.css` | All styles and the 11 themes |
+| `css/hibi.css` | All styles, the 17 themes and the card styles (`data-style`) |
 | `js/crash.js` | Crash reports and the "Something went wrong" screen. Loads first. |
 | `js/core.js` | `APP_VERSION`, constants, helpers, load/normalize/save, the mode list |
 | `js/japan.js` | Japan trip mode (also defines `SAVE` and the form handler). Flights use airport time zones (`AIRPORT_TZ`, `zoned()`), and flights sharing a confirmation code count as one booking price (`flightBookings()`). |
@@ -21,6 +21,8 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/focus.js` | School Focus tab: Pomodoro timer (`S.pomo`) |
 | `js/cardio.js` | Cardio machines: fields, logs, charts |
 | `js/music.js` | stats.fm top artists and tracks on Home and in Wrapped (`S.mu`) |
+| `js/health.js` | Health mode: water in fl oz, habits with streaks, sleep (`S.hl`) |
+| `js/lists.js` | Lists mode: shopping list and wish list with price history (`S.ls`) |
 | `js/state.js` | `let S = load()` and other live state. Runs once everything above is defined. |
 | `js/gym.js` | Lifting helpers, progression hints, plates, body diagram, charts, badges |
 | `js/badges.js` | Badges for every mode, grouped by category, and the Badges screen. Loads before views.js. |
@@ -32,9 +34,11 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/recap.js` | Weekly recap on Home and Monthly/Yearly Wrapped slides. Uses `S.alog` (activity log of episodes, chapters and game hours) and `S.wrapSeen`. |
 | `js/app.js` | `render()`, toasts, timers, Gym actions |
 | `js/data.js` | Backup files, restore, Hevy import, photos (IndexedDB), themes |
+| `js/look.js` | Accent color, card style, mode emojis, app icons (`S.look`), the 🔎 screen finder, and the Settings sections |
 | `js/events.js` | Tap, input and keyboard handling |
+| `js/touch.js` | `haptic()`, swipe rows (`swipeWrap()`), drag to reorder (`data-sort` lists with a `.grip`, saved by `SORT`), Undo after a swipe delete |
 | `js/dropbox.js` | Dropbox auto backup of data, photos and crash reports |
-| `js/main.js` | Starts the app |
+| `js/main.js` | Starts the app, and opens links like `?mode=gym`, `?tab=lshop` or `#water` |
 | `sw.js` | Offline cache. Its `CORE` list must include every file above. |
 
 ## Every change must update the patch notes
@@ -43,7 +47,7 @@ Cynn wants a record of everything that changes. For every change you ship, in th
 
 1. **Add an entry to the top of `CHANGELOG.md`.** Include the version, a short fun episode-style title in quotes, the date, and plain-language bullets about what changed for him. Follow the style of the entries already there.
 2. **Bump `APP_VERSION`** at the top of `js/core.js`. Cynn wants this scheme: the middle number for new features (2.4 → 2.5), the last number for small fixes, tweaks and polish (2.4 → 2.4.1, 2.4.2), and the first number only for huge updates (3.0). Never reuse or lower a version that has shipped. The version must match the new CHANGELOG entry.
-3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v2.5.2`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
+3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v3.0`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
 
 The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also shows a "Hibi was updated" card on Home whenever `APP_VERSION` changes.
 

@@ -3,7 +3,7 @@
 /* =========================================================
    Backup, restore and Hevy import
    ========================================================= */
-const BACKUP_KEYS = ['cardioV','cpick','cardio','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','gm','mu','pomo','wk','home','fx','ideas','subs','subRemind','subSeen','alog','wrapSeen','wrapSince','wrapViewed','themesUsed','sx','hidden','order'];
+const BACKUP_KEYS = ['cardioV','cpick','cardio','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','gm','mu','pomo','wk','home','fx','ideas','subs','subRemind','subSeen','alog','wrapSeen','wrapSince','wrapViewed','themesUsed','sx','hidden','order','hl','ls','look'];
 function backup() { const o = {app:'hibi', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
 function restoreFrom(text) {
   let d;
@@ -108,4 +108,5 @@ function applyTheme() {
   const r = document.documentElement;
   if (S.theme === 'sakura') r.removeAttribute('data-skin'); else r.setAttribute('data-skin', S.theme);
   const t = THEMES.find(x => x[0] === S.theme); const m = $('meta[name="theme-color"]'); if (m && t) m.content = t[2];
+  if (typeof applyLook === 'function') applyLook();
 }

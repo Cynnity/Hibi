@@ -76,7 +76,7 @@ function tick() {
   if (left <= 0 && S.timer.paused == null) {
     const stale = left < -60000;
     S.timer = null; save(); r.hidden = true;
-    if (!stale) { beep(); toast('Rest is over. Next set!'); }
+    if (!stale) { beep(); if (!navigator.vibrate) haptic('heavy'); toast('Rest is over. Next set!'); }
     return;
   }
   r.hidden = false;
@@ -203,8 +203,11 @@ const ACT = {
   deleteWorkout: d => { S.history = S.history.filter(w => String(w.id) !== d.id); },
   saveWeight: () => {
     const v = num($('#bwIn').value); if (!(v > 0)) { toast('Enter your weight first.'); return false; }
-    S.bw = S.bw.filter(p => p.d !== today()); S.bw.push({d:today(), v}); S.bw.sort((a, b) => a.d < b.d ? -1 : 1); toast('Weight saved.');
+    const d = UI.bwDay || today(); S.bw = S.bw.filter(p => p.d !== d); S.bw.push({d, v}); S.bw.sort((a, b) => a.d < b.d ? -1 : 1); toast(d === today() ? 'Weight saved.' : `Weight saved for ${fmtDay(d)}.`); UI.bwDay = null;
   },
+  bwDel: d => { S.bw = S.bw.filter(p => p.d !== d.d); },
+  bwEdit: d => { UI.bwDay = d.d; scrollTo({top:0, behavior:'smooth'}); setTimeout(() => { const i = $('#bwIn'); if (i) i.focus(); }, 300); },
+  bwAll: () => { UI.bwAll = true; },
   deletePhoto: d => { pDel(+d.id).then(loadPhotos); return false; },
 
   toggleSup: d => { const k = today(); S.sl[k] = S.sl[k] || []; toggleIn(S.sl[k], d.id); },

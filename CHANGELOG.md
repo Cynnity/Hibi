@@ -9,6 +9,38 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.0 — "Season 3: Everything, Everywhere" (Oct 23)
+The biggest update yet: two new modes, a whole new way to customize Hibi, and gestures that make it feel like a real iPhone app.
+
+- **New mode: 🌿 Health.**
+  - **Water:** a daily goal in fl oz (64 to start), with +8 oz, +16 oz and one-tap "+ your bottle" buttons. Undo the last drink, see which days you hit your goal, and keep a streak going.
+  - **Habits:** make your own daily habits, like Stretch or Read 10 pages, each with an emoji and the days it's on (every day, weekdays, weekends, or pick days). Check them off for 🔥 streaks and your best streak. There's a list of ideas to start from.
+  - **Sleep:** log when you went to bed and woke up, plus how it felt. You get hours slept, your weekly and 30-day average, your usual bedtime and a chart. Set your own sleep goal.
+  - New Home widgets for water, habits and sleep. Water and habits were added to your Home for you.
+  - New badges for Health, and water, habits and sleep now show up in your weekly recap.
+- **New mode: 🛒 Lists.**
+  - **Shopping list:** type something like "2 dozen eggs" and Hibi sorts it into store sections like Produce, Dairy and Household. Check things off as you shop, then clear them. Things you've bought before show up under Buy again.
+  - **Wish list:** add things you want with a link, a price and a target price. Every time you log the price, Hibi keeps the history and shows drops, like "▼ $60 since Oct 3", plus a little price chart. It tells you when something hits your target. "Save for it" turns it into a Savings goal.
+  - About price tracking: Hibi can't check store prices by itself, because stores block apps from reading their pages. So you tap Check price and log what you see.
+  - Widgets for both lists, and badges too.
+- **Swipe and drag.**
+  - **Swipe right** to check something off and **swipe left** to delete or edit it. This works on habits, the shopping list, homework, Japan to-dos and packing, your Ideas list, weigh-ins and sleep. Deleting with a swipe gives you an **Undo** button.
+  - **Drag ⠿ to reorder** instead of using arrows. This works for modes, Home widgets, workout templates, your Up next games, habits and your wish list.
+- **Haptic taps.** You get a light tap when you check things off, swipe or drag. On iPhone this needs iOS 18 or later, and you can turn it off under Look. When rest is over in the Gym, Android phones vibrate too. iPhone doesn't let websites vibrate on their own, so the iPhone gets the beep.
+- **Make Hibi yours (Settings › Look).**
+  - **Accent color:** 20 colors or pick any color you want, on top of any theme.
+  - **Card style:** Pop (the classic look), Soft, Outline or Glass.
+  - **Mode icons:** pick any emoji for each mode.
+  - **App icon:** 10 colors of the Hibi flower. iPhone only sets a web app's icon when you add it to the Home Screen, so Hibi walks you through adding it again with your backup. That way nothing gets lost.
+  - **5 new themes:** Lavender, Peach, Sky, Mocha and Berry.
+- **Easier to find things.**
+  - Tap **🔎** at the start of the mode bar to jump to any screen, or search for one, like "water", "flights" or "backup".
+  - Settings is now split into sections: this mode's settings, Look, Modes, Passcode, Backup and About.
+- **Links straight to a mode:** add ?mode=gym, #savings, #water or #shopping to Hibi's address. On Android, press and hold the icon for shortcuts.
+  - On iPhone, a link opens in Safari, which keeps separate data from your Home Screen app, so these are mostly for Android.
+- **Launch screen:** adding Hibi to the Home Screen now also sets a launch screen that matches your icon.
+- **Body weight:** you can now log a weight for any date, and edit or delete old weigh-ins to fix mistakes (tap Edit, or swipe left).
+
 ## 2.5.2 — "Lost in time zones" (Oct 22)
 - **Fixed:** on your flight home, the Plan screen showed you landing in Seattle before you'd even checked out in Tokyo. Flying east over the date line means you land at 9:40 AM after taking off at 5:25 PM on the same day, and Hibi was sorting by the clock instead of by what actually happens first.
 - Each day's plans are now in the real order: check out, last plans in Tokyo, take off, land in Seattle, layover, fly to Orlando, land.

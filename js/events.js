@@ -25,7 +25,9 @@ document.addEventListener('click', e => {
   const wasTab = S.tab;
   Crash.lastAct = b.dataset.act;
   try {
+    const hap = b.classList.contains('check') || b.classList.contains('switch') || b.classList.contains('wd-chip') || 'hap' in b.dataset;
     if (fn(b.dataset, b) === false) return;
+    if (hap) haptic();
     afterChange();
   } catch (err) { Crash.record(err, 'button'); toast('Something went wrong. A crash report was saved.'); try { save(); render(); } catch (x) {} return; }
   if (S.tab !== wasTab) scrollTo(0, 0);
@@ -71,6 +73,8 @@ document.addEventListener('change', e => {
   if (t.dataset.bind === 'hname') { S.home.name = t.value.trim().slice(0, 30); save(); return; }
   if (t.dataset.bind === 'suptime') { const x = S.sup.find(q => q.id === t.dataset.id); if (x) { x.time = t.value; save(); } return; }
   if (t.dataset.bind === 'pomo') { S.pomo[t.dataset.k] = +t.value; save(); render(); return; }
+  if (t.dataset.bind === 'bwDay') { UI.bwDay = t.value && t.value <= today() ? t.value : null; render(); return; }
+  if (t.dataset.bind === 'hlset') { S.hl[t.dataset.k] = +t.value; save(); render(); return; }
   if (t.dataset.bind === 'subRemind') { S.subRemind = +t.value; save(); render(); return; }
   if (t.dataset.bind === 'pomoNum') { const k = t.dataset.k, max = {focus:180, short:60, long:90, every:12, goal:720}[k] || 180, min = k === 'goal' ? 0 : 1; const v = Math.round(num(t.value)); if (t.value === '' || isNaN(v)) return; S.pomo[k] = Math.max(min, Math.min(max, v)); save(); render(); return; }
   if (t.dataset.bind === 'pomoClass') { S.pomo.c = t.value; save(); return; }

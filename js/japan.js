@@ -326,9 +326,9 @@ function viewJStays() {
 function viewJPack() {
   const P = S.jp.pack, done = P.filter(p => p.done).length, cats = [...new Set(P.map(p => p.cat))];
   return `<section class="card"><div class="row"><h2>Packed</h2><b>${done} / ${P.length}</b></div><div class="meter"><i style="width:${P.length ? done / P.length * 100 : 0}%"></i></div></section>
-    ${cats.map(c => `<section class="card"><h3>${esc(c)}</h3>${P.filter(p => p.cat === c).map(p => `<div class="pk${p.done ? ' done' : ''}">
+    ${cats.map(c => `<section class="card"><h3>${esc(c)}</h3>${P.filter(p => p.cat === c).map(p => swipeWrap(`<div class="pk${p.done ? ' done' : ''}">
       <button class="check sm" aria-pressed="${!!p.done}" aria-label="Packed: ${esc(p.t)}" data-act="jToggle" data-kind="pack" data-id="${esc(p.id)}">${ICON_CHECK}</button><span>${esc(p.t)}</span>
-      <button class="link quiet" data-act="jDel" data-kind="pack" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`).join('')}</section>`).join('')}
+      <button class="link quiet" data-act="jDel" data-kind="pack" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`, {r:['jToggle', p.done ? 'Undo' : 'Packed'], l:['jDel', 'Delete'], data:{kind:'pack', id:p.id}})).join('')}</section>`).join('')}
     <section class="card"><h2>Add an item</h2><form data-form="pack" class="stack"><input class="input" name="t" placeholder="Item" aria-label="Item">
       <div class="field"><select class="input" name="cat" aria-label="Category">${[...new Set([...cats, 'Other'])].map(c => opt(c, c, 'Other')).join('')}</select><button class="btn" type="submit">Add</button></div></form></section>
     ${done ? '<button class="link danger" data-act="jPackReset" data-confirm>Uncheck everything</button>' : ''}`;
@@ -395,9 +395,10 @@ const prepDate = p => { if (p.due) return p.due; const d = keyDate(S.jp.start); 
 const prepSorted = () => S.jp.prep.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || prepDate(a).localeCompare(prepDate(b)));
 function prepRow(p) {
   const due = prepDate(p), late = !p.done && due < today();
-  return `<div class="pk${p.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!p.done}" aria-label="Done: ${esc(p.t)}" data-act="jToggle" data-kind="prep" data-id="${esc(p.id)}">${ICON_CHECK}</button>
+  return swipeWrap(`<div class="pk${p.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!p.done}" aria-label="Done: ${esc(p.t)}" data-act="jToggle" data-kind="prep" data-id="${esc(p.id)}">${ICON_CHECK}</button>
     <span>${esc(p.t)}<span class="small${late ? '' : ' muted'}" style="display:block${late ? ';color:var(--danger);font-weight:700' : ''}">${late ? 'Overdue, was ' : 'By '}${esc(fmtDay(due))}</span></span>
-    <button class="link quiet" data-act="jDel" data-kind="prep" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`;
+    <button class="link quiet" data-act="jDel" data-kind="prep" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`,
+    {r:['jToggle', p.done ? 'Undo' : 'Done'], l:['jDel', 'Delete'], data:{kind:'prep', id:p.id}});
 }
 function todayCard() {
   const t = today(), J = S.jp;

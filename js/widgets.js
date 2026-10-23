@@ -101,11 +101,27 @@ const WIDGETS = {
   badges:{n:'Badges', em:'🏆', d:'Your badge collection and latest unlock', sizes:['s'], tap:'data-act="wGo" data-k="home" data-to="hbadges"',
     s:() => { const got = BADGES.filter(b => S.bd[b[0]]).sort((a, b) => S.bd[b[0]] - S.bd[a[0]]), l = got[0];
       return small('🏆', 'Badges', `${got.length}<small>/${BADGES.length}</small>`, l ? `Latest: ${l[1]} ${esc(l[2])}` : 'None yet'); }},
+  water:{n:'Water', em:'💧', d:'Water today, tap to add your bottle', mode:'health', sizes:['s', 'm'], tap:goTo('health', 'hltoday'),
+    s:() => { const oz = waterOz(today()), G = S.hl.goal; return small('💧', 'Water', `${fmtN(Math.round(oz))}<small>/${fmtN(G)}</small>`, oz >= G ? '🎉 Goal reached' : 'fl oz today', '', `<div class="cbar wd-bar"><i style="width:${Math.min(100, oz / G * 100)}%"></i></div><button class="btn sm wd-btn" data-act="hlWater" data-n="${S.hl.bottle}" data-hap>+${fmtN(S.hl.bottle)} oz</button>`); },
+    m:() => waterCard(true)},
+  habits:{n:'Habits', em:'✅', d:"Today's habits, tap to check off", mode:'health', sizes:['s', 'm'], tap:goTo('health', 'hltoday'),
+    s:() => { const L = hlToday(), n = L.filter(x => hlDid(x, today())).length;
+      return small('✅', 'Habits', L.length ? `${n}/${L.length}` : '🌱', L.length ? (n === L.length ? '🎉 All done today' : 'done today') : 'Add a habit', '', `<div class="wd-chips">${L.slice(0, 4).map(x => `<button class="wd-chip${hlDid(x, today()) ? ' on' : ''}" data-act="hlToggle" data-id="${esc(x.id)}" aria-pressed="${hlDid(x, today())}">${esc(x.em)} ${esc(x.name.slice(0, 9))}</button>`).join('')}</div>`); },
+    m:() => habitsCard()},
+  sleep:{n:'Sleep', em:'🌙', d:'Last night and your weekly average', mode:'health', sizes:['s'], tap:goTo('health', 'hlsleep'),
+    s:() => { const l = slSorted()[0], a = slAvg(7); return l ? small('🌙', 'Sleep', `${hlR1(slMin(l) / 60)}<small> h</small>`, `${l.d === today() ? 'last night' : esc(fmtMD(keyDate(l.d)))}${a ? ` · ${hlR1(a.m / 60)} h avg` : ''}`) : small('🌙', 'Sleep', '😴', 'Tap to log last night'); }},
+  shop:{n:'Shopping list', em:'🛒', d:'What you still need to buy', mode:'lists', sizes:['s', 'm'], tap:goTo('lists', 'lshop'),
+    s:() => { const L = S.ls.shop.filter(x => !x.done); return small('🛒', 'Shopping', L.length || '✓', L.length ? esc(L.slice(0, 3).map(x => x.name).join(', ')) : 'Nothing to buy'); },
+    m:() => { const L = S.ls.shop.filter(x => !x.done);
+      return `<section class="card"><div class="row"><h2>🛒 Shopping list</h2><button class="link" data-act="mode" data-k="lists">Open</button></div>${L.length ? L.slice(0, 6).map(lsRow).join('') + (L.length > 6 ? `<p class="note">+${L.length - 6} more</p>` : '') : '<p class="note">Nothing to buy.</p>'}</section>`; }},
+  wish:{n:'Wish list', em:'🎁', d:'Your wish list and price drops', mode:'lists', sizes:['s'], tap:goTo('lists', 'lwish'),
+    s:() => { const L = S.ls.wish.filter(w => !w.got), dr = L.filter(w => { const f = wFirst(w); return f && wPrice(w) < f.p; });
+      return small('🎁', 'Wish list', L.length || '✨', L.length ? (dr.length ? `📉 ${esc(dr[0].name)} dropped` : `${L.length === 1 ? 'item' : 'items'} · ${cash0(L.reduce((t, w) => t + wPrice(w), 0))}`) : 'Add things you want'); }},
   wrapped:{n:'Wrapped', em:'🎁', d:'Your month and year in review', sizes:['m'], m:() => wrapCard() || '<section class="card"><h2>🎁 Wrapped</h2><p class="note">Your first Wrapped shows up once you log a few things.</p></section>'},
 };
 const muSetup = title => `<section class="card"><h2>${title}</h2><p class="note">${S.mu.user ? esc(S.mu.err || 'Loading your music from stats.fm…') : 'Add your stats.fm username in Home Settings to see your music here.'}</p>${S.mu.user ? '' : '<button class="btn sm mt" data-act="wGo" data-k="home" data-to="settings">Add stats.fm</button>'}</section>`;
 const muMaybe = () => { if (S.mu.user && Date.now() - (S.mu.at || 0) > 6 * 36e5) setTimeout(() => muRefresh(), 0); };
-const W_DEFAULT = () => [['week', 'm'], ...S.order.filter(k => modeVisible(k)).flatMap(k => ({gym:[['gym', 'm']], school:[['school', 'm']], japan:[['japan', 'm']], media:[['media', 'm']], work:[['work', 'm']], games:[['games', 'm']], save:[['save', 'm']]})[k] || []),
+const W_DEFAULT = () => [['week', 'm'], ...S.order.filter(k => modeVisible(k)).flatMap(k => ({gym:[['gym', 'm']], school:[['school', 'm']], japan:[['japan', 'm']], media:[['media', 'm']], work:[['work', 'm']], games:[['games', 'm']], save:[['save', 'm']], health:[['water', 's'], ['habits', 's']], lists:[['shop', 'm']]})[k] || []),
   ...(S.mu.user ? [['music', 'm']] : []), ['wrapped', 'm']].map(([t, z], i) => ({id:'w' + i, t, z}));
 function normalizeHome(s) {
   if (!s.home || typeof s.home !== 'object') s.home = {};
@@ -114,25 +130,28 @@ function normalizeHome(s) {
   if (typeof s.home.greet !== 'boolean') s.home.greet = true;
   if (typeof s.home.name !== 'string') s.home.name = 'Cynn';
   if (typeof s.home.startHome !== 'boolean') s.home.startHome = true;
+  // 3.0 added Health: put its two small widgets on an existing Home once
+  if (s.home.w && !s.home.v3) { s.home.w.push({id:'w' + Date.now() + 'a', t:'water', z:'s'}, {id:'w' + Date.now() + 'b', t:'habits', z:'s'}); }
+  s.home.v3 = true;
 }
 const wVisible = w => !WIDGETS[w.t].mode || modeVisible(WIDGETS[w.t].mode);
 function drawWidget(w, i, edit) {
   const def = WIDGETS[w.t]; let inner = '';
   try { inner = def[w.z](); } catch (e) { Crash.record(e, 'widget ' + w.t); inner = w.z === 's' ? small('⚠️', def.n, '!', "Couldn't load") : `<section class="card"><p class="note">${esc(def.n)} couldn't load.</p></section>`; }
-  const bar = edit ? `<div class="wd-edit"><b>${def.em} ${esc(def.n)}</b><span>${i ? `<button class="btn sm ghost" data-act="wMove" data-i="${i}" data-n="-1" aria-label="Move up">↑</button>` : ''}<button class="btn sm ghost" data-act="wMove" data-i="${i}" data-n="1" aria-label="Move down">↓</button>${def.sizes.length > 1 ? `<button class="btn sm ghost" data-act="wSize" data-i="${i}">${w.z === 's' ? 'Make wide' : 'Make small'}</button>` : ''}<button class="btn sm ghost" data-act="wDel" data-i="${i}" aria-label="Remove ${esc(def.n)}">✕</button></span></div>` : '';
-  if (w.z === 's') return `<div class="wd-slot s${edit ? ' editing' : ''}">${bar}<section class="wd s"${!edit && def.tap ? ` ${def.tap} role="button" tabindex="0"` : ''}>${inner}</section></div>`;
-  return `<div class="wd-slot m${edit ? ' editing' : ''}">${bar}${inner}</div>`;
+  const bar = edit ? `<div class="wd-edit"><b>${def.em} ${esc(def.n)}</b><span>${grip(def.n)}${def.sizes.length > 1 ? `<button class="btn sm ghost" data-act="wSize" data-i="${i}">${w.z === 's' ? 'Make wide' : 'Make small'}</button>` : ''}<button class="btn sm ghost" data-act="wDel" data-i="${i}" aria-label="Remove ${esc(def.n)}">✕</button></span></div>` : '';
+  if (w.z === 's') return `<div class="wd-slot s${edit ? ' editing' : ''}" data-sid="${esc(w.id)}">${bar}<section class="wd s"${!edit && def.tap ? ` ${def.tap} role="button" tabindex="0"` : ''}>${inner}</section></div>`;
+  return `<div class="wd-slot m${edit ? ' editing' : ''}" data-sid="${esc(w.id)}">${bar}${inner}</div>`;
 }
 function viewHomeW() {
   if (!S.home.w) { S.home.w = W_DEFAULT(); saveRaw(); }
   const h = new Date().getHours(), edit = !!UI.homeEdit, L = S.home.w.map((w, i) => [w, i]).filter(([w]) => edit || wVisible(w));
   const upd = S.seenVer !== APP_VERSION ? `<section class="card" style="border-color:var(--accent)"><h2>Hibi was updated to ${APP_VERSION}</h2><div class="btns mt"><button class="btn sm" data-act="openNotes">See what's new</button><button class="btn sm ghost" data-act="seenUpdate">Dismiss</button></div></section>` : '';
   const greet = S.home.greet ? `<p class="lead">${h < 5 ? 'Up late' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'}${S.home.name ? ', ' + esc(S.home.name) : ''}.</p>` : '';
-  return `${upd}${edit ? '' : subAlert()}${edit ? `<section class="card" style="border-color:var(--accent)"><h2>Customize Home</h2><p class="note">Move, resize or remove widgets, and add new ones. Small widgets sit two to a row.</p>
+  return `${upd}${edit ? '' : subAlert()}${edit ? `<section class="card" style="border-color:var(--accent)"><h2>Customize Home</h2><p class="note">Drag ⠿ to move widgets. Resize or remove them, and add new ones. Small widgets sit two to a row.</p>
       <label class="setrow"><span>Show greeting</span><input type="checkbox" data-bind="hgreet"${S.home.greet ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
       <label class="setrow"><span>Name in greeting</span><input class="input" style="width:50%" data-bind="hname" value="${esc(S.home.name)}" placeholder="Your name" aria-label="Name in greeting"></label>
       <div class="btns mt"><button class="btn" style="flex:1" data-act="wAddOpen">+ Add widget</button><button class="btn ghost" data-act="wDone">Done</button></div></section>` : greet}
-    <div class="wgrid">${L.map(([w, i]) => drawWidget(w, i, edit)).join('') || '<div class="wd-slot m"><section class="card"><p class="note">No widgets yet. Tap Customize to add some.</p></section></div>'}</div>
+    <div class="wgrid"${edit ? ' data-sort="widgets"' : ''}>${L.map(([w, i]) => drawWidget(w, i, edit)).join('') || '<div class="wd-slot m"><section class="card"><p class="note">No widgets yet. Tap Customize to add some.</p></section></div>'}</div>
     ${edit ? `<div class="btns mt"><button class="btn block" data-act="wAddOpen">+ Add widget</button></div><button class="link danger mt" data-act="wReset" data-confirm>Reset to the default layout</button>`
       : '<button class="btn ghost block mt" data-act="wEdit">✏️ Customize Home</button>'}`;
 }

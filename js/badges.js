@@ -8,11 +8,21 @@ MODES.home.nav.splice(1, 0, ['hbadges', 'Badges', 'trophy']);
 Object.assign(TAB_INFO, {hbadges:{g:'hbadges', t:'Badges'}});
 Object.assign(GROUPS, {hbadges:['hbadges']});
 const BADGE_CATS = [['secret','🤫','Secret'],['gym','🏋️','Gym'],['cardio','🏃','Cardio'],['daily','📓','Daily'],['school','🎓','School'],['work','💼','Work'],['japan','🗾','Japan'],
-  ['media','📚','Shows & Books'],['games','🎮','Games'],['save','💰','Savings'],['hibi','🌸','Hibi']];
+  ['media','📚','Shows & Books'],['games','🎮','Games'],['save','💰','Savings'],['health','🌿','Health'],['lists','🛒','Lists'],['hibi','🌸','Hibi']];
 const BADGE_CAT_OF = {cardio10:'cardio', stairs:'cardio', t1230:'cardio', stack:'daily', creat:'daily', jr7:'daily', bw7:'daily', photo:'daily'};
 const badgeCat = b => b[6] || BADGE_CAT_OF[b[0]] || 'gym';
 // [id, emoji, name, how to get it, real or fun, progress -> [current, goal], category]
 BADGES.push(
+  ['hl1','💧','Hydrated','Hit your water goal for the day','real',s => [s.hlWaterDays, 1],'health'],
+  ['hl7','🌊','Water Week','Hit your water goal 7 days in a row','real',s => [s.hlWaterRun, 7],'health'],
+  ['hb1','✅','Day One','Check off a habit','real',s => [s.hlChecks, 1],'health'],
+  ['hb7','🔥','On a Roll','Keep a habit going 7 days in a row','real',s => [s.hlBest, 7],'health'],
+  ['hb30','🏆','Habit Formed','Keep a habit going 30 days in a row','real',s => [s.hlBest, 30],'health'],
+  ['sl7','🌙','Sleep Tracker','Log 7 nights of sleep','real',s => [s.slN, 7],'health'],
+  ['sl10','🐻','Hibernation Mode','Sleep 10 hours or more in one night','fun',s => [s.sl10, 1],'health'],
+  ['ls10','🛒','Grocery Run','Check off 10 things on your shopping list','real',s => [s.lsGot, 10],'lists'],
+  ['lsdrop','📉','Price Drop','Spot a price drop on your wish list','fun',s => [s.wDrop, 1],'lists'],
+  ['lsgot','🎁','Treat Yourself','Get something from your wish list','real',s => [s.wGot, 1],'lists'],
   ['c1','👟','First Steps','Log your first cardio session','real',s => [s.cn, 1],'cardio'],
   ['c25','🏃','Cardio Regular','Log 25 cardio sessions','real',s => [s.cn, 25],'cardio'],
   ['cmara','🏅','Marathon, Technically','Cover 26.2 miles (42 km) of cardio in total','fun',s => [s.cdist, byUnit(26.2, 42.2)],'cardio'],
@@ -121,6 +131,11 @@ function statsMore() {
   ds.forEach((x, i) => { run = i && Math.round((keyDate(x) - keyDate(ds[i - 1])) / 864e5) === 1 ? run + 1 : 1; o.openRun = Math.max(o.openRun, run); });
   const R = [...S.md.items, ...S.gm.items].map(x => x.rating || 0); o.rated1 = R.filter(r => r === 1).length; o.rated10 = R.filter(r => r >= 10).length;
   o.widgets = S.home && S.home.w ? S.home.w.length : 0;
+  if (S.hl) { const wk = Object.keys(S.hl.water).filter(k => waterOz(k) >= S.hl.goal).sort(); o.hlWaterDays = wk.length; o.hlWaterRun = 0; let rn = 0;
+    wk.forEach((k, i) => { rn = i && hlAdd(wk[i - 1], 1) === k ? rn + 1 : 1; o.hlWaterRun = Math.max(o.hlWaterRun, rn); });
+    o.hlChecks = Object.values(S.hl.done).reduce((t, L) => t + L.length, 0); o.hlBest = Math.max(0, ...S.hl.habits.map(hlBest));
+    o.slN = S.hl.sleep.length; o.sl10 = S.hl.sleep.some(x => slMin(x) >= 600) ? 1 : 0; }
+  if (S.ls) { o.lsGot = S.ls.got; o.wDrop = S.ls.wish.some(w => { const f = wFirst(w); return f && w.prices.some(x => x.p < f.p); }) ? 1 : 0; o.wGot = S.ls.wish.filter(w => w.got).length; }
   return o;
 }
 function viewBadges() {

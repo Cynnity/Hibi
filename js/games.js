@@ -60,10 +60,10 @@ function viewGNow() {
   const Q = gUpNext(), plan = I.filter(g => g.status === 'plan' && !gQueued(g)).sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 4);
   const recent = I.filter(gDone).sort((a, b) => (b.finished || 0) - (a.finished || 0)).slice(0, 3);
   return `<section class="card"><h2>Playing now</h2>${now.length ? now.map(gNowRow).join('') : '<p class="note">Nothing in progress. Start something from your backlog.</p>'}</section>
-    ${Q.length ? `<section class="card"><h2>Up next</h2><p class="note">Your order for what to play next. Tap Start when you begin one.</p>
-      ${Q.map((g, i) => `<div class="mrow"><b class="qn">${i + 1}</b>${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span>
-        <span class="row qacts" style="justify-content:flex-start;gap:14px;margin-top:4px">${i ? `<button class="link quiet" data-act="gQUp" data-id="${esc(g.id)}" aria-label="Move ${esc(g.title)} up">↑ Up</button>` : ''}<button class="link quiet" data-act="gQ" data-id="${esc(g.id)}">Remove</button></span></div>
-        <button class="btn sm${i ? ' ghost' : ''}" data-act="gStart" data-id="${esc(g.id)}">Start</button></div>`).join('')}</section>` : ''}
+    ${Q.length ? `<section class="card"><h2>Up next</h2><p class="note">Your order for what to play next. Drag ⠿ to reorder. Tap Start when you begin one.</p>
+      <div data-sort="gq">${Q.map((g, i) => `<div class="mrow sortrow" data-sid="${esc(g.id)}">${grip(g.title)}<b class="qn">${i + 1}</b>${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span>
+        <span class="row qacts" style="justify-content:flex-start;gap:14px;margin-top:4px"><button class="link quiet" data-act="gQ" data-id="${esc(g.id)}">Remove</button></span></div>
+        <button class="btn sm${i ? ' ghost' : ''}" data-act="gStart" data-id="${esc(g.id)}">Start</button></div>`).join('')}</div></section>` : ''}
     ${plan.length ? `<section class="card"><div class="row"><h2>Want to play</h2><button class="link" data-act="gFilter" data-s="plan">See all</button></div>
       ${plan.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(g.genres.slice(0, 2).join(', ') || 'Game')}</span></div><button class="btn sm ghost" data-act="gQ" data-id="${esc(g.id)}">+ Up next</button></div>`).join('')}</section>` : ''}
     ${recent.length ? `<section class="card"><h2>Recently beaten</h2>${recent.map(g => `<div class="mrow">${gCover(g)}<div><b>${esc(g.title)}</b><span class="small muted">${esc(gmSt(g.status))}</span></div>${g.rating ? ring(g.rating, 36) : `<button class="link" data-act="gOpen" data-id="${esc(g.id)}">Rate</button>`}</div>`).join('')}</section>` : ''}`;

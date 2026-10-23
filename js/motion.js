@@ -7,6 +7,7 @@ function normalizeFx(s) {
   if (!s.fx || typeof s.fx !== 'object') s.fx = {};
   if (typeof s.fx.intro !== 'boolean') s.fx.intro = true;
   if (typeof s.fx.anim !== 'boolean') s.fx.anim = true;
+  if (typeof s.fx.haptic !== 'boolean') s.fx.haptic = true;
 }
 normalizeFx(S);
 const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
@@ -53,6 +54,7 @@ function confetti(n) {
 Object.assign(XACT, {
   homeStart: () => { S.home.startHome = !S.home.startHome; toast(S.home.startHome ? 'Hibi will open to Home.' : 'Hibi will open where you left off.'); },
   fxIntro: () => { S.fx.intro = !S.fx.intro; toast(S.fx.intro ? 'Welcome animation on.' : 'Welcome animation off.'); },
+  fxHaptic: () => { S.fx.haptic = !S.fx.haptic; if (S.fx.haptic) haptic(); toast(S.fx.haptic ? 'Haptic taps on.' : 'Haptic taps off.'); },
   fxAnim: () => { S.fx.anim = !S.fx.anim; applyFx(); toast(S.fx.anim ? 'Animations on.' : 'Animations off.'); if (S.fx.anim) setTimeout(() => confetti(24), 150); },
   fxPreview: () => { const s = document.createElement('div'); s.innerHTML = SPLASH_HTML; document.body.appendChild(s.firstElementChild); const was = S.fx.intro; S.fx.intro = true; splashRun(); S.fx.intro = was; return false; },
 });
@@ -61,8 +63,8 @@ const fxSwitch = (act, on, label, note) => `<div class="setrow"><span>${label}<s
 function fxSettings() {
   return `    <section class="card"><h2>Opening and animations</h2>
       ${fxSwitch('fxIntro', S.fx.intro, 'Welcome animation', 'Plays when you open Hibi. Tap it to skip.')}
-      ${fxSwitch('homeStart', S.home.startHome, 'Open to Home', 'Opening Hibi again always starts on Home.')}
       ${fxSwitch('fxAnim', S.fx.anim, 'Smooth animations', 'Screen transitions, filling bars and confetti.')}
+      ${fxSwitch('fxHaptic', S.fx.haptic, 'Haptic taps', 'A light tap when you check things off, swipe or drag. iPhone needs iOS 18 or later.')}
       <button class="btn sm ghost mt" data-act="fxPreview">Play the welcome animation</button>
       ${reduced() ? '<p class="note">Your iPhone has Reduce Motion turned on, so Hibi keeps animations off. You can change that in Settings, then Accessibility, then Motion.</p>' : ''}</section>
 `;

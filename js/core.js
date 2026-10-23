@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '2.5.2';
+const APP_VERSION = '3.0';
 
 /* =========================================================
    Constants and reference data
@@ -60,7 +60,8 @@ const THEMES = [
   ['sakura','Sakura','#F0467F','#2BB8D0'],['midnight','Midnight','#8B6CFF','#141B2D'],['ocean','Ocean','#0A86AA','#F2A541'],
   ['forest','Forest','#86D993','#1F2B22'],['sunset','Sunset','#E8590C','#B5179E'],['mono','Mono','#141414','#F3F3F1'],
   ['ink','Ink','#FFFFFF','#000000'],['matcha','Matcha','#4F8A3C','#D98E73'],['aqua','Aqua','#16A9A3','#E0457B'],
-  ['neon','Neon','#FF2E88','#00E5FF'],['royal','Royal','#F2C14E','#0E1530'],['miku','Miku','#39C5BB','#E4508C']];
+  ['neon','Neon','#FF2E88','#00E5FF'],['royal','Royal','#F2C14E','#0E1530'],['miku','Miku','#39C5BB','#E4508C'],
+  ['lavender','Lavender','#9B7BEA','#F6F1FF'],['peach','Peach','#F06D4F','#FFF4EE'],['sky','Sky','#2F7BEA','#EEF5FF'],['mocha','Mocha','#D4A373','#2A211C'],['berry','Berry','#FF5D9E','#2A1020']];
 
 const TAB_INFO = {
   workout:{g:'workout',t:'Workout'},
@@ -157,6 +158,10 @@ function normalize(s) {
   if (typeof normalizeHome === 'function') normalizeHome(s);
   if (typeof normalizeIdeas === 'function') normalizeIdeas(s);
   if (typeof normalizeSubs === 'function') normalizeSubs(s);   // widgets.js loads after the state, so it also runs this itself
+  if (typeof normalizeHl === 'function') normalizeHl(s);
+  if (typeof normalizeLs === 'function') normalizeLs(s);
+  if (typeof normalizeLook === 'function') normalizeLook(s);
+  if (typeof normalizeFx === 'function') normalizeFx(s);
   if (!Array.isArray(s.alog)) s.alog = [];
   { const cut = Date.now() - 800 * 864e5; s.alog = s.alog.filter(a => Array.isArray(a) && a[0] > cut); }
   if (!s.wrapSeen || typeof s.wrapSeen !== 'object') s.wrapSeen = {};
@@ -199,5 +204,5 @@ Object.assign(TAB_INFO, {
 Object.assign(GROUPS, {jplan:['jplan','jprep','jjournal'], jmoney:['jmoney','jconv'], jbook:['jflights','jstays'], jlists:['jpack','jplaces','jgifts','jphrases','jinfo']});
 const firstTab = mode => GROUPS[MODES[mode].nav[0][0]][0];
 const modeOfGroup = g => Object.keys(MODES).find(m => m !== 'gym' && MODES[m].nav.some(n => n[0] === g && g !== 'settings')) || 'gym';
-const modeBar = () => `<div class="modes" role="tablist" aria-label="Mode">${orderedModes().filter(k => modeVisible(k)).map(k => [k, MODES[k]]).map(([k, m]) =>
+const modeBar = () => `<div class="modes" role="tablist" aria-label="Mode"><button class="mjump" data-act="jumpOpen" aria-label="Find a screen" title="Find a screen">🔎</button>${orderedModes().filter(k => modeVisible(k)).map(k => [k, MODES[k]]).map(([k, m]) =>
   `<button role="tab" aria-selected="${S.mode === k}" data-act="mode" data-k="${k}" title="${m.label}"><span aria-hidden="true">${m.em}</span>${S.mode === k ? m.label : `<span class="vh">${m.label}</span>`}</button>`).join('')}</div>`;

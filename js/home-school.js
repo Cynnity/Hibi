@@ -76,9 +76,10 @@ function kGrade(cid) {
 }
 function kRow(x) {
   const c = kClass(x.c), k = kKind(x.kind), late = !x.done && x.due && x.due < today();
-  return `<div class="pk${x.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!x.done}" data-act="kToggle" data-id="${esc(x.id)}" aria-label="Done: ${esc(x.title)}">${ICON_CHECK}</button>
+  return swipeWrap(`<div class="pk${x.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!x.done}" data-act="kToggle" data-id="${esc(x.id)}" aria-label="Done: ${esc(x.title)}">${ICON_CHECK}</button>
     <span>${k[1]} <b>${esc(x.title)}</b><span class="small" style="display:block;${late ? 'color:var(--danger);font-weight:700' : 'color:var(--mute)'}">${c ? `<span class="cdot" style="background:${esc(c.color)}"></span>${esc(c.name)}, ` : ''}${x.due ? (late ? 'was due ' : 'due ') + esc(fmtDay(x.due)) + (x.time ? ' at ' + fmtTime(x.time) : '') : 'no due date'}</span></span>
-    <button class="link quiet" data-act="kDel" data-id="${esc(x.id)}" data-confirm aria-label="Delete ${esc(x.title)}">✕</button></div>`;
+    <button class="link quiet" data-act="kDel" data-id="${esc(x.id)}" data-confirm aria-label="Delete ${esc(x.title)}">✕</button></div>`,
+    {r:['kToggle', x.done ? 'Undo' : 'Done'], l:['kDel', 'Delete'], data:{id:x.id}});
 }
 const kOpenSorted = () => S.sc.tasks.filter(x => !x.done && !(kClass(x.c) || {}).archived).sort((a, b) => (a.due || '9').localeCompare(b.due || '9') || (a.time || '').localeCompare(b.time || ''));
 const kClassOpts = cur => { const now = termOf(new Date()); return opt('', 'No class', cur || '') + S.sc.classes.filter(c => live(c) || c.id === cur).sort((a, b) => (a.term === now ? 0 : 1) - (b.term === now ? 0 : 1) || termKey(a.term) - termKey(b.term)).map(c => opt(c.id, c.name + (c.term && c.term !== now ? ` (${c.term})` : ''), cur || '')).join(''); };
@@ -250,11 +251,7 @@ document.addEventListener('visibilitychange', () => {
 });
 const pinSupported = () => !!(window.crypto && crypto.subtle);
 function settingsCommon() {
-  return `    <section class="card"><h2>Modes</h2><p class="note">Tick the modes you want to see, and use the arrows to put them in order. Hidden modes keep their data.</p>
-      ${S.order.map((k, i) => { const m = MODES[k]; return `<div class="setrow"><label style="display:flex;align-items:center;gap:10px;flex:1"><input type="checkbox" data-bind="modevis" data-k="${k}"${modeVisible(k) ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"><span>${m.em} ${m.label}</span></label>
-        <span style="display:flex;gap:6px"><button class="btn sm ghost" data-act="modeMove" data-k="${k}" data-n="-1"${i ? '' : ' disabled style="opacity:.35"'} aria-label="Move ${m.label} up">↑</button><button class="btn sm ghost" data-act="modeMove" data-k="${k}" data-n="1"${i < S.order.length - 1 ? '' : ' disabled style="opacity:.35"'} aria-label="Move ${m.label} down">↓</button></span></div>`; }).join('')}
-      <p class="note">The order here is the order in the mode switcher and on Home. Home always stays first.</p></section>
-    <section class="card"><h2>Passcode</h2>
+  return `    <section class="card"><h2>Passcode</h2>
       <p class="note">${S.pin ? 'The app asks for your passcode when it opens and after a minute in the background.' : 'Ask for a 4-digit passcode when the app opens.'} It stops people from casually looking, but it isn't as strong as Face ID. If you forget it, you'd have to erase the app's data, so keep a backup.</p>
       <div class="btns mt">${S.pin ? '<button class="btn ghost" data-act="pinChange">Change passcode</button><button class="btn ghost" data-act="pinOff">Turn off</button>' : '<button class="btn" data-act="pinSet">Set a passcode</button>'}</div>
       ${S.pin && FID_OK ? `<div class="setrow mt"><span>Unlock with Face ID</span>${S.faceId ? '<button class="btn sm ghost" data-act="faceOff">Turn off</button>' : '<button class="btn sm" data-act="faceOn">Turn on</button>'}</div>

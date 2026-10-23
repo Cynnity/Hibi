@@ -15,6 +15,8 @@ function subtitle() {
   if (['wtoday', 'wshifts', 'wpay'].includes(S.tab)) return workSubtitle();
   if (S.tab === 'kfocus') { const st = focusStats(); return st.n ? `${plural(st.n, 'focus round')} today` : 'Focus timer'; }
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
+  if (TAB_INFO[S.tab].g.startsWith('hl')) return hlSubtitle();
+  if (S.tab === 'lshop' || S.tab === 'lwish') return lsSubtitle();
   if (S.tab === 'vsubs') { const T = subTotals(); return T.n ? `${cash2(T.m)} a month, ${T.n} active` : 'Track what you pay for'; }
   if (TAB_INFO[S.tab].g[0] === 'v') { const n = S.sv.goals.filter(g => live(g) && !svDone(g)).length; return `${plural(n, 'goal')} in progress`; }
   if (['gnow', 'glib', 'gadd', 'gstats'].includes(TAB_INFO[S.tab].g)) { const L = S.gm.items.filter(live), n = L.filter(g => g.status === 'now').length; return `${n} playing, ${plural(L.length, 'game')} in total`; }
@@ -29,7 +31,7 @@ function subtitle() {
     case 'hbadges': case 'badges': return `${BADGES.filter(b => S.bd[b[0]]).length} of ${BADGES.length} unlocked`;
     case 'today': return nowStr;
     case 'journal': return 'One entry a day';
-    default: return 'Theme, units and your data';
+    default: return 'Look, modes, passcode and backups';
   }
 }
 
@@ -88,8 +90,8 @@ function viewWorkout() {
     <div class="tiles">${S.cats.filter(live).filter(c => { const L = S.ex.filter(e => live(e) && e.cats.includes(c.id)); return !L.length || !L.every(e => CARDIO[e.kind]); }).map(c => { const n = S.ex.filter(e => live(e) && e.cats.includes(c.id)).length;
       return `<button class="tile" data-act="start" data-cat="${esc(c.id)}"><b>${esc(c.name)}</b><span>${plural(n, 'exercise')}</span></button>`; }).join('')}</div>
     <div class="btns"><button class="btn ghost" style="flex:1" data-act="start">Start empty workout</button><button class="btn ghost" style="flex:1" data-act="openPlates">Plate calculator</button></div>
-    ${S.tpl.length ? `<details class="card mt" ${det('manageTpl')}><summary class="sum"><h2>Manage templates</h2><span class="small muted">Rename, reorder or delete. Your rotation follows this order.</span></summary>
-      ${S.tpl.map((t, i) => `<div class="lrow" style="align-items:center"><input class="input" style="min-height:40px" data-bind="tplname" data-id="${esc(t.id)}" value="${esc(t.name)}" aria-label="Template name">${i ? `<button class="link quiet" data-act="tplUp" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">↑ Up</button>` : ''}${archBtn('tpl', t)}<button class="link danger" data-act="deleteTpl" data-id="${esc(t.id)}" data-confirm>Delete</button></div>`).join('')}</details>`
+    ${S.tpl.length ? `<details class="card mt" ${det('manageTpl')}><summary class="sum"><h2>Manage templates</h2><span class="small muted">Rename, drag ⠿ to reorder, or delete. Your rotation follows this order.</span></summary>
+      <div data-sort="tpl">${S.tpl.map(t => `<div class="lrow sortrow" style="align-items:center" data-sid="${esc(t.id)}">${grip(t.name)}<input class="input" style="min-height:40px" data-bind="tplname" data-id="${esc(t.id)}" value="${esc(t.name)}" aria-label="Template name">${archBtn('tpl', t)}<button class="link danger" data-act="deleteTpl" data-id="${esc(t.id)}" data-confirm>Delete</button></div>`).join('')}</div></details>`
       : `<p class="note">Tip: save any workout as a template from the workout screen or your history, then start it here with one tap.</p>`}
     ${backupDue ? `<div class="card flat mt"><div class="row"><span class="small">It's been over a week since your last backup.</span><button class="btn sm" data-act="go" data-to="settings">Back up</button></div></div>` : ''}`;
 }
@@ -228,10 +230,15 @@ function viewHistory() {
     }).join('')}`;
 }
 function viewBody() {
-  const pts = S.bw.slice(-60).map(p => ({l:fmtMD(keyDate(p.d)), v:p.v})), t = S.bw.find(p => p.d === today());
+  const pts = S.bw.slice(-60).map(p => ({l:fmtMD(keyDate(p.d)), v:p.v})), d = UI.bwDay || today(), t = S.bw.find(p => p.d === d), L = [...S.bw].reverse();
   return `<section class="card"><h2>Body weight</h2>
-      <div class="field mt"><input class="input" id="bwIn" inputmode="decimal" placeholder="Today's weight in ${S.unit}" value="${t ? t.v : ''}" data-enter="saveWeight" aria-label="Today's body weight"><button class="btn" data-act="saveWeight">Save</button></div>
+      <div class="field mt"><input class="input" id="bwIn" inputmode="decimal" placeholder="Weight in ${S.unit}" value="${t ? t.v : ''}" data-enter="saveWeight" aria-label="Body weight"><button class="btn" data-act="saveWeight">Save</button></div>
+      <div class="ff one mt"><label>Date<input class="input" type="date" id="bwDay" data-bind="bwDay" value="${esc(d)}" max="${today()}"></label></div>
+      <p class="note">${d === today() ? 'Logging for today.' : `Logging for ${esc(fmtDay(d))}.`} Saving on a day that already has a weight replaces it.</p>
       ${trend(pts, S.unit)}${lineChart(pts, S.unit)}</section>
+    ${L.length ? `<details class="card" ${det('bwList')}><summary class="sum"><h2>Weigh-ins</h2><span class="small muted">${plural(L.length, 'entry')}. Fix or delete mistakes here.</span></summary>
+      ${L.slice(0, UI.bwAll ? 2000 : 20).map(p => swipeWrap(`<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(fmtDay(p.d))}</span><span><b style="color:var(--ink)">${fmtN(p.v)} ${S.unit}</b> <button class="link" data-act="bwEdit" data-d="${esc(p.d)}">Edit</button> <button class="link danger" data-act="bwDel" data-d="${esc(p.d)}" data-confirm>Delete</button></span></div>`, {l:['bwDel', 'Delete'], data:{d:p.d}})).join('')}
+      ${L.length > 20 && !UI.bwAll ? `<button class="link mt" data-act="bwAll">Show all ${L.length}</button>` : ''}<p class="note">Swipe an entry left to delete it.</p></details>` : ''}
     <section class="card"><div class="row"><h2>Progress photos</h2>
       <label class="btn sm file-btn">Add photo<input type="file" accept="image/*" data-file="photo" aria-label="Add a progress photo"></label></div>
       <p class="note">Photos stay on this phone only and aren't included in backups.</p>
@@ -284,36 +291,38 @@ function crashCard() {
       <p class="note">${DBX.rt ? (up === l.length ? 'All saved to Dropbox › Apps › your Hibi folder › crash-reports.' : 'Saving to Dropbox on the next backup.') : 'Connect Dropbox above and these get saved there too.'} Copy them and send them to Claude to get them fixed.</p>
       <div class="btns mt"><button class="btn" style="flex:1" data-act="crashCopy">Copy reports</button><button class="btn ghost" data-act="crashClear" data-confirm>Clear</button></div></section>`;
 }
-function viewSettings() {
-  return `<section class="card"><h2>Theme</h2>
-      <div class="swatches">${THEMES.map(([id, n, a, b]) => `<button class="swatch" aria-pressed="${S.theme === id}" data-act="theme" data-k="${id}"><i style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></i>${n}</button>`).join('')}</div>
-      <p class="note">Sakura follows your phone's light or dark mode. The others stay fixed.</p></section>
-${S.mode === 'home' ? fxSettings() + musicSettings() : S.mode === 'school' ? '' : S.mode === 'gym' ? `    <section class="card"><h2>Training</h2>
+const gymSettings = () => `    <section class="card"><h2>Training</h2>
       <label class="setrow"><span>Weight unit</span><select class="input" data-bind="setting" data-k="unit">${['lb', 'kg'].map(u => `<option${S.unit === u ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rest timer</span><select class="input" data-bind="setting" data-k="rest">${[45, 60, 90, 120, 150, 180, 240].map(n => `<option value="${n}"${S.rest === n ? ' selected' : ''}>${clock(n * 1000)}</option>`).join('')}</select></label>
       <label class="setrow"><span>Rep range for hints</span><select class="input" data-bind="setting" data-k="rr">${['5-8', '6-10', '8-12', '10-15', '12-20'].map(r => `<option value="${r}"${S.rr === r ? ' selected' : ''}>${r.replace('-', ' to ')} reps</option>`).join('')}</select></label>
       <label class="setrow"><span>Weight jump</span><select class="input" data-bind="setting" data-k="inc">${incOpts().map(n => `<option value="${n}"${inc() === n ? ' selected' : ''}>${n} ${S.unit}</option>`).join('')}</select></label>
       <label class="setrow"><span>Bar weight</span><select class="input" data-bind="setting" data-k="bar">${barOpts().map(n => `<option value="${n}"${barW() === n ? ' selected' : ''}>${n} ${S.unit}</option>`).join('')}</select></label>
-      <p class="note">Hints tell you to add weight once you hit the top of your rep range on every set.</p>
+      <p class="note">Hints tell you to add weight once you hit the top of your rep range on every set. When rest is over, your phone beeps and, on Android, vibrates.</p>
       <p class="note">Changing the unit only changes labels. Numbers you already logged stay as entered.</p></section>
-` : S.mode === 'save' ? svSettings() : S.mode === 'games' ? gmSettings() : S.mode === 'work' ? wkSettings() : S.mode === 'japan' ? `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
+    <section class="card"><h2>Import from Hevy</h2>
+      <p class="note">In Hevy, go to Settings, then Export &amp; Import Data, then Export Workouts. Pick that CSV file here. Warm-up sets are skipped and workouts you already have are ignored.</p>
+      <label class="btn ghost file-btn mt">Choose Hevy CSV<input type="file" accept=".csv,text/csv,text/plain" data-file="hevy" aria-label="Import Hevy CSV"></label></section>
+`;
+const jpSettings = () => `    <section class="card"><h2>Japan trip</h2><form data-form="trip" class="stack mt">
       <div class="ff"><label>First day<input class="input" type="date" name="start" value="${esc(S.jp.start)}"></label><label>Last day<input class="input" type="date" name="end" value="${esc(S.jp.end)}"></label></div>
       <button class="btn" type="submit">Save dates</button></form>
       <p class="note">Exchange rate: ¥${fmtN(R())} per dollar. Change it in Money, then Converter.</p></section>
-` : `    <section class="card"><h2>Import from AniList</h2>
+`;
+const mdSettings = () => `    <section class="card"><h2>Import from AniList</h2>
       <p class="note">Bring in your anime and manga lists with your AniList username. Your profile needs to be public. Run it again any time to update progress.</p>
       <form data-form="alimport" class="field mt"><input class="input" name="user" placeholder="AniList username" value="${esc(S.md.al || '')}" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="AniList username"><button class="btn" type="submit">Import</button></form>
       <p class="note" id="alStatus" role="status"></p></section>
-`}${ideasCard()}${settingsCommon()}${dbxCard()}${crashCard()}    <section class="card"><h2>Backup file</h2>
+`;
+const backupSettings = () => `${dbxCard()}${crashCard()}    <section class="card"><h2>Backup file</h2>
       <p class="note">Everything lives on this phone, in this browser.${DBX.rt ? ' Dropbox backs it up for you, but you can still save a file by hand.' : ' Save a backup file to your Files app or iCloud Drive now and then.'} Last backup: <b>${S.lb ? fmtMD(new Date(S.lb)) : 'never'}</b>.</p>
       <div class="btns mt"><button class="btn" data-act="shareBackup">Save backup file</button><label class="btn ghost file-btn">Restore from file<input type="file" accept=".json,application/json,text/plain" data-file="restore" aria-label="Restore from a backup file"></label></div>
       <details class="mt" ${det('textBackup')}><summary class="link">Copy or paste backup as text</summary>
         <textarea class="input" id="bk" style="min-height:100px;font-size:13px" placeholder="Backup text appears here. Paste a backup here to restore." aria-label="Backup text"></textarea>
         <div class="btns mt"><button class="btn sm ghost" data-act="copyBackup">Show and copy</button><button class="btn sm ghost" data-act="restoreText">Restore from text</button></div></details></section>
-${S.mode === 'gym' ? `    <section class="card"><h2>Import from Hevy</h2>
-      <p class="note">In Hevy, go to Settings, then Export &amp; Import Data, then Export Workouts. Pick that CSV file here. Warm-up sets are skipped and workouts you already have are ignored.</p>
-      <label class="btn ghost file-btn mt">Choose Hevy CSV<input type="file" accept=".csv,text/csv,text/plain" data-file="hevy" aria-label="Import Hevy CSV"></label></section>` : ''}
-    <section class="card"><div class="mhead"><span data-act="logoTap" style="cursor:pointer;display:flex">${HIBI_LOGO}</span><div><h2>Hibi</h2><span class="small muted">Everyday life, all in one place. Version ${APP_VERSION}</span></div></div>
-      <button class="btn ghost block mt" data-act="openNotes">What's new: patch notes</button>
-      <p class="note">When you upload a new version to GitHub, the app gets it the next time it opens with internet and shows a Reload button.</p></section>`;
+`;
+function viewSettings() {
+  const secs = setSecs(), sec = secs.some(x => x[0] === UI.setSec) ? UI.setSec : secs[0][0];
+  const body = sec === 'mode' ? modeSettings()() : sec === 'look' ? lookSettings() : sec === 'modes' ? modesSettings() : sec === 'privacy' ? settingsCommon() : sec === 'data' ? backupSettings() : settingsAbout();
+  return `<div class="chips setchips mb" role="tablist">${secs.map(([k, l]) => `<button class="chip${k === sec ? ' on' : ''}" role="tab" aria-selected="${k === sec}" data-act="setSec" data-s="${k}">${esc(l)}</button>`).join('')}</div>
+${body}`;
 }

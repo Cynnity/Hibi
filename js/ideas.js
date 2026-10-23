@@ -11,9 +11,9 @@ function ideasCard() {
   return `    <section class="card" id="ideas"><div class="row"><h2>💡 Ideas for Hibi</h2><span class="small muted">${open.length} to send</span></div>
       <p class="note">Jot down ideas and fixes as they come to you. When you have a batch, tap Copy all and paste it to Claude.</p>
       <form data-form="idea" class="field mt"><input class="input" name="t" placeholder="Like: rest timer is too loud" autocomplete="off" aria-label="New idea"><button class="btn" type="submit">Add</button></form>
-      ${open.map(x => `<div class="lrow" style="align-items:center"><button class="check sm" aria-pressed="false" aria-label="Mark sent: ${esc(x.t)}" data-act="ideaDone" data-id="${esc(x.id)}">${ICON_CHECK}</button>
+      ${open.map(x => swipeWrap(`<div class="lrow" style="align-items:center"><button class="check sm" aria-pressed="false" aria-label="Mark sent: ${esc(x.t)}" data-act="ideaDone" data-id="${esc(x.id)}">${ICON_CHECK}</button>
         <span style="flex:1;text-align:left;color:var(--ink)">${esc(x.t)}<small class="muted" style="display:block">${esc(MODES[x.m] ? MODES[x.m].em + ' ' + MODES[x.m].label + ' · ' : '')}${esc(fmtMD(new Date(x.at)))}</small></span>
-        <button class="link danger" data-act="ideaDel" data-id="${esc(x.id)}" aria-label="Delete idea">✕</button></div>`).join('')}
+        <button class="link danger" data-act="ideaDel" data-id="${esc(x.id)}" aria-label="Delete idea">✕</button></div>`, {r:['ideaDone', 'Sent'], l:['ideaDel', 'Delete'], data:{id:x.id}})).join('')}
       ${open.length ? `<div class="btns mt"><button class="btn" style="flex:1" data-act="ideaCopy">📋 Copy all (${open.length})</button></div>` : ''}
       ${done.length ? `<details class="mt" ${det('ideasDone')}><summary class="link">Sent (${done.length})</summary>${done.slice().reverse().map(x => `<div class="lrow"><span class="muted" style="text-align:left;text-decoration:line-through">${esc(x.t)}</span><button class="link quiet" data-act="ideaDone" data-id="${esc(x.id)}">Undo</button></div>`).join('')}
         <button class="link danger mt" data-act="ideaClear" data-confirm>Clear sent ideas</button></details>` : ''}</section>

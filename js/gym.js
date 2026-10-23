@@ -91,6 +91,8 @@ function plateResult() {
 }
 function sheetHtml() {
   if (UI.wrap) return wrapHtml();
+  if (UI.jump) return jumpSheet();
+  if (UI.emPick) return emSheet();
   if (UI.wAdd) return widgetSheet();
   if (UI.notes) return notesSheet();
   if (UI.clog) return cardioSheet();
