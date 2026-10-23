@@ -48,7 +48,7 @@ Cynn wants a record of everything that changes. For every change you ship, in th
 
 1. **Add an entry to the top of `CHANGELOG.md`.** Include the version, a short fun episode-style title in quotes, the date, and plain-language bullets about what changed for him. Follow the style of the entries already there.
 2. **Bump `APP_VERSION`** at the top of `js/core.js`. Cynn wants this scheme: the middle number for new features (2.4 → 2.5), the last number for small fixes, tweaks and polish (2.4 → 2.4.1, 2.4.2), and the first number only for huge updates (3.0). Never reuse or lower a version that has shipped. The version must match the new CHANGELOG entry.
-3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v3.1`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
+3. **Bump the cache name** `V` in `sw.js` to match, like `hibi-v3.1.1`, so installed apps download the update and show the Reload bar. If you add, rename or remove a file, update `CORE` in `sw.js` and the script list in `index.html`.
 
 The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also shows a "Hibi was updated" card on Home whenever `APP_VERSION` changes.
 
@@ -70,3 +70,4 @@ The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also
 - `index.html` must start with `<!DOCTYPE html>`. If a copy came from a claude.ai artifact, strip the wrapper the artifact viewer adds before it, or the Home Screen icon and name break.
 - Check every script parses (`node --check js/*.js sw.js`) and the app loads with no console errors and no new crash reports.
 - No Japanese text in the app's own interface, except the Japan mode phrases list.
+- Hibi runs on iPhone and iPad. Check layouts at phone widths (320 to 430) and iPad widths (768 to 1366, portrait and landscape). The iPad layout lives in the `min-width:700px` and `min-width:1100px` blocks at the end of `css/hibi.css`.

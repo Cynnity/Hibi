@@ -9,6 +9,16 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.1.1 — "Big Screen Energy" (Oct 23)
+- **Made for iPad.** Hibi used to show a phone-sized strip in the middle of the iPad screen. Now it uses the space:
+  - The page is wider, and Home widgets sit side by side: 4 across on iPad and 6 in landscape.
+  - Flashcards are bigger. Decks show 3 or 4 across, the study modes sit in one row, and Match spreads into a wider grid.
+  - Theme swatches, badges, workout categories and photos fit more per row.
+  - Bottom sheets, like Add widget and 🔎, show as a neat panel instead of stretching edge to edge.
+- **Turning sideways works.** Hibi no longer asks to stay in portrait, so landscape works on iPad (and Android).
+- **Trackpad and mouse:** buttons and cards light up when you hover over them. Space and the arrow keys still flip and sort flashcards on a keyboard.
+- Checked every screen in every mode on iPad sizes in portrait and landscape, plus iPhone sizes from the smallest to the biggest. Nothing runs off the screen.
+
 ## 3.1 — "Study Arc" (Oct 23)
 - **Flashcards, Quizlet style.** School's Notes tab is now **Study**, with Flashcards and Notes inside it.
 - **Make decks your way:**
