@@ -129,7 +129,7 @@ function knList() {
   return L.map(n => { const c = kClass(n.c);
     return `<details class="card" ${det('kn-' + n.id, n.id === 'kref')}><summary class="sum"><h3>${esc(n.title)}</h3><span class="small muted">${c ? esc(c.name) : 'General'}</span></summary>
       <p style="white-space:pre-wrap;line-height:1.7">${esc(n.body)}</p>
-      <div class="row mt"><button class="link" data-act="kEditNote" data-id="${esc(n.id)}">Edit</button><button class="link danger" data-act="kDelNote" data-id="${esc(n.id)}" data-confirm>Delete</button></div></details>`; }).join('');
+      <div class="row mt"><button class="link" data-act="kEditNote" data-id="${esc(n.id)}">Edit</button><button class="link" data-act="fcFromNote" data-id="${esc(n.id)}">🃏 Make flashcards</button><button class="link danger" data-act="kDelNote" data-id="${esc(n.id)}" data-confirm>Delete</button></div></details>`; }).join('');
 }
 function viewKNotes() {
   const ed = UI.edit && UI.edit.kind === 'knote' ? S.sc.notes.find(n => n.id === UI.edit.id) : null;

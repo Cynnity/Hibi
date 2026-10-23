@@ -38,7 +38,7 @@ function recap(P) {
   o.dist = r1(C.reduce((t, x) => t + (x.k === 'stairs' ? 0 : distOf(x)), 0)); o.floors = C.reduce((t, x) => t + num(x.fl), 0);
 
   const A = S.alog.filter(a => inR(a[0], P)), sumK = k => A.filter(a => a[1] === k).reduce((t, a) => t + a[2], 0);
-  o.ep = sumK('ep'); o.ch = sumK('ch'); o.vols = sumK('vol'); o.pages = sumK('page');
+  o.cards = sumK('fc'); o.ep = sumK('ep'); o.ch = sumK('ch'); o.vols = sumK('vol'); o.pages = sumK('page');
   const mh = {};
   A.forEach(a => { if (a[1] !== 'gh') mh[a[3]] = (mh[a[3]] || 0) + a[2]; });
   const tm = topKey(mh); o.topShow = tm && tm[1] > 0 && mFind(tm[0]) ? {m:mFind(tm[0]), n:tm[1]} : null;
@@ -63,7 +63,7 @@ function recap(P) {
   const WK = Object.keys(S.hl.water).filter(k => dIn(k, P)); o.waterDays = WK.filter(k => waterOz(k) >= S.hl.goal).length;
   o.habitN = Object.keys(S.hl.done).filter(k => dIn(k, P)).reduce((t, k) => t + S.hl.done[k].length, 0);
   const SL = S.hl.sleep.filter(x => dIn(x.d, P)); o.sleepAvg = SL.length ? r1(SL.reduce((t, x) => t + slMin(x), 0) / SL.length / 60) : 0;
-  o.any = !!(o.waterDays || o.habitN || o.sleepAvg || o.workouts || o.cardioN || o.gStarted.length || o.ep || o.ch || o.vols || o.pages || o.beaten.length || o.finished.length || o.saved || o.tasks || o.focusN || o.shifts || o.journal || o.badges.length || o.jpDays);
+  o.any = !!(o.cards || o.waterDays || o.habitN || o.sleepAvg || o.workouts || o.cardioN || o.gStarted.length || o.ep || o.ch || o.vols || o.pages || o.beaten.length || o.finished.length || o.saved || o.tasks || o.focusN || o.shifts || o.journal || o.badges.length || o.jpDays);
   return o;
 }
 
@@ -72,7 +72,7 @@ function weekCard() {
   const cur = weekStart(Date.now()), last = UI.wk === 'last', P = periodOf('week', last ? cur - 7 * DAY_MS : cur), o = recap(P);
   const tiles = [[o.workouts, o.workouts === 1 ? 'workout' : 'workouts', '🏋️'], [o.cardioMin, 'cardio min', '🏃'], [o.gStarted.length, o.gStarted.length === 1 ? 'game started' : 'games started', '🎮'], [o.beaten.length, o.beaten.length === 1 ? 'game beaten' : 'games beaten', '🏁'],
     [o.ep, o.ep === 1 ? 'episode' : 'episodes', '📺'], [o.ch, o.ch === 1 ? 'chapter' : 'chapters', '📖'], [o.pages, 'pages', '📚'], [o.saved ? cash0(o.saved) : 0, 'saved', '💰'],
-    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? cash0(o.earned) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🎯'], [o.habitN, o.habitN === 1 ? 'habit check-in' : 'habit check-ins', '✅'], [o.waterDays, o.waterDays === 1 ? 'day at water goal' : 'days at water goal', '💧'], [o.sleepAvg, 'h sleep a night', '🌙'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
+    [o.workMin ? r1(o.workMin / 60) : 0, 'hours worked', '💼'], [o.earned ? cash0(o.earned) : 0, 'earned', '💵'], [o.tasks, 'homework done', '🎓'], [o.focusMin, 'focus min', '🎯'], [o.cards, o.cards === 1 ? 'flashcard studied' : 'flashcards studied', '🃏'], [o.habitN, o.habitN === 1 ? 'habit check-in' : 'habit check-ins', '✅'], [o.waterDays, o.waterDays === 1 ? 'day at water goal' : 'days at water goal', '💧'], [o.sleepAvg, 'h sleep a night', '🌙'], [o.journal, o.journal === 1 ? 'journal entry' : 'journal entries', '📝']].filter(x => x[0]);
   const hi = [o.prs ? `🏆 ${plural(o.prs, 'new PR')}` : '', ...o.beaten.slice(0, 2).map(g => `🎮 Beat ${g.title}`), ...o.finished.slice(0, 2).map(m => `✅ Finished ${m.title}`),
     ...o.badges.slice(0, 2).map(b => `${b[1]} ${b[2]}`)].filter(Boolean);
   return `<section class="card"><div class="row"><h2>${last ? 'Last week' : 'This week'}</h2>

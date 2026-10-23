@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '3.0';
+const APP_VERSION = '3.1';
 
 /* =========================================================
    Constants and reference data
@@ -159,6 +159,7 @@ function normalize(s) {
   if (typeof normalizeIdeas === 'function') normalizeIdeas(s);
   if (typeof normalizeSubs === 'function') normalizeSubs(s);   // widgets.js loads after the state, so it also runs this itself
   if (typeof normalizeHl === 'function') normalizeHl(s);
+  if (typeof normalizeFc === 'function') normalizeFc(s);
   if (typeof normalizeLs === 'function') normalizeLs(s);
   if (typeof normalizeLook === 'function') normalizeLook(s);
   if (typeof normalizeFx === 'function') normalizeFx(s);

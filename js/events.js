@@ -86,6 +86,7 @@ document.addEventListener('change', e => {
     if (kind === 'photo') addPhoto(f);
     else if (kind === 'restore') f.text().then(restoreFrom);
     else if (kind === 'hevy') f.text().then(importHevy);
+    else if (kind === 'fcimport') f.text().then(tx => { const fm = $('form[data-form="fcimp"]'), nm = (fm && fm.name.value.trim()) || f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(); if (fcImport(tx, nm, fm && fm.c.value)) afterChange(); });
     return;
   }
   if (t.dataset.bind === 'pick') { S.pick = t.value; save(); render(); }

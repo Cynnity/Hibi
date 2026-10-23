@@ -9,6 +9,24 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.1 — "Study Arc" (Oct 23)
+- **Flashcards, Quizlet style.** School's Notes tab is now **Study**, with Flashcards and Notes inside it.
+- **Make decks your way:**
+  - Import a text file, or paste cards in. Use one card per line, like `Ohm's law :: V = I × R`. Dashes, colons and tabs work too, so Quizlet exports import as they are.
+  - A line starting with `#` starts a new deck, so one file can hold several decks.
+  - Tap **🃏 Make flashcards** on any note to turn it into a deck.
+  - Add, edit, star and delete cards by hand (swipe left to delete), link a deck to a class, and export a deck back out as a text file.
+- **Study modes:**
+  - **🃏 Flashcards:** tap to flip, then swipe right if you know it or left if you're still learning. You can undo, and at the end you can study just the ones you missed.
+  - **🧠 Learn:** rounds of 7 cards. You get multiple choice first, then you type the answer. You're done when every card is mastered.
+  - **📝 Test:** pick how many questions and which kinds (multiple choice, true or false, written). You get a score, every answer you missed, and a button to Learn just those.
+  - **⚡ Match:** tap each term and its definition against the clock. Wrong pairs cost a second, and Hibi keeps your best time for each deck.
+  - **🔁 Review:** cards come back right before you'd forget them (spaced repetition). "Know it" pushes a card further out; missing it brings it back today.
+- **Options:** shuffle, starred cards only, and show the term or the definition first.
+- **Typed answers are forgiving.** Small typos, capitals, accents, extra spaces and anything in brackets don't count against you. "v = i x r" matches "V = I × R". If Hibi still marks you wrong when you were right, tap **I was right**.
+- A **Flashcards widget** for Home shows how many cards are due, with a Review button.
+- New School badges: Deck Builder, Card Shark, Flashcard Grind, Learned It, Perfect Score and Speed Matcher. Flashcards studied also show up in your weekly recap.
+
 ## 3.0 — "Season 3: Everything, Everywhere" (Oct 23)
 The biggest update yet: two new modes, a whole new way to customize Hibi, and gestures that make it feel like a real iPhone app.
 

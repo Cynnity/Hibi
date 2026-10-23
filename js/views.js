@@ -14,6 +14,7 @@ function subtitle() {
   if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   if (['wtoday', 'wshifts', 'wpay'].includes(S.tab)) return workSubtitle();
   if (S.tab === 'kfocus') { const st = focusStats(); return st.n ? `${plural(st.n, 'focus round')} today` : 'Focus timer'; }
+  if (S.tab === 'kstudy') { const n = fcAllDue().length; return `${plural(S.fc.decks.length, 'deck')}${n ? ` · ${n} to review today` : ''}`; }
   if (TAB_INFO[S.tab].g[0] === 'k') { const wk = dk(new Date(Date.now() + 7 * 864e5)), n = S.sc.tasks.filter(t => !t.done && t.due && t.due <= wk).length; return `${n} due in the next week`; }
   if (TAB_INFO[S.tab].g.startsWith('hl')) return hlSubtitle();
   if (S.tab === 'lshop' || S.tab === 'lwish') return lsSubtitle();

@@ -117,6 +117,8 @@ const WIDGETS = {
   wish:{n:'Wish list', em:'🎁', d:'Your wish list and price drops', mode:'lists', sizes:['s'], tap:goTo('lists', 'lwish'),
     s:() => { const L = S.ls.wish.filter(w => !w.got), dr = L.filter(w => { const f = wFirst(w); return f && wPrice(w) < f.p; });
       return small('🎁', 'Wish list', L.length || '✨', L.length ? (dr.length ? `📉 ${esc(dr[0].name)} dropped` : `${L.length === 1 ? 'item' : 'items'} · ${cash0(L.reduce((t, w) => t + wPrice(w), 0))}`) : 'Add things you want'); }},
+  study:{n:'Flashcards', em:'🃏', d:'Cards due for review today', mode:'school', sizes:['s'], tap:goTo('school', 'kstudy'),
+    s:() => { const n = fcAllDue().length; return S.fc.decks.length ? small('🃏', 'Flashcards', n || '✓', n ? (n === 1 ? 'card to review' : 'cards to review') : 'All caught up', '', n ? '<button class="btn sm wd-btn" data-act="wStudy">Review</button>' : '') : small('🃏', 'Flashcards', '📚', 'Import a deck'); }},
   wrapped:{n:'Wrapped', em:'🎁', d:'Your month and year in review', sizes:['m'], m:() => wrapCard() || '<section class="card"><h2>🎁 Wrapped</h2><p class="note">Your first Wrapped shows up once you log a few things.</p></section>'},
 };
 const muSetup = title => `<section class="card"><h2>${title}</h2><p class="note">${S.mu.user ? esc(S.mu.err || 'Loading your music from stats.fm…') : 'Add your stats.fm username in Home Settings to see your music here.'}</p>${S.mu.user ? '' : '<button class="btn sm mt" data-act="wGo" data-k="home" data-to="settings">Add stats.fm</button>'}</section>`;
@@ -174,6 +176,7 @@ Object.assign(XVIEWS, {hhome:viewHomeW});
 Object.assign(XACT, {
   wGo: d => { if (S.mode !== d.k) { S.lastMode[S.mode] = S.tab; S.mode = d.k; } go(d.to); scrollTo(0, 0); },
   wPomo: () => { XACT.pomoStart(); S.lastMode[S.mode] = S.tab; S.mode = 'school'; go('kfocus'); },
+  wStudy: () => { S.lastMode[S.mode] = S.tab; S.mode = 'school'; go('kstudy'); UI.fcDeck = null; fcBegin('review', ''); },
   wEdit: () => { UI.homeEdit = true; },
   wDone: () => { UI.homeEdit = false; UI.wAdd = false; toast('Home saved.'); },
   wAddOpen: () => { UI.wAdd = true; },

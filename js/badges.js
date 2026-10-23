@@ -37,6 +37,12 @@ BADGES.push(
   ['f10h','🧠','Deep Work','Focus for 10 hours in total','real',s => [s.fMin / 60, 10],'school'],
   ['f4','🔥','Locked In (Study Edition)','Finish 4 focus rounds in one day','fun',s => [s.fDay, 4],'school'],
   ['fnight','🌙','All-Nighter','Finish a focus round between midnight and 4am','fun',s => [s.fLate, 1],'school'],
+  ['fc1','🃏','Deck Builder','Make your first flashcard deck','real',s => [s.fcDecks, 1],'school'],
+  ['fc100','🧠','Card Shark','Study 100 flashcards','real',s => [s.fcSeen, 100],'school'],
+  ['fc1000','📇','Flashcard Grind','Study 1,000 flashcards','real',s => [s.fcSeen, 1000],'school'],
+  ['fclearn','🎓','Learned It','Finish a Learn session','real',s => [s.fcLearned, 1],'school'],
+  ['fcperf','💯','Perfect Score','Get 100% on a practice test','fun',s => [s.fcPerfect, 1],'school'],
+  ['fcmatch','⚡','Speed Matcher','Finish Match in under 20 seconds','fun',s => [s.fcFast, 1],'school'],
   ['kspring','🌸','Next Semester Ready','Add classes for an upcoming semester','fun',s => [s.kNext, 1],'school'],
   ['w1','⏱️','Clocked In','Log your first shift','real',s => [s.wkShifts, 1],'work'],
   ['w100h','💼','Hundred Hours','Work 100 hours in total','real',s => [s.wkHours, 100],'work'],
@@ -135,6 +141,7 @@ function statsMore() {
     wk.forEach((k, i) => { rn = i && hlAdd(wk[i - 1], 1) === k ? rn + 1 : 1; o.hlWaterRun = Math.max(o.hlWaterRun, rn); });
     o.hlChecks = Object.values(S.hl.done).reduce((t, L) => t + L.length, 0); o.hlBest = Math.max(0, ...S.hl.habits.map(hlBest));
     o.slN = S.hl.sleep.length; o.sl10 = S.hl.sleep.some(x => slMin(x) >= 600) ? 1 : 0; }
+  if (S.fc) { o.fcDecks = S.fc.decks.length; o.fcSeen = S.fc.st.seen; o.fcLearned = S.fc.st.learned; o.fcPerfect = S.fc.st.perfect; o.fcFast = S.fc.st.match && S.fc.st.match < 200 ? 1 : 0; }
   if (S.ls) { o.lsGot = S.ls.got; o.wDrop = S.ls.wish.some(w => { const f = wFirst(w); return f && w.prices.some(x => x.p < f.p); }) ? 1 : 0; o.wGot = S.ls.wish.filter(w => w.got).length; }
   return o;
 }
