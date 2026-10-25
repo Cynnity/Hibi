@@ -157,11 +157,12 @@ function wkSettings() {
   return `    <section class="card"><h2>Pay</h2><form data-form="wkset" class="stack mt">
       <div class="ff"><label>Hourly rate ($)<input class="input" name="rate" inputmode="decimal" placeholder="15.00" value="${w.rate || ''}"></label><label>Tax rate (%)<input class="input" name="tax" inputmode="decimal" placeholder="12" value="${w.tax || ''}"></label></div>
       <label>How often you get paid<select class="input" name="freq">${WK_FREQ.map(([k, l]) => opt(k, l, w.freq)).join('')}</select></label>
-      <div class="ff"><label>A payday (any past or upcoming one)<input class="input" type="date" name="pay" value="${esc(w.pay)}"></label><label>Days between the period ending and payday<input class="input" name="lag" inputmode="numeric" placeholder="0" value="${w.lag || ''}"></label></div>
+      <div class="ff"><label>A payday (any past or upcoming one)<input class="input" type="date" name="pay" value="${esc(w.pay)}"></label><label>Last day of that paycheck's period<input class="input" type="date" name="pe" value="${w.pay ? esc(addDays(w.pay, -(w.freq === 'semimonthly' ? 0 : 1) - w.lag)) : ''}"></label></div>
+      ${wkReady() ? (() => { const P = periodFor(today()), Q = periodFor(addDays(P.from, -1)); return `<p class="note">Right now Hibi has your pay periods as <b>${esc(fmtShort(Q.from))} to ${esc(fmtShort(Q.to))}</b> (paid ${esc(fmtShort(Q.pay))}) and <b>${esc(fmtShort(P.from))} to ${esc(fmtShort(P.to))}</b> (paid ${esc(fmtShort(P.pay))}). If that's off, change the two dates above.</p>`; })() : ''}
       <label class="setrow"><span>Overtime at 1.5× after 40 hours a week</span><input type="checkbox" name="ot"${w.ot ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
       <button class="btn" type="submit">Save</button></form>
       <p class="note">Tax rate: try 10 to 15% to start. Compare with a real paystub (taxes taken out ÷ pay before taxes) and adjust until it matches.</p>
-      <p class="note">If your paycheck covers days that ended earlier, like the week before payday, put that number of days in the second box. Leave it at 0 if the pay period runs right up to payday.</p>
+      <p class="note">Put one payday, and the last day of the pay period that paycheck covers. For example, a paycheck on Oct 23 covering Oct 4 to Oct 17 means the last day is Oct 17.</p>
       <p class="note">Changing your rate only affects new shifts. Shifts you already logged keep the rate they were logged at.</p></section>
 `;
 }
@@ -220,7 +221,7 @@ Object.assign(SAVE, {
     UI.open.wkBonus = false; },
   wkset: o => {
     const w = S.wk, oldRate = w.rate;
-    w.rate = Math.max(0, num(o.rate)); w.tax = Math.max(0, Math.min(60, num(o.tax))); w.freq = o.freq || 'biweekly'; w.pay = o.pay || ''; w.lag = Math.max(0, Math.round(num(o.lag))); w.ot = o.ot === 'on';
+    w.rate = Math.max(0, num(o.rate)); w.tax = Math.max(0, Math.min(60, num(o.tax))); w.freq = o.freq || 'biweekly'; w.pay = o.pay || ''; w.lag = o.pe && o.pay ? Math.max(0, dayDiff(o.pe, o.pay) - (w.freq === 'semimonthly' ? 0 : 1)) : w.lag; w.ot = o.ot === 'on';
     if (!oldRate && w.rate) w.shifts.forEach(s => { if (!num(s.rate)) s.rate = w.rate; });
     toast('Pay settings saved.');
   },

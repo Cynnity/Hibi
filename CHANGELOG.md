@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.2.1 — "Payday Math" (Oct 25)
+- **Pay periods you can set by date.** In Work settings you now enter a payday and the last day of the period that paycheck covers, instead of counting days in between. Hibi shows the two pay periods it came up with so you can spot a mistake right away.
+- Fix for the Shifts tab grouping: if your paycheck covers an earlier stretch, like Oct 4 to Oct 17 paid Oct 23, set it in Work settings and shifts land in the right pay period.
+
+---
+
 ## 3.2 — "Lecture Hall" (Oct 23)
 - **Notebooks with Apple Pencil**, in School › Study › Notebooks. Made to feel like GoodNotes and Notability:
   - **Pen** with pressure, so lines get thicker as you press harder. Pick from 8 colors (or any color) and 3 sizes.
