@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.3.1 — "Where Did It Go?" (Oct 26)
+- **Fix:** the Budget mode (💸) now shows up in the mode bar and in Settings › Modes. It was installed but missing from the list on phones that already had Hibi.
+
+---
+
 ## 3.3 — "Safe to Spend" (Oct 26)
 - **A whole Budget mode** (💸), built to feel like Rocket Money with your own twists. Five tabs: Overview, Spending, Bills, Plan and Settings.
   - **Safe to spend, front and center.** Hibi takes your paycheck, sets aside bills and savings first, then splits what's left across the days until your next payday. The big number is what you can spend today, with a daily amount and a "you're under or over your usual pace" line.

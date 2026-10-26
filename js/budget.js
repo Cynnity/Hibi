@@ -587,3 +587,5 @@ function bgBadgeStats(o) {
   for (let i = 0; i < 8 && per.to >= first; i++) { const C = bgCalc(per, true); if (C.n >= 3 && C.pool > 0 && C.left >= 0) o.bgUnder++; per = bgPeriodAt(addDays(per.from, -1)); }
 }
 normalizeBg(S);
+// This file loads after the state was built, so add Budget to the mode order here
+S.order = [...S.order.filter(k => MODES[k]), ...Object.keys(MODES).filter(k => k !== 'home' && !S.order.includes(k))];
