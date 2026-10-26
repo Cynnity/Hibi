@@ -9,6 +9,13 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.6.1 — "One Wallet, Three Cards" (Oct 26)
+- **Rewards for each card.** Card rewards now lists every card with its own balance. It starts with Discover it, Capital One and Bank of America, and you can edit, delete or add more.
+- **Points or cash back.** Each card has "each point is worth", so cash back counts as 1 and points or miles can be about 0.01. Type your points, and Hibi shows the dollars.
+- **Pick the card on a purchase.** "Paid with card rewards" now has a card picker, so each card's balance counts down on its own. Anything you had entered before moves to an "Other rewards" card.
+
+---
+
 ## 3.6 — "Points Well Spent" (Oct 26)
 - **Card rewards.** Accounts now has a Card rewards box. Type what your points or cash back are worth, and it counts down as you use them.
 - **Pay with rewards.** Any purchase has a new "Paid with card rewards" amount. That part comes off your rewards instead of your safe to spend, so it acts a bit like extra money without being income. Partial amounts work.

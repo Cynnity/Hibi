@@ -39,6 +39,12 @@ function normalizeBg(s) {
   g.tx.forEach(x => { if (x.kind !== 'in') x.kind = 'out'; if (!x.cat) x.cat = 'other'; if (!x.rev) x.rev = 0; x.pts = x.kind !== 'in' && x.pts > 0 ? Math.min(+x.pts, x.amt) : 0; if (typeof x.name !== 'string') x.name = ''; });
   if (!Array.isArray(g.bills)) g.bills = [];
   if (!g.pts || typeof g.pts !== 'object') g.pts = {bal:0, asOf:today()}; g.pts.bal = Math.max(0, +g.pts.bal || 0); if (!g.pts.asOf) g.pts.asOf = today();
+  if (!Array.isArray(g.cards)) {   // 3.6.1: rewards are kept per card. Start with the cards from his bank, plus one for anything entered before
+    g.cards = [['d1', 'Discover it', '🟧'], ['c1', 'Capital One', '🟦'], ['b1', 'Bank of America', '🟥']].map(([id, name, em]) => ({id, name, em, bal:0, val:1, asOf:today()}));
+    if (g.pts.bal > 0 || g.tx.some(x => x.pts > 0)) { g.cards.push({id:'o1', name:'Other rewards', em:'🎁', bal:g.pts.bal, val:1, asOf:g.pts.asOf}); g.tx.forEach(x => { if (x.pts > 0) x.pc = 'o1'; }); }
+  }
+  g.cards = g.cards.filter(c => c && c.id && c.name).map(c => ({id:String(c.id), name:String(c.name).slice(0, 24), em:String(c.em || '💳').slice(0, 4), bal:Math.max(0, +c.bal || 0), val:+c.val > 0 ? +c.val : 1, asOf:c.asOf || today(), at:+c.at || 0}));
+  g.tx.forEach(x => { if (x.pts > 0 && !g.cards.some(c => c.id === x.pc)) x.pc = g.cards[0] ? g.cards[0].id : ''; });
   ['plan', 'learn', 'paid', 'moved'].forEach(k => { if (!g[k] || typeof g[k] !== 'object' || Array.isArray(g[k])) g[k] = {}; });
   if (!g.base || typeof g.base !== 'object') g.base = {};
   if (!g.base.b || typeof g.base.b !== 'object') g.base.b = {};
@@ -241,7 +247,7 @@ function bgTxForm(ed) {
     <div class="ff"><label>Amount ($)<input class="input" name="amt" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed ? esc(ed.amt) : ''}"></label><label>Date<input class="input" type="date" name="d" value="${esc(ed ? ed.d : today())}"></label></div>
     <label>What was it?<input class="input" name="name" placeholder="Shell, Publix, SunPass…" autocomplete="off" autocapitalize="words" value="${ed ? esc(ed.name) : ''}"></label>
     <label>Category<select class="input" name="cat">${bgCatOpts(ed ? ed.cat : '', !ed)}</select></label>
-    <label>Paid with card rewards ($)<small class="muted" style="display:block;font-weight:600">Points or cash back you used. It comes off your rewards instead of your budget.</small><input class="input" name="pts" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed && ed.pts ? esc(ed.pts) : ''}"></label>
+    <label>Paid with card rewards ($)<small class="muted" style="display:block;font-weight:600">Points or cash back you used. It comes off your rewards instead of your budget.</small><div class="ff"><input class="input" name="pts" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed && ed.pts ? esc(ed.pts) : ''}" aria-label="Amount paid with rewards"><select class="input" name="pc" aria-label="Which card's rewards">${S.bg.cards.map(c => opt(c.id, c.em + ' ' + c.name, ed && ed.pc ? ed.pc : UI.bgPc || '')).join('')}</select></div></label>
     <label class="setrow"><span>Money coming in<small class="muted" style="display:block;font-weight:600">Like a gift or something you sold</small></span><input type="checkbox" name="kin"${ed && ed.kind === 'in' ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
     <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
 }
@@ -301,7 +307,7 @@ function viewBgo() {
 function bgRow(x) {
   const c = bgCat(x.cat), inc = x.kind === 'in';
   return swipeWrap(`<div class="bgtx" data-act="bgTxEdit" data-id="${esc(x.id)}" role="button" tabindex="0"><span class="bgem" style="--c:${c.color}">${esc(inc ? '💵' : c.em)}</span>
-    <div><b>${esc(x.name)}</b><span class="small muted">${inc ? (x.rf === 'yes' && bgRefundOn(x) ? 'Refund of ' + esc((bgFind(x.of) || {}).name || 'a purchase') : bgAsk(x) ? 'Maybe a refund · needs a look' : 'Money in') : esc(c.name)}${x.rev ? ' · needs a look' : ''}${!inc && x.pts ? ` · ${cash2(x.pts)} from rewards` : ''}${!inc && bgNet(x) < x.amt - (x.pts || 0) - 0.005 ? ` · ${cash2(x.amt - (x.pts || 0) - bgNet(x))} refunded` : ''}</span></div><b class="bgamt${inc ? ' in' : ''}">${inc ? '+' : ''}${cash2(x.amt)}</b></div>`,
+    <div><b>${esc(x.name)}</b><span class="small muted">${inc ? (x.rf === 'yes' && bgRefundOn(x) ? 'Refund of ' + esc((bgFind(x.of) || {}).name || 'a purchase') : bgAsk(x) ? 'Maybe a refund · needs a look' : 'Money in') : esc(c.name)}${x.rev ? ' · needs a look' : ''}${!inc && x.pts ? ` · ${cash2(x.pts)} from ${esc((S.bg.cards.find(c => c.id === x.pc) || {name:''}).name)} rewards` : ''}${!inc && bgNet(x) < x.amt - (x.pts || 0) - 0.005 ? ` · ${cash2(x.amt - (x.pts || 0) - bgNet(x))} refunded` : ''}</span></div><b class="bgamt${inc ? ' in' : ''}">${inc ? '+' : ''}${cash2(x.amt)}</b></div>`,
     {r:['bgTxEdit', 'Edit'], l:['bgTxDel', 'Delete'], data:{id:x.id}});
 }
 function bgFiltered() {
@@ -595,14 +601,20 @@ Object.assign(SAVE, {
     const amt = num(o.amt); if (!(amt > 0)) { toast('Add the amount.'); return false; }
     const ed = UI.edit && UI.edit.kind === 'bgtx' ? S.bg.tx.find(x => x.id === UI.edit.id) : null, kind = o.kin === 'on' ? 'in' : 'out';
     if (ed) {
-      Object.assign(ed, {amt:Math.round(amt * 100) / 100, d:o.d || ed.d, name:o.name || ed.name, kind}); ed.pts = kind === 'in' ? 0 : Math.min(Math.max(0, num(o.pts)), ed.amt);
+      Object.assign(ed, {amt:Math.round(amt * 100) / 100, d:o.d || ed.d, name:o.name || ed.name, kind}); ed.pts = kind === 'in' ? 0 : Math.min(Math.max(0, num(o.pts)), ed.amt); ed.pc = ed.pts ? o.pc || '' : '';
       if (kind === 'in') { ed.rev = 0; if (!ed.rf) bgScanRefunds(); } else if (o.cat && (o.cat !== ed.cat || ed.rev)) { ed.cat = o.cat; ed.rev = 0; ed.why = 'manual'; bgLearn(ed); }
       UI.open.bgTxForm = false; toast('Updated.'); return;
     }
-    const x = bgMk({amt, d:o.d, name:o.name, cat:o.cat, kind}); x.pts = kind === 'in' ? 0 : Math.min(Math.max(0, num(o.pts)), x.amt); S.bg.tx.push(x); if (o.cat && o.name) bgLearn(x); if (kind === 'in' && bgScanRefunds()) { toast('That looks like a refund. Check Review.'); return; }
+    const x = bgMk({amt, d:o.d, name:o.name, cat:o.cat, kind}); x.pts = kind === 'in' ? 0 : Math.min(Math.max(0, num(o.pts)), x.amt); x.pc = x.pts ? o.pc || '' : ''; if (x.pc) UI.bgPc = x.pc; S.bg.tx.push(x); if (o.cat && o.name) bgLearn(x); if (kind === 'in' && bgScanRefunds()) { toast('That looks like a refund. Check Review.'); return; }
     const c = bgCat(x.cat); toast(kind === 'in' ? `Added ${cash2(x.amt)} coming in.` : `${cash2(x.amt)} → ${c.em} ${c.name}.${x.rev ? ' Not sure about that one, so it\'s in Review.' : ''}`); haptic();
   },
-  bgpts: o => { const v = num(o.v); if (!(v >= 0) || o.v === '') { toast('Type your rewards balance.'); return false; } S.bg.pts = {bal:Math.round(v * 100) / 100, asOf:today()}; toast('Rewards updated.'); },
+  bgpts: o => { const c = S.bg.cards.find(x => x.id === o.id), v = num(o.v); if (!c) return false; if (!(v >= 0) || String(o.v || '').trim() === '') { toast('Type what you have now.'); return false; } Object.assign(c, {bal:v, asOf:today(), at:Date.now()}); toast(`${c.name} updated.`); },
+  bgcard: o => {
+    const name = (o.name || '').trim(); if (!name) { toast('Give the card a name.'); return false; }
+    const ed = UI.edit && UI.edit.kind === 'bgcard' ? S.bg.cards.find(c => c.id === UI.edit.id) : null, val = num(o.val) > 0 ? num(o.val) : 1, em = (o.em || '').trim().slice(0, 4) || '💳';
+    if (ed) { Object.assign(ed, {name:name.slice(0, 24), em, val}); UI.open.bgCardForm = false; toast('Saved.'); return; }
+    S.bg.cards.push({id:'k' + Date.now().toString(36), name:name.slice(0, 24), em, bal:Math.max(0, num(o.bal)), val, asOf:today(), at:Date.now()}); UI.open.bgCardForm = false; toast(`Added ${name}.`);
+  },
   bgbill: o => {
     const price = num(o.price); if (!o.name || !(price > 0)) { toast('Add the name and amount.'); return false; } if (!o.start) { toast('Add when it is next due.'); return false; }
     const rec = {name:o.name.trim(), em:(o.em || '').trim(), price:Math.round(price * 100) / 100, cycle:o.cycle || 'month', start:o.start, trial:false, note:''};
@@ -680,12 +692,26 @@ function bgAcctForm(ed) {
     <label class="setrow"><span>Count my Work paychecks<small class="muted" style="display:block;font-weight:600">Adds each payday after the date you entered</small></span><input type="checkbox" name="work"${!ed || ed.work ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
     <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add account'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
 }
-const bgPtsLeft = () => { const p = S.bg.pts, used = S.bg.tx.filter(x => x.kind !== 'in' && x.d > p.asOf).reduce((t, x) => t + (x.pts || 0), 0); return {left:Math.max(0, p.bal - used), used}; };
+const bgMadeAt = x => { const n = parseInt(String(x.id).slice(1, -4), 36); return n > 1e12 ? n : 0; };
+// Spending after the day you typed the balance counts. On that same day it counts only if you logged it after typing the balance
+const bgCardLeft = c => { const used = S.bg.tx.filter(x => x.kind !== 'in' && x.pc === c.id && (x.d > c.asOf || (x.d === c.asOf && bgMadeAt(x) >= (c.at || 0)))).reduce((t, x) => t + (x.pts || 0), 0); return {used, left:Math.max(0, c.bal * c.val - used)}; };
+const bgPtsLeft = () => S.bg.cards.reduce((o, c) => { const r = bgCardLeft(c); o.left += r.left; o.used += r.used; return o; }, {left:0, used:0});
+function bgCardForm(ed) {
+  return `<form data-form="bgcard" class="stack">
+    <div class="field"><input class="input" name="em" value="${ed ? esc(ed.em) : '💳'}" aria-label="Emoji" style="flex:0 0 58px;text-align:center;font-size:22px" maxlength="4"><input class="input" name="name" placeholder="Card name" value="${ed ? esc(ed.name) : ''}" aria-label="Card name" maxlength="24"></div>
+    <label>Each point is worth ($)<small class="muted" style="display:block;font-weight:600">Cash back: 1. Points or miles are often about 0.01.</small><input class="input" name="val" inputmode="decimal" placeholder="1" value="${ed ? esc(ed.val) : ''}"></label>
+    ${ed ? '' : '<label>What you have now<small class="muted" style="display:block;font-weight:600">Dollars of cash back, or your number of points</small><input class="input" name="bal" inputmode="decimal" placeholder="0"></label>'}
+    <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add card'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
+}
 function bgRewardsCard() {
-  const p = S.bg.pts, R = bgPtsLeft();
+  const R = bgPtsLeft(), ed = UI.edit && UI.edit.kind === 'bgcard' ? S.bg.cards.find(c => c.id === UI.edit.id) : null;
   return `<section class="card"><div class="row"><h2>🎁 Card rewards</h2><b>${bgM(R.left)}</b></div>
-    <p class="note">${p.bal || R.used ? `You had ${bgM(p.bal)} on ${esc(fmtShort(p.asOf))}${R.used ? `, and have used ${bgM(R.used)} since` : ''}.` : 'Points or cash back from your cards, counted in dollars.'} When you pay for something with them, add the amount in "Paid with card rewards" on that purchase. That part comes off your rewards and doesn't use up your safe to spend.</p>
-    <form data-form="bgpts" class="field mt"><input class="input" name="v" inputmode="decimal" placeholder="Update what you have now" aria-label="Rewards balance in dollars"><button class="btn ghost" type="submit">Update</button></form></section>`;
+    <p class="note">Points and cash back for each card, in dollars. When you pay for something with them, add the amount and pick the card on that purchase. It comes off that card's rewards and doesn't use up your safe to spend.</p>
+    ${S.bg.cards.map(c => { const r = bgCardLeft(c), pt = c.val !== 1; return `<div class="bgcardrow"><div class="row"><b>${esc(c.em)} ${esc(c.name)}</b><b>${bgM(r.left)}</b></div>
+      <span class="small muted">${pt ? `${Math.round(c.bal).toLocaleString()} points at ${cash2(c.val)} each on ${esc(fmtShort(c.asOf))}` : `${bgM(c.bal)} on ${esc(fmtShort(c.asOf))}`}${r.used ? `, ${bgM(r.used)} used since` : ''}</span>
+      <form data-form="bgpts" class="field mt"><input type="hidden" name="id" value="${esc(c.id)}"><input class="input" name="v" inputmode="decimal" placeholder="${pt ? 'Points you have now' : 'What you have now ($)'}" aria-label="Rewards now on ${esc(c.name)}"><button class="btn ghost" type="submit">Update</button></form>
+      <div class="row mt" style="justify-content:flex-start;gap:16px"><button class="link" data-act="bgCardEdit" data-id="${esc(c.id)}">Edit</button><button class="link danger" data-act="bgCardDel" data-id="${esc(c.id)}" data-confirm>Delete</button></div></div>`; }).join('')}
+    <details class="mt" ${det('bgCardForm', !!ed)}><summary class="link">${ed ? 'Edit ' + esc(ed.name) : 'Add a card'}</summary>${bgCardForm(ed)}</details></section>`;
 }
 function viewBacct() {
   const A = S.bg.accts, ed = UI.edit && UI.edit.kind === 'bgacct' ? A.find(x => x.id === UI.edit.id) : null, tot = bgTotalBal();
@@ -730,7 +756,7 @@ function viewBtot() {
     : emptyCard(y === 'all' ? 'Nothing tracked yet' : `Nothing in ${y}`, 'Add or import your spending and your year and lifetime totals show up here.', 'Add spending', 'data-act="go" data-to="btx"')}`;
 }
 Object.assign(XVIEWS, {btot:viewBtot, bacct:viewBacct});
-Object.assign(FORM_KEY, {bgacct:'bgAcctForm'});
+Object.assign(FORM_KEY, {bgacct:'bgAcctForm', bgcard:'bgCardForm'});
 Object.assign(XACT, {
   bgIncWork: d => { const per = bgPer(+d.v || 0), v = bgWorkIn(per); if (!(v > 0)) { toast('No Work paychecks land in that time.'); return false; } (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).inc = Math.round(v * 100) / 100; toast('Income set from your Work pay.'); },
   bgIncPrev: d => { const per = bgPer(+d.v || 0), pv = bgPer((+d.v || 0) - 1), p = S.bg.plan[pv.key], v = p && p.inc != null && p.inc !== '' ? num(p.inc) : bgIncome(pv).base; if (!(v > 0)) { toast('Last one has no income to copy.'); return false; } (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).inc = Math.round(v * 100) / 100; toast(`Income set to ${bgM(v)}.`); },
@@ -738,6 +764,8 @@ Object.assign(XACT, {
   bgView: d => { UI.bgView = +d.n === 0 ? 0 : Math.max(-36, Math.min(36, (UI.bgView || 0) + +d.n)); },
   bgY: d => { const yr = new Date().getFullYear(); if (d.v === 'all') UI.bgYear = 'all'; else if (d.v === 'year') UI.bgYear = yr; else { const c = UI.bgYear === 'all' ? yr : (UI.bgYear || yr); UI.bgYear = Math.min(yr, c + +d.n); } },
   bgAcctEdit: d => { UI.edit = {kind:'bgacct', id:d.id}; UI.open.bgAcctForm = true; setTimeout(() => { const f = $('form[data-form="bgacct"]'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); },
+  bgCardEdit: d => { UI.edit = {kind:'bgcard', id:d.id}; UI.open.bgCardForm = true; },
+  bgCardDel: d => { S.bg.cards = S.bg.cards.filter(c => c.id !== d.id); S.bg.tx.forEach(x => { if (x.pc === d.id) { x.pts = 0; x.pc = ''; } }); UI.edit = null; },
   bgAcctDel: d => { S.bg.accts = S.bg.accts.filter(a => a.id !== d.id); UI.edit = null; },
 });
 Object.assign(SAVE, {
