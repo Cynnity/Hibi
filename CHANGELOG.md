@@ -9,6 +9,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.5 — "Money Back" (Oct 26)
+- **Hibi spots refunds.** When money comes in that matches something you bought (same amount or part of it, similar name, within 60 days), it shows up in Review as "Looks like a refund for…". Swipe right to confirm, left if it's something else.
+- **Confirmed refunds cancel the spending.** That purchase comes back off its category and month, so safe to spend goes back up. The refund isn't counted as income. Say no and it stays as normal money in.
+- **Imports pair them up.** Even with "Also import money coming in" off, a credit that matches a purchase is brought in for you to confirm. Everything else is skipped like before.
+- Spending shows "$21.04 refunded" on the purchase and "Refund of Apple" on the money in.
+
+---
+
 ## 3.4.2 — "Counted Once" (Oct 26)
 - **Fixed income being counted twice.** If you typed what you expect to make and also imported your paychecks as money coming in, Budget added both together, so safe to spend looked far too high. Imported money in now replaces your estimate instead of stacking on top of it. Once more arrives than you expected, the real total is used.
 - Money you add by hand (a gift, something you sold) still adds on top, as before.

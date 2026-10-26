@@ -100,6 +100,32 @@ function bgLearn(x) {
   return n;
 }
 
+/* ----- Refunds: money back for a purchase cancels it out, once you say yes ----- */
+const BG_RFSKIP = new Set(['pay', 'card', 'refund', 'return', 'credit', 'purchase', 'payment', 'the', 'inc', 'llc', 'com']);
+const bgWords = n => bgClean(n).split(' ').filter(w => w.length >= 3 && !BG_RFSKIP.has(w));
+const bgRefundOn = x => x.kind === 'in' && (x.rf === 'yes' || x.rf === 'ask') && S.bg.tx.some(p => p.id === x.of);
+const bgAsk = x => x.kind === 'in' && x.rf === 'ask' && S.bg.tx.some(p => p.id === x.of);
+function bgNet(x) {
+  if (x.kind === 'in') return x.amt;
+  const r = S.bg.tx.reduce((t, y) => t + (y.kind === 'in' && y.rf === 'yes' && y.of === x.id ? y.amt : 0), 0);
+  return r ? Math.max(0, Math.round((x.amt - r) * 100) / 100) : x.amt;
+}
+function bgFindRefund(r, pool) {
+  const rw = bgWords(r.name), taken = new Set(S.bg.tx.filter(y => y.kind === 'in' && (y.rf === 'yes' || y.rf === 'ask') && y.of).map(y => y.of));
+  const C = pool.filter(p => p.kind !== 'in' && !taken.has(p.id) && p.d <= r.d && dayDiff(p.d, r.d) <= 60 && p.amt + 0.005 >= r.amt).map(p => {
+    const pw = bgWords(p.name), nm = rw.some(a => pw.some(b => a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a))))), eq = Math.abs(p.amt - r.amt) < 0.005;
+    return {p, score:eq && nm ? 3 : nm ? 2 : eq ? 1 : 0, ago:dayDiff(p.d, r.d)};
+  }).filter(c => c.score > 0).sort((a, b) => b.score - a.score || a.ago - b.ago);
+  if (!C.length) return null;
+  if (C[0].score === 1 && (C.filter(c => c.score === 1).length > 1 || r.amt < 5)) return null;   // same amount with a different name has to be unambiguous
+  return C[0].p;
+}
+function bgScanRefunds() {
+  let n = 0;
+  S.bg.tx.filter(x => x.kind === 'in' && !x.rf).forEach(x => { const p = bgFindRefund(x, S.bg.tx); if (p) { x.rf = 'ask'; x.of = p.id; n++; } });
+  return n;
+}
+
 /* ----- Periods, income, bills ----- */
 const bgPayOn = () => S.bg.per === 'pay' && wkReady();
 // Paychecks (Work mode periods) whose payday falls in a range
@@ -133,7 +159,7 @@ function bgTypical() {
   return L.length ? L.reduce((a, b) => a + b, 0) / L.length : 0;
 }
 function bgIncome(per) {
-  const g = S.bg, pl = g.plan[per.key] || {}, ins = g.tx.filter(x => x.kind === 'in' && x.d >= per.from && x.d <= per.to), sum = L => L.reduce((t, x) => t + x.amt, 0), csvIn = sum(ins.filter(x => x.src === 'csv')), hand = sum(ins.filter(x => x.src !== 'csv'));
+  const g = S.bg, pl = g.plan[per.key] || {}, ins = g.tx.filter(x => x.kind === 'in' && x.d >= per.from && x.d <= per.to && !bgRefundOn(x)), sum = L => L.reduce((t, x) => t + x.amt, 0), csvIn = sum(ins.filter(x => x.src === 'csv')), hand = sum(ins.filter(x => x.src !== 'csv'));
   let base, note;
   if (pl.inc != null && pl.inc !== '') { base = num(pl.inc); note = 'You set this'; }
   else if (g.src === 'entered') { base = 0; note = 'Enter this month\'s income'; }
@@ -174,15 +200,15 @@ function bgCalc(per, noRoll) {
   if (g.roll && !noRoll) { const pv = bgPeriodAt(addDays(per.from, -1)); if (pv.to < per.from && pv.to < today()) { const c = bgCalc(pv, true); if (c.n) roll = Math.max(0, c.left); } }
   const pool = inc.total - billsTotal - sv + roll;
   const flex = bgTxIn(per).filter(x => x.kind !== 'in' && bgCat(x.cat).kind === 'flex');
-  const spent = flex.reduce((t, x) => t + x.amt, 0), bud = bgBudgetsOf(per), t0 = today();
+  const spent = flex.reduce((t, x) => t + bgNet(x), 0), bud = bgBudgetsOf(per), t0 = today();
   const inP = t0 >= per.from && t0 <= per.to, daysLeft = inP ? dayDiff(t0, per.to) + 1 : t0 < per.from ? per.days : 0;
-  const spentToday = inP ? flex.filter(x => x.d === t0).reduce((t, x) => t + x.amt, 0) : 0, left = pool - spent;
-  const by = S.bg.cats.filter(c => c.kind === 'flex').map(c => { const b = num(bud[c.id]), s = flex.filter(x => x.cat === c.id).reduce((t, x) => t + x.amt, 0); return {c, b, s, left:b - s, perDay:daysLeft ? (b - s) / daysLeft : 0}; });
+  const spentToday = inP ? flex.filter(x => x.d === t0).reduce((t, x) => t + bgNet(x), 0) : 0, left = pool - spent;
+  const by = S.bg.cats.filter(c => c.kind === 'flex').map(c => { const b = num(bud[c.id]), s = flex.filter(x => x.cat === c.id).reduce((t, x) => t + bgNet(x), 0); return {c, b, s, left:b - s, perDay:daysLeft ? (b - s) / daysLeft : 0}; });
   const elapsed = inP ? dayDiff(per.from, t0) : t0 > per.to ? per.days : 0;
   return {per, inc, bills, billsTotal, sv, roll, pool, spent, left, by, daysLeft, perDay:daysLeft ? left / daysLeft : 0, spentToday,
     todayCan:daysLeft ? Math.max(0, (left + spentToday) / daysLeft - spentToday) : 0, pace:pool * (elapsed / per.days) - (spent - spentToday), inP, n:flex.length, assigned:by.reduce((t, x) => t + x.b, 0)};
 }
-const bgRevList = () => { const sk = UI.bgSkip || [], L = S.bg.tx.filter(x => x.rev).slice().reverse().sort((a, b) => b.d.localeCompare(a.d)); return [...L.filter(x => !sk.includes(x.id)), ...L.filter(x => sk.includes(x.id))]; };
+const bgRevList = () => { const sk = UI.bgSkip || [], L = S.bg.tx.filter(x => x.rev || bgAsk(x)).slice().reverse().sort((a, b) => b.d.localeCompare(a.d)); return [...L.filter(x => !sk.includes(x.id)), ...L.filter(x => sk.includes(x.id))]; };
 function bgSubtitle() {
   if (S.tab === 'brev') { const n = bgRevList().length; return n ? `${plural(n, 'purchase')} to check` : 'Everything is sorted'; }
   if (S.tab === 'bbills') return `${bgM(bgBillsIn(bgPer(0)).reduce((t, b) => t + b.amt, 0))} set aside this period`;
@@ -272,7 +298,7 @@ function viewBgo() {
 function bgRow(x) {
   const c = bgCat(x.cat), inc = x.kind === 'in';
   return swipeWrap(`<div class="bgtx" data-act="bgTxEdit" data-id="${esc(x.id)}" role="button" tabindex="0"><span class="bgem" style="--c:${c.color}">${esc(inc ? '💵' : c.em)}</span>
-    <div><b>${esc(x.name)}</b><span class="small muted">${inc ? 'Money in' : esc(c.name)}${x.rev ? ' · needs a look' : ''}</span></div><b class="bgamt${inc ? ' in' : ''}">${inc ? '+' : ''}${cash2(x.amt)}</b></div>`,
+    <div><b>${esc(x.name)}</b><span class="small muted">${inc ? (x.rf === 'yes' && bgRefundOn(x) ? 'Refund of ' + esc((bgFind(x.of) || {}).name || 'a purchase') : bgAsk(x) ? 'Maybe a refund · needs a look' : 'Money in') : esc(c.name)}${x.rev ? ' · needs a look' : ''}${!inc && bgNet(x) < x.amt ? ` · ${cash2(x.amt - bgNet(x))} refunded` : ''}</span></div><b class="bgamt${inc ? ' in' : ''}">${inc ? '+' : ''}${cash2(x.amt)}</b></div>`,
     {r:['bgTxEdit', 'Edit'], l:['bgTxDel', 'Delete'], data:{id:x.id}});
 }
 function bgFiltered() {
@@ -294,7 +320,7 @@ function bgImportCard() {
     <p class="note">Download a CSV from your bank or card app (look for Export or Download on your transactions). Hibi sorts everything, skips ones it already has, and asks about the unsure ones in Review.</p>
     <label class="btn ghost file-btn">📄 Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" data-file="bgcsv" aria-label="Choose a bank CSV file"></label>
     <form data-form="bgcsvp" class="stack mt"><textarea class="input" name="csv" rows="3" placeholder="…or paste the rows here, with the column names on the first line" aria-label="Paste bank rows">${esc(t || '')}</textarea><button class="btn ghost" type="submit">Preview</button></form>
-    ${P ? (P.err ? `<p class="note" style="color:${BG_BAD}">${esc(P.err)}</p>` : `<div class="mt"><p class="note"><b>${plural(P.items.length, 'new purchase')}</b> from ${esc(fmtShort(P.from))} to ${esc(fmtShort(P.to))}${P.dups ? `, ${P.dups} already in Hibi` : ''}${P.credits ? `, ${P.credits} ${o.inc ? 'deposits added as money in' : 'deposits or credits skipped'}` : ''}.</p>
+    ${P ? (P.err ? `<p class="note" style="color:${BG_BAD}">${esc(P.err)}</p>` : `<div class="mt"><p class="note"><b>${plural(P.items.length, 'new purchase')}</b> from ${esc(fmtShort(P.from))} to ${esc(fmtShort(P.to))}${P.dups ? `, ${P.dups} already in Hibi` : ''}${P.refs ? `, ${P.refs} look${P.refs === 1 ? 's' : ''} like refund${P.refs === 1 ? '' : 's'} (you'll confirm in Review)` : ''}${P.credits ? `, ${P.credits} ${o.inc ? 'deposits added as money in' : 'deposits or credits skipped'}` : ''}.</p>
       ${P.items.slice(0, 4).map(i => { const c = bgCat(i.cat); return `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(i.kind === 'in' ? '💵' : c.em)} ${esc(i.name)}<small class="muted">${esc(fmtShort(i.d))} · ${i.kind === 'in' ? 'Money in' : esc(c.name)}${i.conf < 2 ? ' · will ask' : ''}</small></span><span>${cash2(i.amt)}</span></div>`; }).join('')}
       <div class="ff mt"><label>Which amounts are spending?<select class="input" data-bind="bgcsvsign"><option value="auto"${(o.sign || 'auto') === 'auto' ? ' selected' : ''}>Detect it for me</option><option value="neg"${o.sign === 'neg' ? ' selected' : ''}>Negative amounts</option><option value="pos"${o.sign === 'pos' ? ' selected' : ''}>Positive amounts</option></select></label></div>
       <label class="setrow"><span>Also import money coming in<small class="muted" style="display:block;font-weight:600">Leave off if your paycheck is already counted from Work</small></span><input type="checkbox" data-bind="bgcsvinc"${o.inc ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
@@ -346,13 +372,14 @@ function bgCsvPlan(text) {
   let neg = 0, pos = 0; if (!split) data.forEach(r => { const v = bgAmtOf(r[iA]); if (v < 0) neg++; else if (v > 0) pos++; });
   const spendNeg = o.sign === 'neg' ? true : o.sign === 'pos' ? false : neg >= pos;
   const have = new Map(); S.bg.tx.forEach(x => { const k = x.d + '|' + x.amt.toFixed(2) + '|' + bgClean(x.name) + '|' + x.kind; have.set(k, (have.get(k) || 0) + 1); });
-  const seen = new Map(), items = []; let dups = 0, credits = 0, bad = 0;
+  const seen = new Map(), items = []; let dups = 0, credits = 0, bad = 0, refs = 0;
   data.forEach(r => {
     const d = bgDateOf(r[iD]), name = r[iN] || ''; let amt, kind;
     if (split) { const db = Math.abs(bgAmtOf(r[iDeb]) || 0), cr = iCr >= 0 ? Math.abs(bgAmtOf(r[iCr]) || 0) : 0; if (db > 0) { amt = db; kind = 'out'; } else if (cr > 0) { amt = cr; kind = 'in'; } }
     else { const v = bgAmtOf(r[iA]); if (!isNaN(v) && v !== 0) { amt = Math.abs(v); kind = (spendNeg ? v < 0 : v > 0) ? 'out' : 'in'; } }
     if (!d || !amt || !name) { bad++; return; }
-    if (kind === 'in' && (!o.inc || BG_XFER.test(name.trim()))) { credits++; return; }
+    if (kind === 'in' && BG_XFER.test(name.trim())) { credits++; return; }
+    if (kind === 'in' && !o.inc) { const pool = S.bg.tx.concat(items.filter(i => i.kind === 'out').map(i => ({id:'~' + i.d + i.name, kind:'out', d:i.d, amt:i.amt, name:i.name}))); if (!bgFindRefund({d, amt, name}, pool)) { credits++; return; } refs++; }
     if (kind === 'out' && BG_XFER.test(name.trim())) { credits++; return; }
     const key = d + '|' + amt.toFixed(2) + '|' + bgClean(name) + '|' + kind, n = (seen.get(key) || 0) + 1; seen.set(key, n);
     if (n <= (have.get(key) || 0)) { dups++; return; }
@@ -361,11 +388,21 @@ function bgCsvPlan(text) {
   });
   if (!items.length && !dups && !credits) return {err:"I couldn't read any rows from that. Check that it's the transactions file."};
   const ds = items.map(i => i.d).sort();
-  return {items, dups, credits, bad, from:ds[0] || today(), to:ds[ds.length - 1] || today()};
+  return {items, dups, credits, bad, refs, from:ds[0] || today(), to:ds[ds.length - 1] || today()};
 }
 
 /* ----- Review (swipe) ----- */
+function bgRefundCard(x, live) {
+  const p = bgFind(x.of), pc = p ? bgCat(p.cat) : null, part = p && x.amt < p.amt - 0.005;
+  return `<div class="bgcard${live ? '' : ' behind'}"${live ? ` data-live data-id="${esc(x.id)}"` : ''}>
+    ${live ? '<div class="bgstamp ok">REFUND</div><div class="bgstamp no">NOPE</div>' : ''}
+    <span class="small muted">${esc(fmtWd(x.d))} · money in</span><div class="bg-merch">${esc(x.name)}</div><div class="bg-amt">+${cash2(x.amt)}</div>
+    <p class="bg-q">Looks like ${part ? 'part of' : ''} a refund for</p><div class="bg-guess" style="--c:${pc ? pc.color : 'var(--accent)'}">${esc(p ? p.name : 'a purchase')} · ${cash2(p ? p.amt : 0)}</div>
+    <p class="small muted">${p ? esc(fmtWd(p.d)) : ''}${pc ? ` · ${esc(pc.em)} ${esc(pc.name)}` : ''}. If yes, that spending comes back off your budget.</p>
+    ${live ? `<div class="btns bg-btns"><button class="btn ghost" data-act="bgNo" data-id="${esc(x.id)}" aria-label="Not a refund">✗ Not a refund</button><button class="btn" data-act="bgOk" data-id="${esc(x.id)}" aria-label="Yes, a refund">✓ Yes, refund</button></div>` : ''}</div>`;
+}
 function bgCardHtml(x, live) {
+  if (bgAsk(x)) return bgRefundCard(x, live);
   const c = bgCat(x.cat), pick = live && (UI.bgPick === x.id || x.why === 'none');
   return `<div class="bgcard${live ? '' : ' behind'}"${live ? ` data-live data-id="${esc(x.id)}"` : ''}>
     ${live ? '<div class="bgstamp ok">RIGHT</div><div class="bgstamp no">NOT QUITE</div>' : ''}
@@ -506,8 +543,8 @@ Object.assign(FORM_KEY, {bgtx:'bgTxForm', bgbill:'bgBillForm', bgcat:'bgCatNew'}
 const bgFind = id => S.bg.tx.find(x => x.id === id);
 function bgCheckEmpty() { if (!bgRevList().length) { setTimeout(() => confetti(30), 120); toast('All sorted. Nice!'); } }
 Object.assign(XACT, {
-  bgOk: d => { const x = bgFind(d.id); if (!x) return false; if (x.why === 'none') { UI.bgPick = x.id; toast('Pick a category for this one first.'); return; } x.rev = 0; if (x.why === 'rule' || x.why === 'none') x.why = 'manual'; const n = bgLearn(x); S.bg.n.rev++; UI.bgPick = null; haptic(); toast(n ? `Got it. ${plural(n, 'other purchase')} from them sorted too.` : 'Got it.'); if (!bgRevList().length) bgCheckEmpty(); },
-  bgNo: d => { UI.bgPick = d.id; },
+  bgOk: d => { const x = bgFind(d.id); if (!x) return false; if (bgAsk(x)) { x.rf = 'yes'; S.bg.n.rev++; haptic(); toast(`Refund counted. ${cash2(x.amt)} back in your budget.`); if (!bgRevList().length) bgCheckEmpty(); return; } if (x.why === 'none') { UI.bgPick = x.id; toast('Pick a category for this one first.'); return; } x.rev = 0; if (x.why === 'rule' || x.why === 'none') x.why = 'manual'; const n = bgLearn(x); S.bg.n.rev++; UI.bgPick = null; haptic(); toast(n ? `Got it. ${plural(n, 'other purchase')} from them sorted too.` : 'Got it.'); if (!bgRevList().length) bgCheckEmpty(); },
+  bgNo: d => { const x = bgFind(d.id); if (x && bgAsk(x)) { x.rf = 'no'; toast('Left as money in.'); if (!bgRevList().length) bgCheckEmpty(); return; } UI.bgPick = d.id; },
   bgSet: d => { const x = bgFind(d.id); if (!x) return false; x.cat = d.c; x.rev = 0; x.why = 'manual'; const n = bgLearn(x); S.bg.n.rev++; UI.bgPick = null; haptic(); const c = bgCat(d.c);
     toast(`${c.em} ${c.name}.${n ? ` ${plural(n, 'other purchase')} from them sorted too.` : ' I\'ll remember that.'}`); if (!bgRevList().length) bgCheckEmpty(); },
   bgSkip: d => { UI.bgSkip = [...(UI.bgSkip || []).filter(i => i !== d.id), d.id]; UI.bgPick = null; },
@@ -542,7 +579,7 @@ Object.assign(XACT, {
   bgCsvGo: () => {
     const P = UI.bgCsvText ? bgCsvPlan(UI.bgCsvText) : null; if (!P || P.err || !P.items.length) { toast('Nothing to import.'); return false; }
     let rv = 0; P.items.forEach(i => { const x = bgMk({d:i.d, amt:i.amt, name:i.name, kind:i.kind, src:'csv'}); if (x.rev) rv++; S.bg.tx.push(x); });
-    S.bg.n.imp += P.items.length; UI.bgCsvText = ''; UI.open.bgImp = false; toast(`Imported ${plural(P.items.length, 'purchase')}.${rv ? ` ${rv} need a quick look in Review.` : ''}`); if (rv) UI.bgRev = rv; },
+    const rn = bgScanRefunds(); S.bg.n.imp += P.items.length; UI.bgCsvText = ''; UI.open.bgImp = false; toast(`Imported ${plural(P.items.length, 'purchase')}.${rv + rn ? ` ${rv + rn} need a quick look in Review.` : ''}`); if (rv + rn) UI.bgRev = rv + rn; },
   bgCsvClear: () => { UI.bgCsvText = ''; },
   bgExport: () => {
     const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', rows = [['Date', 'Amount', 'Type', 'Category', 'Name', 'Note'].join(',')];
@@ -556,10 +593,10 @@ Object.assign(SAVE, {
     const ed = UI.edit && UI.edit.kind === 'bgtx' ? S.bg.tx.find(x => x.id === UI.edit.id) : null, kind = o.kin === 'on' ? 'in' : 'out';
     if (ed) {
       Object.assign(ed, {amt:Math.round(amt * 100) / 100, d:o.d || ed.d, name:o.name || ed.name, kind});
-      if (kind === 'in') { ed.rev = 0; } else if (o.cat && (o.cat !== ed.cat || ed.rev)) { ed.cat = o.cat; ed.rev = 0; ed.why = 'manual'; bgLearn(ed); }
+      if (kind === 'in') { ed.rev = 0; if (!ed.rf) bgScanRefunds(); } else if (o.cat && (o.cat !== ed.cat || ed.rev)) { ed.cat = o.cat; ed.rev = 0; ed.why = 'manual'; bgLearn(ed); }
       UI.open.bgTxForm = false; toast('Updated.'); return;
     }
-    const x = bgMk({amt, d:o.d, name:o.name, cat:o.cat, kind}); S.bg.tx.push(x); if (o.cat && o.name) bgLearn(x);
+    const x = bgMk({amt, d:o.d, name:o.name, cat:o.cat, kind}); S.bg.tx.push(x); if (o.cat && o.name) bgLearn(x); if (kind === 'in' && bgScanRefunds()) { toast('That looks like a refund. Check Review.'); return; }
     const c = bgCat(x.cat); toast(kind === 'in' ? `Added ${cash2(x.amt)} coming in.` : `${cash2(x.amt)} → ${c.em} ${c.name}.${x.rev ? ' Not sure about that one, so it\'s in Review.' : ''}`); haptic();
   },
   bgbill: o => {
@@ -658,11 +695,11 @@ function bgStats(y) {
   const first = S.bg.tx.map(x => x.d).sort()[0] || today(), yr = new Date().getFullYear();
   const from = y === 'all' ? first : `${y}-01-01`, to = y === 'all' || +y === yr ? today() : `${y}-12-31`;
   const tx = S.bg.tx.filter(x => x.d >= from && x.d <= to), out = tx.filter(x => x.kind !== 'in'), sum = L => L.reduce((t, x) => t + x.amt, 0);
-  const pcs = wkReady() ? bgPaychecks(from, to, 400) : [], work = pcs.reduce((t, P) => t + payFor(P).net, 0), inn = sum(tx.filter(x => x.kind === 'in'));
+  const pcs = wkReady() ? bgPaychecks(from, to, 400) : [], work = pcs.reduce((t, P) => t + payFor(P).net, 0), inn = sum(tx.filter(x => x.kind === 'in' && !bgRefundOn(x)));
   const mk = {}; const add = (k, f, v) => { (mk[k] = mk[k] || {spent:0, earned:0})[f] += v; };
-  out.forEach(x => add(x.d.slice(0, 7), 'spent', x.amt)); tx.filter(x => x.kind === 'in').forEach(x => add(x.d.slice(0, 7), 'earned', x.amt)); pcs.forEach(P => { const v = payFor(P).net; if (v > 0) add(P.pay.slice(0, 7), 'earned', v); });
+  out.forEach(x => add(x.d.slice(0, 7), 'spent', bgNet(x))); tx.filter(x => x.kind === 'in' && !bgRefundOn(x)).forEach(x => add(x.d.slice(0, 7), 'earned', x.amt)); pcs.forEach(P => { const v = payFor(P).net; if (v > 0) add(P.pay.slice(0, 7), 'earned', v); });
   const months = Object.keys(mk).sort(), n = Math.max(1, (+to.slice(0, 4) - +from.slice(0, 4)) * 12 + (+to.slice(5, 7) - +from.slice(5, 7)) + 1);
-  const mer = new Map(); out.forEach(x => { const c = bgClean(x.name), k = bgKey(c) || 'unknown', o = mer.get(k) || {name:x.name, sum:0, n:0}; o.sum += x.amt; o.n++; mer.set(k, o); });
+  const mer = new Map(); out.forEach(x => { const c = bgClean(x.name), k = bgKey(c) || 'unknown', o = mer.get(k) || {name:x.name, sum:0, n:0}; o.sum += bgNet(x); o.n++; mer.set(k, o); });
   const cats = S.bg.cats.map(c => ({c, v:sum(out.filter(x => x.cat === c.id))})).filter(o => o.v > 0).sort((a, b) => b.v - a.v);
   const big = out.slice().sort((a, b) => b.amt - a.amt)[0];
   return {from, to, spent:sum(out), bills:sum(out.filter(x => bgCat(x.cat).kind === 'bill')), earned:work + inn, n, count:out.length, months, mk, cats, mer:[...mer.values()].sort((a, b) => b.sum - a.sum).slice(0, 8), big};
@@ -713,5 +750,6 @@ function bgBadgeStats(o) {
   for (let i = 0; i < 8 && per.to >= first; i++) { const C = bgCalc(per, true); if (C.n >= 3 && C.pool > 0 && C.left >= 0) o.bgUnder++; per = bgPeriodAt(addDays(per.from, -1)); }
 }
 normalizeBg(S);
+bgScanRefunds();
 // This file loads after the state was built, so add Budget to the mode order here
 S.order = [...S.order.filter(k => MODES[k]), ...Object.keys(MODES).filter(k => k !== 'home' && !S.order.includes(k))];
