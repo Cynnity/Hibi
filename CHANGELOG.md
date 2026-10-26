@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.4.2 — "Counted Once" (Oct 26)
+- **Fixed income being counted twice.** If you typed what you expect to make and also imported your paychecks as money coming in, Budget added both together, so safe to spend looked far too high. Imported money in now replaces your estimate instead of stacking on top of it. Once more arrives than you expected, the real total is used.
+- Money you add by hand (a gift, something you sold) still adds on top, as before.
+
+---
+
 ## 3.4.1 — "Every Month Is Different" (Oct 26)
 - **Each month gets its own income.** Budget now asks what you expect to make this month (or this pay period) and uses that for safe-to-spend, since part-time pay moves around. Type it on Overview or Plan, and change it any time.
 - **Shortcuts for it:** "Use my Work pay" fills it in from the paychecks that land in that month, and "Same as last month" copies the previous one. Browse other months with ‹ and › to set them ahead of time.

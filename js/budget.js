@@ -133,7 +133,7 @@ function bgTypical() {
   return L.length ? L.reduce((a, b) => a + b, 0) / L.length : 0;
 }
 function bgIncome(per) {
-  const g = S.bg, pl = g.plan[per.key] || {}, extra = g.tx.filter(x => x.kind === 'in' && x.d >= per.from && x.d <= per.to).reduce((t, x) => t + x.amt, 0);
+  const g = S.bg, pl = g.plan[per.key] || {}, ins = g.tx.filter(x => x.kind === 'in' && x.d >= per.from && x.d <= per.to), sum = L => L.reduce((t, x) => t + x.amt, 0), csvIn = sum(ins.filter(x => x.src === 'csv')), hand = sum(ins.filter(x => x.src !== 'csv'));
   let base, note;
   if (pl.inc != null && pl.inc !== '') { base = num(pl.inc); note = 'You set this'; }
   else if (g.src === 'entered') { base = 0; note = 'Enter this month\'s income'; }
@@ -141,7 +141,10 @@ function bgIncome(per) {
   else if (g.src === 'work' && wkReady()) {
     const typ = bgTypical(); base = bgPaychecks(per.from, per.to).reduce((t, P) => t + (P.to < today() ? payFor(P).net : Math.max(payFor(P).net, typ)), 0); note = 'From your Work pay';
   } else { base = g.inc; note = g.src === 'work' ? 'Set up Work pay, or type your pay in Settings' : 'Your usual pay'; }
-  return {base, extra, total:base + extra, note};
+  // Money in from an import is what really arrived, so it replaces your estimate instead of stacking on top of it
+  const total = Math.max(base, csvIn) + hand, extra = total - base;
+  if (csvIn > base) note = 'Using the money you actually received';
+  return {base, extra, total, note};
 }
 const bgSaveAmt = (per, income) => { const p = S.bg.plan[per.key], s = S.bg.save; if (p && p.save != null && p.save !== '') return Math.max(0, num(p.save)); return Math.max(0, s.mode === 'pct' ? income * num(s.v) / 100 : num(s.v)); };
 const bgBudgetsOf = per => { const p = S.bg.plan[per.key]; return p && p.b ? p.b : S.bg.base.b; };
