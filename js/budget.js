@@ -43,7 +43,8 @@ function normalizeBg(s) {
   if (!g.base.b || typeof g.base.b !== 'object') g.base.b = {};
   if (!['pay', 'month'].includes(g.per)) g.per = 'month';
   if (!g.v332) { g.v332 = true; g.per = 'month'; }   // 3.3.2: budgets run month by month unless you switch back to pay periods
-  if (!['work', 'month', 'manual'].includes(g.src)) g.src = 'work';
+  if (!['work', 'month', 'manual', 'entered'].includes(g.src)) g.src = 'entered';
+  if (!g.v341) { g.v341 = true; g.src = 'entered'; }   // 3.4.1: every month gets the income you enter for it
   if (typeof g.minc !== 'number') g.minc = 0;
   if (typeof g.inc !== 'number') g.inc = 0;
   if (typeof g.roll !== 'boolean') g.roll = false;
@@ -135,6 +136,7 @@ function bgIncome(per) {
   const g = S.bg, pl = g.plan[per.key] || {}, extra = g.tx.filter(x => x.kind === 'in' && x.d >= per.from && x.d <= per.to).reduce((t, x) => t + x.amt, 0);
   let base, note;
   if (pl.inc != null && pl.inc !== '') { base = num(pl.inc); note = 'You set this'; }
+  else if (g.src === 'entered') { base = 0; note = 'Enter this month\'s income'; }
   else if (g.src === 'month' && g.minc > 0) { base = g.minc * (per.pay ? per.days / 30.4375 : 1); note = per.pay ? `Your predicted ${bgM(g.minc)} a month, split across this period` : 'Your predicted monthly income'; }
   else if (g.src === 'work' && wkReady()) {
     const typ = bgTypical(); base = bgPaychecks(per.from, per.to).reduce((t, P) => t + (P.to < today() ? payFor(P).net : Math.max(payFor(P).net, typ)), 0); note = 'From your Work pay';
@@ -189,6 +191,16 @@ function bgSubtitle() {
 }
 
 /* ----- Overview ----- */
+const bgHasInc = per => { const p = S.bg.plan[per.key]; return !!p && p.inc != null && p.inc !== ''; };
+const bgWorkIn = per => wkReady() ? bgPaychecks(per.from, per.to).reduce((t, P) => t + payFor(P).net, 0) : 0;
+function bgIncCard(per, view, C, big) {
+  const set = bgHasInc(per), w = bgWorkIn(per), word = per.pay ? 'period' : 'month';
+  return `<section class="card${big ? ' bg-hero' : ''}"><div class="row"><h2>${big ? `What's coming in this ${word}?` : '💵 Income'}</h2>${set ? `<b>${bgM(C.inc.base)}</b>` : ''}</div>
+    ${big ? `<p class="note">Part-time pay changes from ${word} to ${word}, so each one gets its own income. Enter what you expect, and change it any time.</p>` : ''}
+    <label class="bgfield">${set ? `Income for ${esc(bgLabel(per))}` : 'Expected income ($)'}<input class="input" inputmode="decimal" data-bind="bgpinc" data-v="${view}" value="${set ? esc(S.bg.plan[per.key].inc) : ''}" placeholder="${big ? 'What you expect to make' : esc(String(Math.round(C.inc.base * 100) / 100))}" aria-label="Income for this ${word}"></label>
+    <div class="btns mt">${w > 0 ? `<button class="btn ghost sm" data-act="bgIncWork" data-v="${view}">Use my Work pay (${bgM(w)})</button>` : ''}<button class="btn ghost sm" data-act="bgIncPrev" data-v="${view}">Same as last ${word}</button>${set && S.bg.src !== 'entered' ? `<button class="btn ghost sm" data-act="bgIncClear" data-v="${view}">Use my estimate</button>` : ''}</div>
+    ${C.inc.extra ? `<p class="small muted mt">Plus ${bgM(C.inc.extra)} of money in you added.</p>` : ''}</section>`;
+}
 const bgNavBar = () => { const v = UI.bgView || 0, per = bgPer(v); return `<div class="bgnav"><button class="btn sm ghost" data-act="bgView" data-n="-1" aria-label="Earlier">‹</button><b>${esc(bgLabel(per))}</b><button class="btn sm ghost" data-act="bgView" data-n="1" aria-label="Later">›</button>${v ? '<button class="link" data-act="bgView" data-n="0">Back to now</button>' : ''}</div>`; };
 const BG_BAD = 'var(--danger)';
 const bgBar = (parts, total) => `<div class="bgstack" role="img" aria-label="Where this period's money goes">${parts.map(([v, col]) => v > 0 && total > 0 ? `<i style="width:${Math.min(100, v / total * 100)}%;background:${col}"></i>` : '').join('')}</div>`;
@@ -223,7 +235,8 @@ function bgSavingsCard(C) {
 function viewBgo() {
   const view = UI.bgView || 0, per = bgPer(view), C = bgCalc(per), rv = bgRevList().length, over = C.left < 0, none = !C.inc.total && !S.bg.tx.length;
   const tot = Math.max(C.inc.total + C.roll, C.billsTotal + C.sv + C.spent, 1), cls = over ? 'bad' : C.pool > 0 && C.left < C.pool * .15 ? 'warn' : '';
-  const hero = none ? `<section class="card bg-hero"><h2>Let's set up your budget</h2><p class="note">Hibi works out what's safe to spend by taking your pay, setting aside bills and savings, and splitting what's left across the days until your next payday.</p>
+  const needInc = S.bg.src === 'entered' && !bgHasInc(per) && !C.inc.extra;
+  const hero = needInc ? bgIncCard(per, view, C, true) : none ? `<section class="card bg-hero"><h2>Let's set up your budget</h2><p class="note">Hibi works out what's safe to spend by taking your pay, setting aside bills and savings, and splitting what's left across the days until your next payday.</p>
       <div class="btns mt"><button class="btn" data-act="wGo" data-k="budget" data-to="bplan">Add your pay</button><button class="btn ghost" data-act="wGo" data-k="work" data-to="settings">Set up Work pay</button></div></section>`
     : `<section class="card bg-hero"><div class="row"><h2>Safe to spend</h2><span class="small muted">${esc(bgRange(per))}</span></div>
       <div class="bg-big ${cls}">${C.daysLeft ? bgM(over ? 0 : C.todayCan) : bgM(Math.max(0, C.left))}<small> ${C.daysLeft ? 'today' : 'left'}</small></div>
@@ -240,6 +253,7 @@ function viewBgo() {
         <div class="lrow"><span style="text-align:left;color:var(--ink)">Spent so far</span><span>−${bgM(C.spent)}</span></div></details></section>`;
   const shown = C.by.filter(o => o.b || o.s);
   return `${bgNavBar()}${hero}
+    ${needInc ? '' : bgIncCard(per, view, C, false)}
     ${bgMoneyCard()}
     ${rv ? `<section class="card bg-rev"><div class="row"><h2>👀 ${plural(rv, 'purchase')} to check</h2><button class="btn sm" data-act="wGo" data-k="budget" data-to="brev">Swipe through</button></div><p class="note">I wasn't sure where ${rv === 1 ? 'this one goes' : 'these go'}. It takes a few seconds.</p></section>` : ''}
     <details class="card" ${det('bgQuick', !S.bg.tx.length)}><summary class="sum"><h2>➕ Add spending</h2><span class="small muted">I'll sort it for you</span></summary>${bgTxForm(null)}</details>
@@ -465,9 +479,9 @@ function bgSettings() {
   return `<section class="card"><h2>Budget period</h2>
       <label>Budget runs<select class="input" data-bind="bgper">${opt('pay', 'From payday to payday (uses Work)', g.per)}${opt('month', 'By calendar month', g.per)}</select></label>
       ${g.per === 'pay' && !wkReady() ? '<p class="note">Set your pay in Work settings first. Until then, Hibi uses calendar months.</p>' : ''}
-      <label class="mt" style="display:block">Where income comes from<select class="input" data-bind="bgsrc">${opt('work', 'My Work mode pay', g.src)}${opt('month', 'My predicted monthly income', g.src)}${opt('manual', 'A fixed amount each period', g.src)}</select></label>
+      <label class="mt" style="display:block">Where income comes from<select class="input" data-bind="bgsrc">${opt('entered', 'What I enter for each month', g.src)}${opt('work', 'My Work mode pay', g.src)}${opt('month', 'My predicted monthly income', g.src)}${opt('manual', 'A fixed amount each period', g.src)}</select></label>
       <label class="mt" style="display:block">Predicted income per month ($)<input class="input" inputmode="decimal" data-bind="bgminc" value="${g.minc || ''}" placeholder="0" aria-label="Predicted income per month"></label>
-      <p class="note">${g.src === 'month' ? 'Hibi uses this every month. With pay periods, each period gets its share, like 14 days out of the month. Change one period from Plan.' : 'Pick "My predicted monthly income" above to use it.'}</p>
+      <p class="note">${g.src === 'entered' ? 'Each month has its own income. Enter it on Overview or Plan. Nothing here is used unless you pick a different source.' : g.src === 'month' ? 'Hibi uses this every month. With pay periods, each period gets its share, like 14 days out of the month. Change one period from Plan.' : 'Pick "My predicted monthly income" above to use it.'}</p>
       <label class="mt" style="display:block">Fixed pay each period ($)<input class="input" inputmode="decimal" data-bind="bginc" value="${g.inc || ''}" placeholder="0" aria-label="Usual pay each period"></label>
       <p class="note">${g.src === 'work' ? 'Used if Work has no pay set up. Your real paychecks come from Work.' : g.src === 'manual' ? 'Hibi uses this for every period. You can change one period from Plan.' : 'Only used when you pick a fixed amount.'}</p>
       <label class="setrow"><span>Roll leftovers into the next period<small class="muted" style="display:block;font-weight:600">Money you didn't spend carries forward</small></span><input type="checkbox" data-bind="bgroll"${g.roll ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label></section>
@@ -563,7 +577,7 @@ Object.assign(SAVE, {
 });
 // Typing and tapping controls (called from events.js)
 function bgBind(t) {
-  const g = S.bg, k = t.dataset.bind, v = t.type === 'checkbox' ? t.checked : t.value, per = bgPer(UI.bgOff || 0), pl = () => (g.plan[per.key] = g.plan[per.key] || {});
+  const g = S.bg, k = t.dataset.bind, v = t.type === 'checkbox' ? t.checked : t.value, per = bgPer(t.dataset.v !== undefined ? +t.dataset.v : (UI.bgOff || 0)), pl = () => (g.plan[per.key] = g.plan[per.key] || {});
   const blank = String(v).trim() === '';
   switch (k) {
     case 'bgb': { const p = pl(); if (!p.b) p.b = Object.assign({}, bgBudgetsOf(per)); const a = Math.max(0, num(v)); if (a) p.b[t.dataset.c] = Math.round(a * 100) / 100; else delete p.b[t.dataset.c]; break; }
@@ -666,6 +680,9 @@ function viewBtot() {
 Object.assign(XVIEWS, {btot:viewBtot, bacct:viewBacct});
 Object.assign(FORM_KEY, {bgacct:'bgAcctForm'});
 Object.assign(XACT, {
+  bgIncWork: d => { const per = bgPer(+d.v || 0), v = bgWorkIn(per); if (!(v > 0)) { toast('No Work paychecks land in that time.'); return false; } (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).inc = Math.round(v * 100) / 100; toast('Income set from your Work pay.'); },
+  bgIncPrev: d => { const per = bgPer(+d.v || 0), pv = bgPer((+d.v || 0) - 1), p = S.bg.plan[pv.key], v = p && p.inc != null && p.inc !== '' ? num(p.inc) : bgIncome(pv).base; if (!(v > 0)) { toast('Last one has no income to copy.'); return false; } (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).inc = Math.round(v * 100) / 100; toast(`Income set to ${bgM(v)}.`); },
+  bgIncClear: d => { const p = S.bg.plan[bgPer(+d.v || 0).key]; if (p) p.inc = null; },
   bgView: d => { UI.bgView = +d.n === 0 ? 0 : Math.max(-36, Math.min(36, (UI.bgView || 0) + +d.n)); },
   bgY: d => { const yr = new Date().getFullYear(); if (d.v === 'all') UI.bgYear = 'all'; else if (d.v === 'year') UI.bgYear = yr; else { const c = UI.bgYear === 'all' ? yr : (UI.bgYear || yr); UI.bgYear = Math.min(yr, c + +d.n); } },
   bgAcctEdit: d => { UI.edit = {kind:'bgacct', id:d.id}; UI.open.bgAcctForm = true; setTimeout(() => { const f = $('form[data-form="bgacct"]'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); },

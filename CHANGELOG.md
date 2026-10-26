@@ -9,6 +9,13 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.4.1 — "Every Month Is Different" (Oct 26)
+- **Each month gets its own income.** Budget now asks what you expect to make this month (or this pay period) and uses that for safe-to-spend, since part-time pay moves around. Type it on Overview or Plan, and change it any time.
+- **Shortcuts for it:** "Use my Work pay" fills it in from the paychecks that land in that month, and "Same as last month" copies the previous one. Browse other months with ‹ and › to set them ahead of time.
+- Settings › Budget lets you pick a different income source if you ever want one. Month-by-month entry is now the default.
+
+---
+
 ## 3.4 — "Money Moves" (Oct 26)
 - **Budget now runs month by month.** Safe to spend, bills and budgets follow the calendar month. Tap ‹ and › on Overview to look at other months, and plan next month ahead in Plan. You can still switch to pay periods in Budget › Settings.
 - **Totals for the year and for life.** A new Totals tab next to Spending shows how much you spent and took in this year (switch years with ‹ ›) or since you started, a month-by-month chart, where it all went by category, your top places, and your biggest purchase.
