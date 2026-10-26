@@ -32,6 +32,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/widgets.js` | Home screen widgets (`WIDGETS` registry, `S.home.w` layout), customize mode and the Add widget sheet |
 | `js/motion.js` | Welcome animation (`#splash` markup lives in index.html), screen transitions, `confetti()`, and the animation switches (`S.fx`) |
 | `js/subs.js` | Subscriptions tab in Savings (`S.subs`), the Renewing soon alert on Home and its widget. Loads after widgets.js. |
+| `js/budget.js` | Budget mode (`S.bg`): categories with sort words, `bgGuess()` auto-sorting, pay-period or month periods (`bgPeriodAt()` uses Work's `periodFor()`), `bgCalc()` safe-to-spend math, bills from `S.subs` plus `S.bg.bills`, plan per period, swipe Review deck, CSV import and export, Home widget. Loads after subs.js. |
 | `js/ideas.js` | Ideas for Hibi list in Settings (`S.ideas`) and its Home widget |
 | `js/recap.js` | Weekly recap on Home and Monthly/Yearly Wrapped slides. Uses `S.alog` (activity log of episodes, chapters and game hours) and `S.wrapSeen`. |
 | `js/app.js` | `render()`, toasts, timers, Gym actions |

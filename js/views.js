@@ -10,6 +10,7 @@ const isOpen = (key, dflt) => key in UI.open ? UI.open[key] : !!dflt;
 const det = (key, dflt) => `data-keep="${esc(key)}"${isOpen(key, dflt) ? ' open' : ''}`;
 
 function subtitle() {
+  if (S.mode === 'budget' && S.tab !== 'settings') return bgSubtitle();
   if (TAB_INFO[S.tab].g[0] === 'j') return jpSubtitle();
   if (TAB_INFO[S.tab].g === 'hhome') return new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
   if (['wtoday', 'wshifts', 'wpay'].includes(S.tab)) return workSubtitle();

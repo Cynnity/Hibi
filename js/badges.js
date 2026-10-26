@@ -8,7 +8,7 @@ MODES.home.nav.splice(1, 0, ['hbadges', 'Badges', 'trophy']);
 Object.assign(TAB_INFO, {hbadges:{g:'hbadges', t:'Badges'}});
 Object.assign(GROUPS, {hbadges:['hbadges']});
 const BADGE_CATS = [['secret','🤫','Secret'],['gym','🏋️','Gym'],['cardio','🏃','Cardio'],['daily','📓','Daily'],['school','🎓','School'],['work','💼','Work'],['japan','🗾','Japan'],
-  ['media','📚','Shows & Books'],['games','🎮','Games'],['save','💰','Savings'],['health','🌿','Health'],['lists','🛒','Lists'],['hibi','🌸','Hibi']];
+  ['media','📚','Shows & Books'],['games','🎮','Games'],['save','💰','Savings'],['health','🌿','Health'],['lists','🛒','Lists'],['budget','💸','Budget'],['hibi','🌸','Hibi']];
 const BADGE_CAT_OF = {cardio10:'cardio', stairs:'cardio', t1230:'cardio', stack:'daily', creat:'daily', jr7:'daily', bw7:'daily', photo:'daily'};
 const badgeCat = b => b[6] || BADGE_CAT_OF[b[0]] || 'gym';
 // [id, emoji, name, how to get it, real or fun, progress -> [current, goal], category]
@@ -23,6 +23,11 @@ BADGES.push(
   ['ls10','🛒','Grocery Run','Check off 10 things on your shopping list','real',s => [s.lsGot, 10],'lists'],
   ['lsdrop','📉','Price Drop','Spot a price drop on your wish list','fun',s => [s.wDrop, 1],'lists'],
   ['lsgot','🎁','Treat Yourself','Get something from your wish list','real',s => [s.wGot, 1],'lists'],
+  ['bg1','💸','First Receipt','Add your first purchase in Budget','real',s => [s.bgTx, 1],'budget'],
+  ['bg50','📒','Bookkeeper','Add 50 purchases in Budget','real',s => [s.bgTx, 50],'budget'],
+  ['bgrev','👈','Swipe Right','Check 20 purchases in Budget review','fun',s => [s.bgRev, 20],'budget'],
+  ['bgunder','🎯','Under Budget','Finish a pay period with money to spare','real',s => [s.bgUnder, 1],'budget'],
+  ['bgsave','🏦','Pay Yourself First','Move budget savings into a goal','real',s => [s.bgMoved, 1],'budget'],
   ['c1','👟','First Steps','Log your first cardio session','real',s => [s.cn, 1],'cardio'],
   ['c25','🏃','Cardio Regular','Log 25 cardio sessions','real',s => [s.cn, 25],'cardio'],
   ['cmara','🏅','Marathon, Technically','Cover 26.2 miles (42 km) of cardio in total','fun',s => [s.cdist, byUnit(26.2, 42.2)],'cardio'],
@@ -147,6 +152,7 @@ function statsMore() {
     o.slN = S.hl.sleep.length; o.sl10 = S.hl.sleep.some(x => slMin(x) >= 600) ? 1 : 0; }
   if (S.nb) { o.nbStrokes = S.nb.st.strokes; o.recMin = S.nb.st.recMs / 6e4; }
   if (S.fc) { o.fcDecks = S.fc.decks.length; o.fcSeen = S.fc.st.seen; o.fcLearned = S.fc.st.learned; o.fcPerfect = S.fc.st.perfect; o.fcFast = S.fc.st.match && S.fc.st.match < 200 ? 1 : 0; }
+  if (S.bg && typeof bgBadgeStats === 'function') bgBadgeStats(o);
   if (S.ls) { o.lsGot = S.ls.got; o.wDrop = S.ls.wish.some(w => { const f = wFirst(w); return f && w.prices.some(x => x.p < f.p); }) ? 1 : 0; o.wGot = S.ls.wish.filter(w => w.got).length; }
   return o;
 }

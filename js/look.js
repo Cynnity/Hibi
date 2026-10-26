@@ -88,7 +88,7 @@ function startupImage(id) {
 /* ----- Settings, in sections ----- */
 const modeSettings = () => ({
   home: () => homeSettings(), gym: () => gymSettings(), japan: () => jpSettings(), media: () => mdSettings(), save: () => svSettings(), games: () => gmSettings(),
-  work: () => wkSettings(), health: () => hlSettings()})[S.mode];
+  work: () => wkSettings(), health: () => hlSettings(), budget: () => bgSettings()})[S.mode];
 function setSecs() {
   const m = modeSettings();
   return [...(m ? [['mode', `${MODES[S.mode].em} ${MODES[S.mode].label}`]] : []), ['look', '🎨 Look'], ['modes', '🧭 Modes'], ['privacy', '🔒 Passcode'], ['data', '💾 Backup'], ['about', '🌸 About']];
@@ -148,7 +148,7 @@ const JUMP_KW = {workout:'gym lift train start', catalog:'exercises library', ca
   hhome:'home widgets', hbadges:'badges achievements', kdue:'homework assignments exams due', kclass:'classes grades schedule', knotes:'notes formulas', knb:'notebooks pencil handwriting draw drawing notes record recording lecture audio transcript', kstudy:'flashcards quizlet study cards decks test learn match review', kfocus:'pomodoro timer study focus',
   jplan:'itinerary calendar days', jprep:'to-do todo checklist', jjournal:'trip journal', jmoney:'budget spending money', jconv:'yen dollar exchange convert currency', jflights:'flights plane airline', jstays:'hotel stays', jpack:'packing', jplaces:'places', jgifts:'gifts souvenirs', jphrases:'phrases words', jinfo:'emergency tokyo time',
   hltoday:'water drink hydrate habits', hlhab:'habits streaks routine', hlsleep:'sleep bed rest', lshop:'shopping groceries store', lwish:'wish list wishlist prices deals',
-  vgoals:'savings goals money', vadd:'new goal', vhist:'deposits history', vsubs:'subscriptions bills netflix spotify', wtoday:'clock in work shift', wshifts:'shifts hours', wpay:'paycheck pay taxes',
+  bgo:'budget safe to spend money overview', btx:'spending transactions purchases csv import bank export', brev:'review swipe sort categories check', bbills:'bills rent subscriptions due', bplan:'plan budgets next month income paycheck savings categories', vgoals:'savings goals money', vadd:'new goal', vhist:'deposits history', vsubs:'subscriptions bills netflix spotify', wtoday:'clock in work shift', wshifts:'shifts hours', wpay:'paycheck pay taxes',
   mnow:'watching reading anime manga', gnow:'playing games'};
 const SEC_KW = {look:'theme color accent icon emoji style animation haptics vibration app icon', modes:'hide show order reorder links', privacy:'passcode face id lock', data:'backup dropbox restore export crash', about:'version patch notes ideas'};
 function jumpItems() {

@@ -96,6 +96,7 @@ const SORT = {
   tpl: ids => { const by = new Map(S.tpl.map(t => [t.id, t])); S.tpl = ids.map(i => by.get(i)).filter(Boolean).concat(S.tpl.filter(t => !ids.includes(t.id))); },
   gq: ids => { S.gm.queue = [...ids.filter(i => S.gm.queue.includes(i)), ...S.gm.queue.filter(i => !ids.includes(i))]; },
   habits: ids => { const by = new Map(S.hl.habits.map(h => [h.id, h])); S.hl.habits = ids.map(i => by.get(i)).filter(Boolean).concat(S.hl.habits.filter(h => !ids.includes(h.id))); },
+  bgcats: ids => { const by = new Map(S.bg.cats.map(c => [c.id, c])); S.bg.cats = ids.map(i => by.get(i)).filter(Boolean).concat(S.bg.cats.filter(c => !ids.includes(c.id))); },
   wish: ids => { const by = new Map(S.ls.wish.map(w => [w.id, w])); S.ls.wish = ids.map(i => by.get(i)).filter(Boolean).concat(S.ls.wish.filter(w => !ids.includes(w.id))); },
 };
 let dragging = null;

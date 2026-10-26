@@ -3,7 +3,7 @@
 /* =========================================================
    Backup, restore and Hevy import
    ========================================================= */
-const BACKUP_KEYS = ['cardioV','cpick','cardio','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','gm','mu','pomo','wk','home','fx','ideas','subs','subRemind','subSeen','alog','wrapSeen','wrapSince','wrapViewed','themesUsed','sx','hidden','order','hl','ls','look','fc','nb'];
+const BACKUP_KEYS = ['cardioV','cpick','cardio','unit','rest','wg','theme','cats','ex','history','bw','j','sup','sl','wt','st','sp','bd','tpl','rr','inc','bar','next','jp','md','sv','sc','gm','mu','pomo','wk','home','fx','ideas','subs','subRemind','subSeen','alog','wrapSeen','wrapSince','wrapViewed','themesUsed','sx','hidden','order','hl','ls','look','fc','nb','bg'];
 function backup() { const o = {app:'hibi', version:2}; BACKUP_KEYS.forEach(k => o[k] = S[k]); return o; }
 function restoreFrom(text) {
   let d;

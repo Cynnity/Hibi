@@ -9,6 +9,23 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.3 — "Safe to Spend" (Oct 26)
+- **A whole Budget mode** (💸), built to feel like Rocket Money with your own twists. Five tabs: Overview, Spending, Bills, Plan and Settings.
+  - **Safe to spend, front and center.** Hibi takes your paycheck, sets aside bills and savings first, then splits what's left across the days until your next payday. The big number is what you can spend today, with a daily amount and a "you're under or over your usual pace" line.
+  - **Runs on your paydays.** Budget periods follow your Work pay periods (Oct 23 to Nov 5, then Nov 6 to Nov 19, and so on), and the income comes from your real Work paychecks. You can switch to calendar months, or type your pay by hand, in Settings.
+  - **Auto-sorting.** Type or import a purchase and Hibi files it: gas stations and fuel into Gas, SunPass, tolls and parking into Car & tolls, movies and games into Entertainment, pharmacy and gym into Health, plus Groceries, Eating out, Shopping, Travel, School and more. It reads messy bank text like `SHELL OIL 57444 OKEECHOBEE FL` and ignores store numbers.
+  - **Swipe review.** When Hibi isn't sure (a Walmart run could be groceries or shopping), it goes into a card deck on Spending › Review. Swipe right if it's right, swipe left to pick a different category. Hibi remembers your choice for that merchant and sorts the other waiting ones too.
+  - **Bills come out first.** Your subscriptions from Savings and your own bills (rent, phone, insurance) are set aside before your safe-to-spend number is worked out, so paying them never pushes you over. Tick them off as paid, or let Hibi spot the payment in your spending.
+  - **Plan this period or the next ones.** Set a budget for each category, change income or savings for just one period, copy a plan forward, save it as your default, or tap Suggest to fill it in from your recent spending.
+  - **Savings built in.** Set aside a dollar amount or a percent of each paycheck, point it at a Savings goal, and move it into the goal with one tap.
+  - **Make it yours.** Add, rename, recolor, reorder and delete categories, and edit the words that sort into each one. A word ending in ? sorts the purchase but asks you to double-check it. Optional rollover of leftovers into the next period.
+  - **Import from your bank.** Choose a CSV file or paste rows. Hibi finds the columns, skips payments and transfers, doesn't add duplicates, and shows a preview first. You can also export everything as a CSV.
+  - A **Safe to spend** widget for Home (small or wide), five new badges, and a Budget shortcut when you press and hold the app icon. `?mode=budget` opens it directly.
+- **Fix:** Home widgets from later files, like Subscriptions, no longer disappear after you close and reopen the app.
+- **Fix:** the old `#budget` link now opens this Budget mode. The Japan trip budget is `#japanbudget`.
+
+---
+
 ## 3.2.1 — "Payday Math" (Oct 25)
 - **Pay periods you can set by date.** In Work settings you now enter a payday and the last day of the period that paycheck covers, instead of counting days in between. Hibi shows the two pay periods it came up with so you can spot a mistake right away.
 - Fix for the Shifts tab grouping: if your paycheck covers an earlier stretch, like Oct 4 to Oct 17 paid Oct 23, set it in Work settings and shifts land in the right pay period.

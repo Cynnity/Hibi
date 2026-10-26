@@ -4,6 +4,7 @@
    Home widgets
    ========================================================= */
 // Each widget: name, emoji, what it shows, the mode it belongs to (hidden modes hide their widgets), sizes ('s' small square, 'm' wide), and how to draw it.
+let HOME_READY = false;   // true once every file has registered its widgets, so saved widgets from later files aren't dropped on load
 const goTo = (k, to) => `data-act="wGo" data-k="${k}" data-to="${to}"`;
 const small = (em, label, big, sub, tap, extra) => `<div class="wd-h"><span aria-hidden="true">${em}</span>${esc(label)}</div><div class="wd-big">${big}</div>${sub ? `<div class="wd-sub">${sub}</div>` : ''}${extra || ''}`;
 const WIDGETS = {
@@ -127,20 +128,23 @@ const WIDGETS = {
 };
 const muSetup = title => `<section class="card"><h2>${title}</h2><p class="note">${S.mu.user ? esc(S.mu.err || 'Loading your music from stats.fm…') : 'Add your stats.fm username in Home Settings to see your music here.'}</p>${S.mu.user ? '' : '<button class="btn sm mt" data-act="wGo" data-k="home" data-to="settings">Add stats.fm</button>'}</section>`;
 const muMaybe = () => { if (S.mu.user && Date.now() - (S.mu.at || 0) > 6 * 36e5) setTimeout(() => muRefresh(), 0); };
-const W_DEFAULT = () => [['week', 'm'], ...S.order.filter(k => modeVisible(k)).flatMap(k => ({gym:[['gym', 'm']], school:[['school', 'm']], japan:[['japan', 'm']], media:[['media', 'm']], work:[['work', 'm']], games:[['games', 'm']], save:[['save', 'm']], health:[['water', 's'], ['habits', 's']], lists:[['shop', 'm']]})[k] || []),
+const W_DEFAULT = () => [['week', 'm'], ...S.order.filter(k => modeVisible(k)).flatMap(k => ({gym:[['gym', 'm']], school:[['school', 'm']], japan:[['japan', 'm']], media:[['media', 'm']], work:[['work', 'm']], games:[['games', 'm']], save:[['save', 'm']], health:[['water', 's'], ['habits', 's']], lists:[['shop', 'm']], budget:[['budget', 'm']]})[k] || []),
   ...(S.mu.user ? [['music', 'm']] : []), ['wrapped', 'm']].map(([t, z], i) => ({id:'w' + i, t, z}));
 function normalizeHome(s) {
   if (!s.home || typeof s.home !== 'object') s.home = {};
   if (!Array.isArray(s.home.w)) s.home.w = null;   // filled with the default layout on first draw
-  else s.home.w = s.home.w.filter(w => w && WIDGETS[w.t]).map(w => Object.assign(w, {z:WIDGETS[w.t].sizes.includes(w.z) ? w.z : WIDGETS[w.t].sizes[0]}));
+  else s.home.w = s.home.w.filter(w => w && w.t && (!HOME_READY || WIDGETS[w.t])).map(w => WIDGETS[w.t] ? Object.assign(w, {z:WIDGETS[w.t].sizes.includes(w.z) ? w.z : WIDGETS[w.t].sizes[0]}) : w);
   if (typeof s.home.greet !== 'boolean') s.home.greet = true;
   if (typeof s.home.name !== 'string') s.home.name = 'Cynn';
   if (typeof s.home.startHome !== 'boolean') s.home.startHome = true;
   // 3.0 added Health: put its two small widgets on an existing Home once
   if (s.home.w && !s.home.v3) { s.home.w.push({id:'w' + Date.now() + 'a', t:'water', z:'s'}, {id:'w' + Date.now() + 'b', t:'habits', z:'s'}); }
   s.home.v3 = true;
+  // 3.3 added Budget: put its widget on an existing Home once
+  if (s.home.w && !s.home.v33) s.home.w.push({id:'w' + Date.now() + 'c', t:'budget', z:'s'});
+  s.home.v33 = true;
 }
-const wVisible = w => !WIDGETS[w.t].mode || modeVisible(WIDGETS[w.t].mode);
+const wVisible = w => WIDGETS[w.t] && (!WIDGETS[w.t].mode || modeVisible(WIDGETS[w.t].mode));
 function drawWidget(w, i, edit) {
   const def = WIDGETS[w.t]; let inner = '';
   try { inner = def[w.z](); } catch (e) { Crash.record(e, 'widget ' + w.t); inner = w.z === 's' ? small('⚠️', def.n, '!', "Couldn't load") : `<section class="card"><p class="note">${esc(def.n)} couldn't load.</p></section>`; }

@@ -42,6 +42,7 @@ document.addEventListener('focusin', e => {
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'cvJ' || t.id === 'cvU') { const r = R(), v = num(t.value), o = $(t.id === 'cvJ' ? '#cvU' : '#cvJ'); o.value = t.value.trim() === '' ? '' : t.id === 'cvJ' ? (v / r).toFixed(2) : String(Math.round(v * r)); return; }
+  if (t.id === 'bgSearch') { UI.bgQ = t.value; const l = $('#bgList'); if (l) l.innerHTML = bgList(); return; }
   if (t.id === 'knSearch') { KQ = t.value; $('#knList').innerHTML = knList(); return; }
   if (t.id === 'payAmt') { $('#payPrev').innerHTML = payPreview(num(t.value)); return; }
   if (t.dataset.bind === 'kgrade') { const x = S.sc.tasks.find(q => q.id === t.dataset.id); if (x) { x[t.dataset.f] = t.value; save(); } return; }
@@ -62,6 +63,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.dataset.bind && t.dataset.bind.startsWith('bg')) { bgBind(t); return; }
   if (t.dataset.bind === 'hgreet') { S.home.greet = t.checked; save(); return; }
   if (t.dataset.bind === 'modevis') {
     const k = t.dataset.k; S.hidden = S.hidden.filter(x => x !== k); if (!t.checked) S.hidden.push(k);
@@ -86,6 +88,7 @@ document.addEventListener('change', e => {
     if (kind === 'photo') addPhoto(f);
     else if (kind === 'restore') f.text().then(restoreFrom);
     else if (kind === 'hevy') f.text().then(importHevy);
+    else if (kind === 'bgcsv') f.text().then(tx => { UI.bgCsvText = tx; UI.open.bgImp = true; render(); });
     else if (kind === 'fcimport') f.text().then(tx => { const fm = $('form[data-form="fcimp"]'), nm = (fm && fm.name.value.trim()) || f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(); if (fcImport(tx, nm, fm && fm.c.value)) afterChange(); });
     return;
   }
