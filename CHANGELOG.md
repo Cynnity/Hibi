@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.3.2 — "Crystal Ball" (Oct 26)
+- **Predicted monthly income for Budget.** In Budget › Settings, pick "My predicted monthly income" and type what you expect to make in a month. Hibi uses it for safe-to-spend: with calendar months you get the full amount, and with pay periods each period gets its share (14 days out of the month, for example). You can still override one period from Plan.
+
+---
+
 ## 3.3.1 — "Where Did It Go?" (Oct 26)
 - **Fix:** the Budget mode (💸) now shows up in the mode bar and in Settings › Modes. It was installed but missing from the list on phones that already had Hibi.
 

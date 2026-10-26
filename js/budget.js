@@ -42,7 +42,8 @@ function normalizeBg(s) {
   if (!g.base || typeof g.base !== 'object') g.base = {};
   if (!g.base.b || typeof g.base.b !== 'object') g.base.b = {};
   if (!['pay', 'month'].includes(g.per)) g.per = hasWk ? 'pay' : 'month';
-  if (!['work', 'manual'].includes(g.src)) g.src = 'work';
+  if (!['work', 'month', 'manual'].includes(g.src)) g.src = 'work';
+  if (typeof g.minc !== 'number') g.minc = 0;
   if (typeof g.inc !== 'number') g.inc = 0;
   if (typeof g.roll !== 'boolean') g.roll = false;
   if (!g.save || typeof g.save !== 'object') g.save = {};
@@ -127,6 +128,7 @@ function bgIncome(per) {
   const g = S.bg, pl = g.plan[per.key] || {}, extra = g.tx.filter(x => x.kind === 'in' && x.d >= per.from && x.d <= per.to).reduce((t, x) => t + x.amt, 0);
   let base, note;
   if (pl.inc != null && pl.inc !== '') { base = num(pl.inc); note = 'You set this'; }
+  else if (g.src === 'month' && g.minc > 0) { base = g.minc * (per.pay ? per.days / 30.4375 : 1); note = per.pay ? `Your predicted ${bgM(g.minc)} a month, split across this period` : 'Your predicted monthly income'; }
   else if (g.src === 'work' && wkReady()) {
     const typ = bgTypical(); base = bgPaychecks(per.from, per.to).reduce((t, P) => t + (P.to < today() ? payFor(P).net : Math.max(payFor(P).net, typ)), 0); note = 'From your Work pay';
   } else { base = g.inc; note = g.src === 'work' ? 'Set up Work pay, or type your pay in Settings' : 'Your usual pay'; }
@@ -452,9 +454,11 @@ function bgSettings() {
   return `<section class="card"><h2>Budget period</h2>
       <label>Budget runs<select class="input" data-bind="bgper">${opt('pay', 'From payday to payday (uses Work)', g.per)}${opt('month', 'By calendar month', g.per)}</select></label>
       ${g.per === 'pay' && !wkReady() ? '<p class="note">Set your pay in Work settings first. Until then, Hibi uses calendar months.</p>' : ''}
-      <label class="mt" style="display:block">Where income comes from<select class="input" data-bind="bgsrc">${opt('work', 'My Work mode pay', g.src)}${opt('manual', 'An amount I type', g.src)}</select></label>
-      <label class="mt" style="display:block">Usual pay each period ($)<input class="input" inputmode="decimal" data-bind="bginc" value="${g.inc || ''}" placeholder="0" aria-label="Usual pay each period"></label>
-      <p class="note">${g.src === 'work' ? 'Used if Work has no pay set up. Your real paychecks come from Work.' : 'Hibi uses this for every period. You can change one period from Plan.'}</p>
+      <label class="mt" style="display:block">Where income comes from<select class="input" data-bind="bgsrc">${opt('work', 'My Work mode pay', g.src)}${opt('month', 'My predicted monthly income', g.src)}${opt('manual', 'A fixed amount each period', g.src)}</select></label>
+      <label class="mt" style="display:block">Predicted income per month ($)<input class="input" inputmode="decimal" data-bind="bgminc" value="${g.minc || ''}" placeholder="0" aria-label="Predicted income per month"></label>
+      <p class="note">${g.src === 'month' ? 'Hibi uses this every month. With pay periods, each period gets its share, like 14 days out of the month. Change one period from Plan.' : 'Pick "My predicted monthly income" above to use it.'}</p>
+      <label class="mt" style="display:block">Fixed pay each period ($)<input class="input" inputmode="decimal" data-bind="bginc" value="${g.inc || ''}" placeholder="0" aria-label="Usual pay each period"></label>
+      <p class="note">${g.src === 'work' ? 'Used if Work has no pay set up. Your real paychecks come from Work.' : g.src === 'manual' ? 'Hibi uses this for every period. You can change one period from Plan.' : 'Only used when you pick a fixed amount.'}</p>
       <label class="setrow"><span>Roll leftovers into the next period<small class="muted" style="display:block;font-weight:600">Money you didn't spend carries forward</small></span><input type="checkbox" data-bind="bgroll"${g.roll ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label></section>
     <section class="card"><div class="row"><h2>Categories</h2><span class="small muted">Drag ⠿ to reorder</span></div>
       <div data-sort="bgcats">${g.cats.map(bgCatItem).join('')}</div>
@@ -556,6 +560,7 @@ function bgBind(t) {
     case 'bgpsave': pl().save = blank ? null : Math.max(0, num(v)); break;
     case 'bgper': g.per = v; break;
     case 'bgsrc': g.src = v; break;
+    case 'bgminc': g.minc = Math.max(0, num(v)); if (g.minc > 0 && g.src === 'work' && !wkReady()) g.src = 'month'; break;
     case 'bginc': g.inc = Math.max(0, num(v)); break;
     case 'bgroll': g.roll = !!v; break;
     case 'bgsm': g.save.mode = v; break;
