@@ -9,6 +9,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.4 — "Money Moves" (Oct 26)
+- **Budget now runs month by month.** Safe to spend, bills and budgets follow the calendar month. Tap ‹ and › on Overview to look at other months, and plan next month ahead in Plan. You can still switch to pay periods in Budget › Settings.
+- **Totals for the year and for life.** A new Totals tab next to Spending shows how much you spent and took in this year (switch years with ‹ ›) or since you started, a month-by-month chart, where it all went by category, your top places, and your biggest purchase.
+- **Accounts.** Under Plan › Accounts, add what's in your accounts right now. Mark one as the account you spend from and Hibi tracks it: the number you typed, plus your Work paychecks and any money in, minus the spending you log. Update the balance whenever you want to reset it to the real number. Overview shows your money on hand, and what's left after the bills still due.
+- Your predicted monthly income (3.3.2) works with all of this.
+
+---
+
 ## 3.3.2 — "Crystal Ball" (Oct 26)
 - **Predicted monthly income for Budget.** In Budget › Settings, pick "My predicted monthly income" and type what you expect to make in a month. Hibi uses it for safe-to-spend: with calendar months you get the full amount, and with pay periods each period gets its share (14 days out of the month, for example). You can still override one period from Plan.
 

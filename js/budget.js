@@ -7,8 +7,8 @@ Object.assign(ICON, {
   wallet:'<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5z"/><circle cx="16" cy="13.5" r="1"/>',
   receipt:'<path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3zM9 8h6M9 12h6"/>'});
 MODES.budget = {label:'Budget', em:'💸', nav:[['bgo','Overview','wallet'],['btx','Spending','receipt'],['bbills','Bills','repeat'],['bplan','Plan','target'],['settings','Settings','settings']]};
-Object.assign(TAB_INFO, {bgo:{g:'bgo', t:'Budget'}, btx:{g:'btx', t:'Spending'}, brev:{g:'btx', t:'Review'}, bbills:{g:'bbills', t:'Bills'}, bplan:{g:'bplan', t:'Plan'}});
-Object.assign(GROUPS, {bgo:['bgo'], btx:['btx', 'brev'], bbills:['bbills'], bplan:['bplan']});
+Object.assign(TAB_INFO, {bgo:{g:'bgo', t:'Budget'}, btx:{g:'btx', t:'Spending'}, brev:{g:'btx', t:'Review'}, bbills:{g:'bbills', t:'Bills'}, bplan:{g:'bplan', t:'Plan'}, btot:{g:'btx', t:'Totals'}, bacct:{g:'bplan', t:'Accounts'}});
+Object.assign(GROUPS, {bgo:['bgo'], btx:['btx', 'brev', 'btot'], bbills:['bbills'], bplan:['bplan', 'bacct']});
 
 // [id, emoji, name, color, kind, keywords]. Keywords are comma separated. A word ending in ? still sorts the spending but asks you to double-check it.
 const BG_DEF = [
@@ -41,7 +41,8 @@ function normalizeBg(s) {
   ['plan', 'learn', 'paid', 'moved'].forEach(k => { if (!g[k] || typeof g[k] !== 'object' || Array.isArray(g[k])) g[k] = {}; });
   if (!g.base || typeof g.base !== 'object') g.base = {};
   if (!g.base.b || typeof g.base.b !== 'object') g.base.b = {};
-  if (!['pay', 'month'].includes(g.per)) g.per = hasWk ? 'pay' : 'month';
+  if (!['pay', 'month'].includes(g.per)) g.per = 'month';
+  if (!g.v332) { g.v332 = true; g.per = 'month'; }   // 3.3.2: budgets run month by month unless you switch back to pay periods
   if (!['work', 'month', 'manual'].includes(g.src)) g.src = 'work';
   if (typeof g.minc !== 'number') g.minc = 0;
   if (typeof g.inc !== 'number') g.inc = 0;
@@ -50,12 +51,16 @@ function normalizeBg(s) {
   if (!['amt', 'pct'].includes(g.save.mode)) g.save.mode = 'amt';
   if (typeof g.save.v !== 'number') g.save.v = 0;
   if (typeof g.save.goal !== 'string') g.save.goal = '';
+  if (!Array.isArray(g.accts)) g.accts = [];
+  g.accts = g.accts.filter(a => a && a.id && a.name);
+  g.accts.forEach(a => { a.bal = num(a.bal); if (!a.asOf) a.asOf = dk(new Date()); if (!Array.isArray(a.hist)) a.hist = [{d:a.asOf, v:a.bal}]; a.main = !!a.main; if (typeof a.work !== 'boolean') a.work = true; if (!a.em) a.em = '🏦'; });
   if (!g.n || typeof g.n !== 'object') g.n = {};
   ['rev', 'moved', 'imp'].forEach(k => { if (typeof g.n[k] !== 'number') g.n[k] = 0; });
 }
 
 /* ----- Money and names ----- */
 const bgCat = id => S.bg.cats.find(c => c.id === id) || S.bg.cats.find(c => c.id === 'other');
+const bgK = a => Math.abs(a) >= 1000 ? (a < 0 ? '−' : '') + '$' + short(Math.abs(a)) : bgM(a);
 const bgM = a => { const v = Math.round(a * 100) / 100, big = Math.abs(v) >= 100; return (v < 0 ? '−' : '') + '$' + Math.abs(v).toLocaleString(undefined, {minimumFractionDigits:big ? 0 : 2, maximumFractionDigits:big ? 0 : 2}); };
 const BG_LEAD = new Set(['sq', 'tst', 'pos', 'sp', 'pp', 'debit', 'purchase', 'card', 'checkcard', 'visa', 'recurring', 'ach', 'dd', 'pmt', 'purch', 'crd']);
 // Makes a bank description easier to match: lower case, no store or card numbers, no processor prefixes
@@ -97,9 +102,9 @@ function bgLearn(x) {
 /* ----- Periods, income, bills ----- */
 const bgPayOn = () => S.bg.per === 'pay' && wkReady();
 // Paychecks (Work mode periods) whose payday falls in a range
-function bgPaychecks(from, to) {
+function bgPaychecks(from, to, max) {
   const out = []; let P = periodFor(addDays(from, -60)), n = 0;
-  while (P.pay <= to && n++ < 40) { if (P.pay >= from) out.push(P); P = periodFor(addDays(P.to, 1)); }
+  while (P.pay <= to && n++ < (max || 40)) { if (P.pay >= from) out.push(P); P = periodFor(addDays(P.to, 1)); }
   return out;
 }
 function bgPeriodAt(k) {
@@ -119,6 +124,8 @@ function bgPer(n) {
   return per;
 }
 const bgRange = per => fmtShort(per.from) + ' to ' + fmtShort(per.to);
+const bgLabel = per => per.pay ? bgRange(per) : keyDate(per.from).toLocaleDateString(undefined, {month:'long', year:'numeric'});
+const bgWord = () => bgPer(0).pay ? 'period' : 'month';
 function bgTypical() {
   const L = []; let P = periodFor(today()), n = 0;
   while (L.length < 3 && n++ < 12) { P = periodFor(addDays(P.from, -1)); const p = payFor(P); if (p.mins > 0) L.push(p.net); }
@@ -174,12 +181,15 @@ const bgRevList = () => { const sk = UI.bgSkip || [], L = S.bg.tx.filter(x => x.
 function bgSubtitle() {
   if (S.tab === 'brev') { const n = bgRevList().length; return n ? `${plural(n, 'purchase')} to check` : 'Everything is sorted'; }
   if (S.tab === 'bbills') return `${bgM(bgBillsIn(bgPer(0)).reduce((t, b) => t + b.amt, 0))} set aside this period`;
+  if (S.tab === 'btot') return UI.bgYear === 'all' ? 'Everything since you started' : 'Your year at a glance';
+  if (S.tab === 'bacct') return `${bgM(bgTotalBal())} across ${plural(S.bg.accts.length, 'account')}`;
   const C = bgCalc(bgPer(0));
   if (S.tab === 'bplan') return bgRange(bgPer(UI.bgOff || 0));
   return C.pool > 0 || C.spent ? (C.left < 0 ? `Over by ${bgM(-C.left)} this period` : `${bgM(C.todayCan)} safe to spend today`) : 'Add your pay to get started';
 }
 
 /* ----- Overview ----- */
+const bgNavBar = () => { const v = UI.bgView || 0, per = bgPer(v); return `<div class="bgnav"><button class="btn sm ghost" data-act="bgView" data-n="-1" aria-label="Earlier">‹</button><b>${esc(bgLabel(per))}</b><button class="btn sm ghost" data-act="bgView" data-n="1" aria-label="Later">›</button>${v ? '<button class="link" data-act="bgView" data-n="0">Back to now</button>' : ''}</div>`; };
 const BG_BAD = 'var(--danger)';
 const bgBar = (parts, total) => `<div class="bgstack" role="img" aria-label="Where this period's money goes">${parts.map(([v, col]) => v > 0 && total > 0 ? `<i style="width:${Math.min(100, v / total * 100)}%;background:${col}"></i>` : '').join('')}</div>`;
 const bgCatOpts = (cur, auto) => `${auto ? '<option value="">✨ Auto-sort</option>' : ''}${S.bg.cats.map(c => opt(c.id, c.em + ' ' + c.name, cur)).join('')}`;
@@ -211,13 +221,13 @@ function bgSavingsCard(C) {
     ${g ? (moved ? `<p class="small muted">✓ Moved ${bgM(moved)} into ${esc(g.name)}</p>` : `<button class="btn block mt" data-act="bgMove">Move ${bgM(C.sv)} into ${esc(g.name)}</button>`) : '<button class="link mt" data-act="wGo" data-k="budget" data-to="bplan">Pick a savings goal in Plan</button>'}</section>`;
 }
 function viewBgo() {
-  const per = bgPer(0), C = bgCalc(per), rv = bgRevList().length, over = C.left < 0, none = !C.inc.total && !S.bg.tx.length;
+  const view = UI.bgView || 0, per = bgPer(view), C = bgCalc(per), rv = bgRevList().length, over = C.left < 0, none = !C.inc.total && !S.bg.tx.length;
   const tot = Math.max(C.inc.total + C.roll, C.billsTotal + C.sv + C.spent, 1), cls = over ? 'bad' : C.pool > 0 && C.left < C.pool * .15 ? 'warn' : '';
   const hero = none ? `<section class="card bg-hero"><h2>Let's set up your budget</h2><p class="note">Hibi works out what's safe to spend by taking your pay, setting aside bills and savings, and splitting what's left across the days until your next payday.</p>
       <div class="btns mt"><button class="btn" data-act="wGo" data-k="budget" data-to="bplan">Add your pay</button><button class="btn ghost" data-act="wGo" data-k="work" data-to="settings">Set up Work pay</button></div></section>`
     : `<section class="card bg-hero"><div class="row"><h2>Safe to spend</h2><span class="small muted">${esc(bgRange(per))}</span></div>
       <div class="bg-big ${cls}">${C.daysLeft ? bgM(over ? 0 : C.todayCan) : bgM(Math.max(0, C.left))}<small> ${C.daysLeft ? 'today' : 'left'}</small></div>
-      <p class="bg-sub">${over ? `You're <b>${bgM(-C.left)}</b> over for this period. A few light days gets you back on track.` : C.daysLeft ? `About <b>${bgM(C.perDay)} a day</b> for the next ${plural(C.daysLeft, 'day')}, with <b>${bgM(C.left)}</b> left in total.` : `This period is over. You finished with ${bgM(C.left)}.`}</p>
+      <p class="bg-sub">${over ? `You're <b>${bgM(-C.left)}</b> over for this period. A few light days gets you back on track.` : C.daysLeft ? `About <b>${bgM(C.perDay)} a day</b> for the next ${plural(C.daysLeft, 'day')}, with <b>${bgM(C.left)}</b> left in total.` : `This ${per.pay ? 'period' : 'month'} is over. You finished with ${bgM(C.left)}.`}</p>
       ${C.inP && C.n ? `<p class="small ${C.pace >= 0 ? 'bg-good' : ''}" style="${C.pace < 0 ? 'color:' + BG_BAD : ''}">${C.pace >= 0 ? `You're ${bgM(C.pace)} under your usual pace.` : `You're ${bgM(-C.pace)} over pace.`}</p>` : ''}
       ${bgBar([[C.billsTotal, '#6C5CE7'], [C.sv, '#1ABC9C'], [C.spent, 'var(--accent)'], [Math.max(0, C.left), 'var(--line)']], tot)}
       <div class="bg-legend"><span><i style="background:#6C5CE7"></i>Bills</span><span><i style="background:#1ABC9C"></i>Savings</span><span><i style="background:var(--accent)"></i>Spent</span><span><i style="background:var(--line)"></i>Left</span></div>
@@ -229,7 +239,8 @@ function viewBgo() {
         <div class="lrow"><span style="text-align:left;color:var(--ink)"><b>To spend freely</b></span><span><b>${bgM(C.pool)}</b></span></div>
         <div class="lrow"><span style="text-align:left;color:var(--ink)">Spent so far</span><span>−${bgM(C.spent)}</span></div></details></section>`;
   const shown = C.by.filter(o => o.b || o.s);
-  return `${hero}
+  return `${bgNavBar()}${hero}
+    ${bgMoneyCard()}
     ${rv ? `<section class="card bg-rev"><div class="row"><h2>👀 ${plural(rv, 'purchase')} to check</h2><button class="btn sm" data-act="wGo" data-k="budget" data-to="brev">Swipe through</button></div><p class="note">I wasn't sure where ${rv === 1 ? 'this one goes' : 'these go'}. It takes a few seconds.</p></section>` : ''}
     <details class="card" ${det('bgQuick', !S.bg.tx.length)}><summary class="sum"><h2>➕ Add spending</h2><span class="small muted">I'll sort it for you</span></summary>${bgTxForm(null)}</details>
     <section class="card"><div class="row"><h2>Categories</h2><button class="link" data-act="wGo" data-k="budget" data-to="bplan">Edit budgets</button></div>
@@ -276,7 +287,7 @@ function viewBtx() {
   const ed = UI.edit && UI.edit.kind === 'bgtx' ? S.bg.tx.find(x => x.id === UI.edit.id) : null, r = UI.bgRange || 'cur', all = bgFiltered(), out = all.filter(x => x.kind !== 'in').reduce((t, x) => t + x.amt, 0);
   const used = S.bg.cats.filter(c => S.bg.tx.some(x => x.cat === c.id && x.kind !== 'in'));
   return `<details class="card" ${det('bgTxForm', !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : '➕ Add spending'}</h2><span class="small muted">${ed ? '' : "I'll sort it for you"}</span></summary>${bgTxForm(ed)}</details>
-    <section class="card"><div class="chips">${[['cur', 'This period'], ['prev', 'Last period'], ['all', 'All time']].map(([k, l]) => chip(l, r === k, `data-act="bgR" data-v="${k}"`)).join('')}</div>
+    <section class="card"><div class="chips">${[['cur', 'This ' + bgWord()], ['prev', 'Last ' + bgWord()], ['all', 'All time']].map(([k, l]) => chip(l, r === k, `data-act="bgR" data-v="${k}"`)).join('')}</div>
       <input class="input mt" id="bgSearch" type="search" placeholder="Search spending" value="${esc(UI.bgQ || '')}" aria-label="Search spending" autocomplete="off">
       <div class="chips mt">${chip('All', !UI.bgCat, 'data-act="bgCatF" data-c=""')}${used.map(c => chip(c.em + ' ' + c.name, UI.bgCat === c.id, `data-act="bgCatF" data-c="${esc(c.id)}"`)).join('')}</div>
       <p class="note">${plural(all.length, 'item')}${out ? ` · ${bgM(out)} spent` : ''}. Swipe left to delete, right to edit.</p><div id="bgList">${bgList()}</div></section>
@@ -413,7 +424,7 @@ function viewBplan() {
   const rows = C.by.map(o => { const lp = pv.by.find(x => x.c.id === o.c.id), ls = lp ? lp.s : 0;
     return `<div class="bgplan-row"><span class="bgem" style="--c:${o.c.color}">${esc(o.c.em)}</span><div style="flex:1;min-width:0"><b>${esc(o.c.name)}</b><span class="small muted" style="display:block">${ls ? `Last period: ${bgM(ls)}` : 'Nothing spent last period'}</span></div>
       <input class="input bgin" inputmode="decimal" data-bind="bgb" data-c="${esc(o.c.id)}" value="${bud[o.c.id] ? esc(bud[o.c.id]) : ''}" placeholder="$0" aria-label="Budget for ${esc(o.c.name)}"></div>`; }).join('');
-  return `<div class="chips mb">${[[0, 'This period'], [1, 'Next period'], [2, 'After that']].map(([k, l]) => chip(l, off === k, `data-act="bgOff" data-v="${k}"`)).join('')}</div>
+  return `<div class="chips mb">${[[0, 'This ' + bgWord()], [1, 'Next ' + bgWord()], [2, 'After that']].map(([k, l]) => chip(l, off === k, `data-act="bgOff" data-v="${k}"`)).join('')}</div>
     <section class="card"><div class="row"><h2>${off ? 'Plan ahead' : 'This period'}</h2><span class="small muted">${esc(bgRange(per))}</span></div>
       ${bgBar([[C.billsTotal, '#6C5CE7'], [C.sv, '#1ABC9C'], [Math.max(0, C.assigned), 'var(--accent)'], [Math.max(0, left), 'var(--line)']], Math.max(C.inc.total + C.roll, C.billsTotal + C.sv + C.assigned, 1))}
       <div class="bg-legend"><span><i style="background:#6C5CE7"></i>Bills</span><span><i style="background:#1ABC9C"></i>Savings</span><span><i style="background:var(--accent)"></i>Budgeted</span><span><i style="background:var(--line)"></i>Unassigned</span></div>
@@ -583,6 +594,96 @@ WIDGETS.budget = {n:'Safe to spend', em:'💸', d:'What you can spend today, and
         ${bgBar([[C.billsTotal, '#6C5CE7'], [C.sv, '#1ABC9C'], [C.spent, 'var(--accent)'], [Math.max(0, C.left), 'var(--line)']], Math.max(C.inc.total + C.roll, C.billsTotal + C.sv + C.spent, 1))}
         ${nb.length ? `<p class="small muted mt">Next: ${nb.map(b => `${esc(b.x.name)} ${cash2(b.amt)} ${esc(subWhen(b.k))}`).join(' · ')}</p>` : ''}
         ${rv ? `<button class="btn sm mt" data-act="wGo" data-k="budget" data-to="brev">👀 ${plural(rv, 'purchase')} to check</button>` : ''}` : '<p class="note">Add your pay to see what\'s safe to spend.</p><button class="btn sm mt" data-act="wGo" data-k="budget" data-to="bplan">Set up</button>'}</section>`; }};
+
+
+/* ----- Accounts (money on hand) ----- */
+// The main account is tracked: what you typed, plus money in and Work paychecks since then, minus the spending you've logged
+function bgEst(a) {
+  const to = today(), tx = S.bg.tx.filter(x => x.d > a.asOf && x.d <= to);
+  const out = tx.filter(x => x.kind !== 'in').reduce((t, x) => t + x.amt, 0), inn = tx.filter(x => x.kind === 'in').reduce((t, x) => t + x.amt, 0);
+  const pay = a.work && wkReady() ? bgPaychecks(addDays(a.asOf, 1), to, 80).reduce((t, P) => t + payFor(P).net, 0) : 0;
+  return {est:a.bal + inn + pay - out, out, inn, pay};
+}
+const bgNow = a => a.main ? bgEst(a).est : a.bal;
+const bgTotalBal = () => S.bg.accts.reduce((t, a) => t + bgNow(a), 0);
+function bgMoneyCard() {
+  const A = S.bg.accts;
+  if (!A.length) return `<section class="card"><h2>🏦 Money on hand</h2><p class="note">Add what's in your accounts. Hibi tracks it as you spend and get paid, so you always know roughly what you have.</p><button class="btn ghost block" data-act="wGo" data-k="budget" data-to="bacct">Add my accounts</button></section>`;
+  const main = A.find(a => a.main), C = bgCalc(bgPer(0)), due = C.bills.filter(b => !bgPaid(b)).reduce((t, b) => t + b.amt, 0);
+  return `<section class="card"><div class="row"><h2>🏦 Money on hand</h2><button class="link" data-act="wGo" data-k="budget" data-to="bacct">Accounts</button></div>
+    <div class="bg-big" style="font-size:34px">${bgM(bgTotalBal())}</div>
+    ${main ? `<p class="note">${esc(main.name)} is about <b>${bgM(bgNow(main))}</b> now${due > 0 ? `, and <b>${bgM(bgNow(main) - due)}</b> after the ${bgM(due)} of bills still due this ${bgWord()}` : ''}.</p>` : '<p class="note">Mark one account as the one you spend from, and Hibi will track it for you.</p>'}</section>`;
+}
+function bgAcctForm(ed) {
+  return `<form data-form="bgacct" class="stack">
+    <div class="field"><input class="input" name="em" value="${ed ? esc(ed.em) : '🏦'}" aria-label="Emoji" style="flex:0 0 58px;text-align:center;font-size:22px" maxlength="4"><input class="input" name="name" placeholder="Checking, Savings, Cash…" value="${ed ? esc(ed.name) : ''}" aria-label="Account name" maxlength="24"></div>
+    ${ed ? '' : '<label>What\'s in it right now ($)<input class="input" name="bal" inputmode="decimal" placeholder="0.00"></label>'}
+    <label class="setrow"><span>Track my spending here<small class="muted" style="display:block;font-weight:600">Hibi updates this one as you spend and get paid</small></span><input type="checkbox" name="main"${!ed ? ' checked' : ed.main ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
+    <label class="setrow"><span>Count my Work paychecks<small class="muted" style="display:block;font-weight:600">Adds each payday after the date you entered</small></span><input type="checkbox" name="work"${!ed || ed.work ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
+    <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add account'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
+}
+function viewBacct() {
+  const A = S.bg.accts, ed = UI.edit && UI.edit.kind === 'bgacct' ? A.find(x => x.id === UI.edit.id) : null, tot = bgTotalBal();
+  const start = A.reduce((t, a) => t + a.hist[0].v, 0), since = A.map(a => a.hist[0].d).sort()[0];
+  return `${A.length ? `<section class="card"><h2>Total</h2><div class="bg-big">${bgM(tot)}</div>${A.length && since ? `<p class="bg-sub">${tot - start >= 0 ? '+' : '−'}<b>${bgM(Math.abs(tot - start))}</b> since ${esc(fmtShort(since))}, when you first added your accounts.</p>` : ''}</section>` : ''}
+    ${A.map(a => { const e = a.main ? bgEst(a) : null;
+      return `<section class="card"><div class="row"><div class="mhead"><span class="gem" aria-hidden="true">${esc(a.em)}</span><div><h3>${esc(a.name)}${a.main ? ' <span class="chip-mini">Tracked</span>' : ''}</h3><span class="small muted">You entered ${bgM(a.bal)} on ${esc(fmtShort(a.asOf))}</span></div></div><b>${bgM(bgNow(a))}</b></div>
+        ${e ? `<p class="note">Now: ${bgM(a.bal)}${e.pay ? ` + ${bgM(e.pay)} paychecks` : ''}${e.inn ? ` + ${bgM(e.inn)} money in` : ''} − ${bgM(e.out)} spent since then.</p>` : ''}
+        <form data-form="bgbal" class="field mt"><input type="hidden" name="id" value="${esc(a.id)}"><input class="input" name="v" inputmode="decimal" placeholder="Update what's in it now" aria-label="New balance for ${esc(a.name)}"><button class="btn ghost" type="submit">Update</button></form>
+        ${a.hist.length > 1 ? `<p class="small muted mt">${a.hist.slice(-5).map(h => `${esc(fmtShort(h.d))}: ${bgM(h.v)}`).join(' → ')}</p>` : ''}
+        <div class="row mt" style="justify-content:flex-start;gap:16px"><button class="link" data-act="bgAcctEdit" data-id="${esc(a.id)}">Edit</button><button class="link danger" data-act="bgAcctDel" data-id="${esc(a.id)}" data-confirm>Delete</button></div></section>`; }).join('')}
+    <details class="card" ${det('bgAcctForm', !!ed || !A.length)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add an account'}</h2><span class="small muted">Checking, savings, cash</span></summary>${bgAcctForm(ed)}</details>
+    <p class="note">Hibi can't see your bank, so update an account's balance now and then to keep it accurate. Every time you do, the estimate starts fresh from the number you typed.</p>`;
+}
+
+/* ----- Totals: year and lifetime ----- */
+function bgStats(y) {
+  const first = S.bg.tx.map(x => x.d).sort()[0] || today(), yr = new Date().getFullYear();
+  const from = y === 'all' ? first : `${y}-01-01`, to = y === 'all' || +y === yr ? today() : `${y}-12-31`;
+  const tx = S.bg.tx.filter(x => x.d >= from && x.d <= to), out = tx.filter(x => x.kind !== 'in'), sum = L => L.reduce((t, x) => t + x.amt, 0);
+  const pcs = wkReady() ? bgPaychecks(from, to, 400) : [], work = pcs.reduce((t, P) => t + payFor(P).net, 0), inn = sum(tx.filter(x => x.kind === 'in'));
+  const mk = {}; const add = (k, f, v) => { (mk[k] = mk[k] || {spent:0, earned:0})[f] += v; };
+  out.forEach(x => add(x.d.slice(0, 7), 'spent', x.amt)); tx.filter(x => x.kind === 'in').forEach(x => add(x.d.slice(0, 7), 'earned', x.amt)); pcs.forEach(P => { const v = payFor(P).net; if (v > 0) add(P.pay.slice(0, 7), 'earned', v); });
+  const months = Object.keys(mk).sort(), n = Math.max(1, (+to.slice(0, 4) - +from.slice(0, 4)) * 12 + (+to.slice(5, 7) - +from.slice(5, 7)) + 1);
+  const mer = new Map(); out.forEach(x => { const c = bgClean(x.name), k = bgKey(c) || 'unknown', o = mer.get(k) || {name:x.name, sum:0, n:0}; o.sum += x.amt; o.n++; mer.set(k, o); });
+  const cats = S.bg.cats.map(c => ({c, v:sum(out.filter(x => x.cat === c.id))})).filter(o => o.v > 0).sort((a, b) => b.v - a.v);
+  const big = out.slice().sort((a, b) => b.amt - a.amt)[0];
+  return {from, to, spent:sum(out), bills:sum(out.filter(x => bgCat(x.cat).kind === 'bill')), earned:work + inn, n, count:out.length, months, mk, cats, mer:[...mer.values()].sort((a, b) => b.sum - a.sum).slice(0, 8), big};
+}
+function viewBtot() {
+  const yr = new Date().getFullYear(), y = UI.bgYear === 'all' ? 'all' : (UI.bgYear || yr), S0 = bgStats(y), mx = Math.max(1, ...S0.months.map(k => Math.max(S0.mk[k].spent, S0.mk[k].earned)));
+  const net = S0.earned - S0.spent, mname = k => keyDate(k + '-01').toLocaleDateString(undefined, y === 'all' ? {month:'short', year:'2-digit'} : {month:'long'});
+  const cmax = S0.cats.length ? S0.cats[0].v : 1;
+  return `<div class="bgnav">${y === 'all' ? '' : `<button class="btn sm ghost" data-act="bgY" data-n="-1" aria-label="Previous year">‹</button><b>${y}</b><button class="btn sm ghost" data-act="bgY" data-n="1" aria-label="Next year"${y >= yr ? ' disabled' : ''}>›</button>`}<button class="chip${y === 'all' ? ' on' : ''}" data-act="bgY" data-v="${y === 'all' ? 'year' : 'all'}" aria-pressed="${y === 'all'}">${y === 'all' ? 'Back to this year' : 'Lifetime'}</button></div>
+    ${S0.count || S0.earned ? `<section class="card"><h2>${y === 'all' ? 'Since you started' : y}</h2>
+      <div class="stats bgstats"><div class="stat"><b>${bgK(S0.spent)}</b><span>spent</span></div><div class="stat"><b>${S0.earned ? bgK(S0.earned) : '–'}</b><span>came in</span></div><div class="stat"><b style="${net < 0 ? 'color:' + BG_BAD : ''}">${S0.earned ? (net < 0 ? '−' : '+') + bgK(Math.abs(net)) : '–'}</b><span>${net < 0 ? 'short' : 'kept'}</span></div></div>
+      <p class="note">About <b>${bgM(S0.spent / S0.n)}</b> a month across ${plural(S0.count, 'purchase')}. ${S0.bills ? `${bgM(S0.bills)} of it was bills.` : ''}${S0.earned ? ' "Came in" is your Work paychecks plus any money in you added.' : ''}</p></section>
+    ${S0.months.length ? `<section class="card"><h2>Month by month</h2>${S0.months.slice(-24).map(k => { const m = S0.mk[k]; return `<div class="crow"><div class="row"><b>${esc(mname(k))}</b><span>${bgM(m.spent)}${m.earned ? ` of ${bgM(m.earned)}` : ''}</span></div><div class="cbar"><i style="width:${m.spent / mx * 100}%;background:${m.earned && m.spent > m.earned ? BG_BAD : 'var(--accent)'}"></i></div></div>`; }).join('')}</section>` : ''}
+    ${S0.cats.length ? `<section class="card"><h2>Where it went</h2>${S0.cats.map(o => `<div class="crow"><div class="row"><b><span class="bgdot" style="background:${o.c.color}"></span>${esc(o.c.em)} ${esc(o.c.name)}</b><span>${bgM(o.v)} · ${Math.round(o.v / S0.spent * 100)}%</span></div><div class="cbar"><i style="width:${o.v / cmax * 100}%;background:${o.c.color}"></i></div></div>`).join('')}</section>` : ''}
+    ${S0.mer.length ? `<section class="card"><h2>Top places</h2>${S0.mer.map(m => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(m.name.replace(/\s+/g, ' ').slice(0, 28))}<small class="muted">${plural(m.n, 'time')}</small></span><span>${bgM(m.sum)}</span></div>`).join('')}${S0.big ? `<p class="note">Biggest single purchase: <b>${cash2(S0.big.amt)}</b> at ${esc(S0.big.name.slice(0, 28))} on ${esc(fmtShort(S0.big.d))}.</p>` : ''}</section>` : ''}`
+    : emptyCard(y === 'all' ? 'Nothing tracked yet' : `Nothing in ${y}`, 'Add or import your spending and your year and lifetime totals show up here.', 'Add spending', 'data-act="go" data-to="btx"')}`;
+}
+Object.assign(XVIEWS, {btot:viewBtot, bacct:viewBacct});
+Object.assign(FORM_KEY, {bgacct:'bgAcctForm'});
+Object.assign(XACT, {
+  bgView: d => { UI.bgView = +d.n === 0 ? 0 : Math.max(-36, Math.min(36, (UI.bgView || 0) + +d.n)); },
+  bgY: d => { const yr = new Date().getFullYear(); if (d.v === 'all') UI.bgYear = 'all'; else if (d.v === 'year') UI.bgYear = yr; else { const c = UI.bgYear === 'all' ? yr : (UI.bgYear || yr); UI.bgYear = Math.min(yr, c + +d.n); } },
+  bgAcctEdit: d => { UI.edit = {kind:'bgacct', id:d.id}; UI.open.bgAcctForm = true; setTimeout(() => { const f = $('form[data-form="bgacct"]'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); },
+  bgAcctDel: d => { S.bg.accts = S.bg.accts.filter(a => a.id !== d.id); UI.edit = null; },
+});
+Object.assign(SAVE, {
+  bgacct: o => {
+    const name = (o.name || '').trim(); if (!name) { toast('Give the account a name.'); return false; }
+    const ed = UI.edit && UI.edit.kind === 'bgacct' ? S.bg.accts.find(a => a.id === UI.edit.id) : null, main = o.main === 'on', work = o.work === 'on';
+    if (ed) { Object.assign(ed, {name:name.slice(0, 24), em:(o.em || '').trim().slice(0, 4) || '🏦', main, work}); if (main) S.bg.accts.forEach(a => { if (a !== ed) a.main = false; }); UI.open.bgAcctForm = false; toast('Saved.'); return; }
+    const bal = Math.round(num(o.bal) * 100) / 100, a = {id:'a' + Date.now().toString(36), name:name.slice(0, 24), em:(o.em || '').trim().slice(0, 4) || '🏦', bal, asOf:today(), hist:[{d:today(), v:bal}], main, work};
+    if (main) S.bg.accts.forEach(x => { x.main = false; }); S.bg.accts.push(a); if (!S.bg.accts.some(x => x.main)) a.main = true; UI.open.bgAcctForm = false; toast(`Added ${a.name}.`);
+  },
+  bgbal: o => {
+    const a = S.bg.accts.find(x => x.id === o.id); if (!a) return false; if (String(o.v || '').trim() === '') { toast('Type what is in it now.'); return false; }
+    a.bal = Math.round(num(o.v) * 100) / 100; a.asOf = today(); a.hist = [...a.hist.filter(h => h.d !== today()), {d:today(), v:a.bal}].slice(-60); toast(`${a.name} is now ${bgM(a.bal)}.`); haptic();
+  },
+});
 
 // Badge counters (called from badges.js)
 function bgBadgeStats(o) {

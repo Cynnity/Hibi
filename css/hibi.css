@@ -803,7 +803,7 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 @media (min-width:1100px){ .nbgrid{grid-template-columns:repeat(5,minmax(0,1fr))} }
 
 /* ---- 3.3 Budget ---- */
-.bg-hero .bg-big{font-size:46px;font-weight:900;line-height:1.05;margin:10px 0 4px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.bg-big{font-size:46px;font-weight:900;line-height:1.05;margin:10px 0 4px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .bg-big small{font-size:16px;font-weight:700;color:var(--mute);letter-spacing:0}
 .bg-big.warn{color:#C77700}.bg-big.bad{color:var(--danger)}
 .bg-sub{margin:0 0 10px;color:var(--mute);font-weight:600;font-size:15px}.bg-sub b{color:var(--ink)}
@@ -850,7 +850,10 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 .bgstamp.ok{left:16px;color:var(--good);border-color:var(--good);opacity:var(--ok,0)}
 .bgstamp.no{right:16px;color:var(--danger);border-color:var(--danger);transform:rotate(12deg);opacity:var(--no,0)}
 .bg-more{justify-content:center;gap:18px}
+.bgnav{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.bgnav b{min-width:140px;text-align:center;font-size:17px}
 @media (hover:hover){.bgrow:hover,.bgtx:hover{opacity:.85}}
 @media (min-width:700px){.bgdeck{min-height:380px}.bg-hero .bg-big{font-size:54px}}
 .gsum .bgem{width:34px;height:34px;font-size:18px;border-radius:10px}
 .gsum h3{overflow-wrap:anywhere}
+.bgstats .stat b{font-size:clamp(14px,4.6vw,20px);white-space:nowrap}
