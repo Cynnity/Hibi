@@ -806,6 +806,10 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 .bg-big{font-size:46px;font-weight:900;line-height:1.05;margin:10px 0 4px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .bg-big small{font-size:16px;font-weight:700;color:var(--mute);letter-spacing:0}
 .bg-big.warn{color:#C77700}.bg-big.bad{color:var(--danger)}
+.bg-big.neg{color:var(--danger)}
+.bgspark{display:block;width:100%;height:56px;margin:8px 0 12px}
+.bgcardrow{padding:14px 0;border-top:1px solid var(--line)}
+.bgcardrow:first-of-type{border-top:0}
 .bg-sub{margin:0 0 10px;color:var(--mute);font-weight:600;font-size:15px}.bg-sub b{color:var(--ink)}
 .bg-good{color:var(--good)}
 .bgstack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line);margin-top:12px}
