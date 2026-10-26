@@ -36,8 +36,9 @@ function normalizeBg(s) {
   g.cats.forEach(c => { if (typeof c.em !== 'string' || !c.em) c.em = '📦'; if (!/^#[0-9a-f]{6}$/i.test(c.color || '')) c.color = '#B2BEC3'; if (c.kind !== 'bill') c.kind = 'flex'; if (typeof c.kw !== 'string') c.kw = ''; });
   if (!Array.isArray(g.tx)) g.tx = [];
   g.tx = g.tx.filter(x => x && x.id && x.d && typeof x.amt === 'number' && isFinite(x.amt));
-  g.tx.forEach(x => { if (x.kind !== 'in') x.kind = 'out'; if (!x.cat) x.cat = 'other'; if (!x.rev) x.rev = 0; if (typeof x.name !== 'string') x.name = ''; });
+  g.tx.forEach(x => { if (x.kind !== 'in') x.kind = 'out'; if (!x.cat) x.cat = 'other'; if (!x.rev) x.rev = 0; x.pts = x.kind !== 'in' && x.pts > 0 ? Math.min(+x.pts, x.amt) : 0; if (typeof x.name !== 'string') x.name = ''; });
   if (!Array.isArray(g.bills)) g.bills = [];
+  if (!g.pts || typeof g.pts !== 'object') g.pts = {bal:0, asOf:today()}; g.pts.bal = Math.max(0, +g.pts.bal || 0); if (!g.pts.asOf) g.pts.asOf = today();
   ['plan', 'learn', 'paid', 'moved'].forEach(k => { if (!g[k] || typeof g[k] !== 'object' || Array.isArray(g[k])) g[k] = {}; });
   if (!g.base || typeof g.base !== 'object') g.base = {};
   if (!g.base.b || typeof g.base.b !== 'object') g.base.b = {};
@@ -107,7 +108,7 @@ const bgRefundOn = x => x.kind === 'in' && (x.rf === 'yes' || x.rf === 'ask') &&
 const bgAsk = x => x.kind === 'in' && x.rf === 'ask' && S.bg.tx.some(p => p.id === x.of);
 function bgNet(x) {
   if (x.kind === 'in') return x.amt;
-  const r = S.bg.tx.reduce((t, y) => t + (y.kind === 'in' && y.rf === 'yes' && y.of === x.id ? y.amt : 0), 0);
+  const r = S.bg.tx.reduce((t, y) => t + (y.kind === 'in' && y.rf === 'yes' && y.of === x.id ? y.amt : 0), 0) + (x.pts || 0);
   return r ? Math.max(0, Math.round((x.amt - r) * 100) / 100) : x.amt;
 }
 function bgFindRefund(r, pool) {
@@ -202,10 +203,11 @@ function bgCalc(per, noRoll) {
   const flex = bgTxIn(per).filter(x => x.kind !== 'in' && bgCat(x.cat).kind === 'flex');
   const spent = flex.reduce((t, x) => t + bgNet(x), 0), bud = bgBudgetsOf(per), t0 = today();
   const inP = t0 >= per.from && t0 <= per.to, daysLeft = inP ? dayDiff(t0, per.to) + 1 : t0 < per.from ? per.days : 0;
+  const ptsUsed = flex.reduce((t, x) => t + (x.pts || 0), 0);
   const spentToday = inP ? flex.filter(x => x.d === t0).reduce((t, x) => t + bgNet(x), 0) : 0, left = pool - spent;
   const by = S.bg.cats.filter(c => c.kind === 'flex').map(c => { const b = num(bud[c.id]), s = flex.filter(x => x.cat === c.id).reduce((t, x) => t + bgNet(x), 0); return {c, b, s, left:b - s, perDay:daysLeft ? (b - s) / daysLeft : 0}; });
   const elapsed = inP ? dayDiff(per.from, t0) : t0 > per.to ? per.days : 0;
-  return {per, inc, bills, billsTotal, sv, roll, pool, spent, left, by, daysLeft, perDay:daysLeft ? left / daysLeft : 0, spentToday,
+  return {per, inc, bills, billsTotal, sv, roll, pool, spent, ptsUsed, left, by, daysLeft, perDay:daysLeft ? left / daysLeft : 0, spentToday,
     todayCan:daysLeft ? Math.max(0, (left + spentToday) / daysLeft - spentToday) : 0, pace:pool * (elapsed / per.days) - (spent - spentToday), inP, n:flex.length, assigned:by.reduce((t, x) => t + x.b, 0)};
 }
 const bgRevList = () => { const sk = UI.bgSkip || [], L = S.bg.tx.filter(x => x.rev || bgAsk(x)).slice().reverse().sort((a, b) => b.d.localeCompare(a.d)); return [...L.filter(x => !sk.includes(x.id)), ...L.filter(x => sk.includes(x.id))]; };
@@ -239,6 +241,7 @@ function bgTxForm(ed) {
     <div class="ff"><label>Amount ($)<input class="input" name="amt" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed ? esc(ed.amt) : ''}"></label><label>Date<input class="input" type="date" name="d" value="${esc(ed ? ed.d : today())}"></label></div>
     <label>What was it?<input class="input" name="name" placeholder="Shell, Publix, SunPass…" autocomplete="off" autocapitalize="words" value="${ed ? esc(ed.name) : ''}"></label>
     <label>Category<select class="input" name="cat">${bgCatOpts(ed ? ed.cat : '', !ed)}</select></label>
+    <label>Paid with card rewards ($)<small class="muted" style="display:block;font-weight:600">Points or cash back you used. It comes off your rewards instead of your budget.</small><input class="input" name="pts" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed && ed.pts ? esc(ed.pts) : ''}"></label>
     <label class="setrow"><span>Money coming in<small class="muted" style="display:block;font-weight:600">Like a gift or something you sold</small></span><input type="checkbox" name="kin"${ed && ed.kind === 'in' ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
     <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
 }
@@ -279,7 +282,7 @@ function viewBgo() {
         <div class="lrow"><span style="text-align:left;color:var(--ink)">Savings</span><span>−${bgM(C.sv)}</span></div>
         ${C.roll ? `<div class="lrow"><span style="text-align:left;color:var(--ink)">Rolled over from last period</span><span>+${bgM(C.roll)}</span></div>` : ''}
         <div class="lrow"><span style="text-align:left;color:var(--ink)"><b>To spend freely</b></span><span><b>${bgM(C.pool)}</b></span></div>
-        <div class="lrow"><span style="text-align:left;color:var(--ink)">Spent so far</span><span>−${bgM(C.spent)}</span></div></details></section>`;
+        <div class="lrow"><span style="text-align:left;color:var(--ink)">Spent so far${C.ptsUsed ? `<small class="muted">Not counting ${bgM(C.ptsUsed)} paid with rewards</small>` : ''}</span><span>−${bgM(C.spent)}</span></div></details></section>`;
   const shown = C.by.filter(o => o.b || o.s);
   return `${bgNavBar()}${hero}
     ${needInc ? '' : bgIncCard(per, view, C, false)}
@@ -298,7 +301,7 @@ function viewBgo() {
 function bgRow(x) {
   const c = bgCat(x.cat), inc = x.kind === 'in';
   return swipeWrap(`<div class="bgtx" data-act="bgTxEdit" data-id="${esc(x.id)}" role="button" tabindex="0"><span class="bgem" style="--c:${c.color}">${esc(inc ? '💵' : c.em)}</span>
-    <div><b>${esc(x.name)}</b><span class="small muted">${inc ? (x.rf === 'yes' && bgRefundOn(x) ? 'Refund of ' + esc((bgFind(x.of) || {}).name || 'a purchase') : bgAsk(x) ? 'Maybe a refund · needs a look' : 'Money in') : esc(c.name)}${x.rev ? ' · needs a look' : ''}${!inc && bgNet(x) < x.amt ? ` · ${cash2(x.amt - bgNet(x))} refunded` : ''}</span></div><b class="bgamt${inc ? ' in' : ''}">${inc ? '+' : ''}${cash2(x.amt)}</b></div>`,
+    <div><b>${esc(x.name)}</b><span class="small muted">${inc ? (x.rf === 'yes' && bgRefundOn(x) ? 'Refund of ' + esc((bgFind(x.of) || {}).name || 'a purchase') : bgAsk(x) ? 'Maybe a refund · needs a look' : 'Money in') : esc(c.name)}${x.rev ? ' · needs a look' : ''}${!inc && x.pts ? ` · ${cash2(x.pts)} from rewards` : ''}${!inc && bgNet(x) < x.amt - (x.pts || 0) - 0.005 ? ` · ${cash2(x.amt - (x.pts || 0) - bgNet(x))} refunded` : ''}</span></div><b class="bgamt${inc ? ' in' : ''}">${inc ? '+' : ''}${cash2(x.amt)}</b></div>`,
     {r:['bgTxEdit', 'Edit'], l:['bgTxDel', 'Delete'], data:{id:x.id}});
 }
 function bgFiltered() {
@@ -592,13 +595,14 @@ Object.assign(SAVE, {
     const amt = num(o.amt); if (!(amt > 0)) { toast('Add the amount.'); return false; }
     const ed = UI.edit && UI.edit.kind === 'bgtx' ? S.bg.tx.find(x => x.id === UI.edit.id) : null, kind = o.kin === 'on' ? 'in' : 'out';
     if (ed) {
-      Object.assign(ed, {amt:Math.round(amt * 100) / 100, d:o.d || ed.d, name:o.name || ed.name, kind});
+      Object.assign(ed, {amt:Math.round(amt * 100) / 100, d:o.d || ed.d, name:o.name || ed.name, kind}); ed.pts = kind === 'in' ? 0 : Math.min(Math.max(0, num(o.pts)), ed.amt);
       if (kind === 'in') { ed.rev = 0; if (!ed.rf) bgScanRefunds(); } else if (o.cat && (o.cat !== ed.cat || ed.rev)) { ed.cat = o.cat; ed.rev = 0; ed.why = 'manual'; bgLearn(ed); }
       UI.open.bgTxForm = false; toast('Updated.'); return;
     }
-    const x = bgMk({amt, d:o.d, name:o.name, cat:o.cat, kind}); S.bg.tx.push(x); if (o.cat && o.name) bgLearn(x); if (kind === 'in' && bgScanRefunds()) { toast('That looks like a refund. Check Review.'); return; }
+    const x = bgMk({amt, d:o.d, name:o.name, cat:o.cat, kind}); x.pts = kind === 'in' ? 0 : Math.min(Math.max(0, num(o.pts)), x.amt); S.bg.tx.push(x); if (o.cat && o.name) bgLearn(x); if (kind === 'in' && bgScanRefunds()) { toast('That looks like a refund. Check Review.'); return; }
     const c = bgCat(x.cat); toast(kind === 'in' ? `Added ${cash2(x.amt)} coming in.` : `${cash2(x.amt)} → ${c.em} ${c.name}.${x.rev ? ' Not sure about that one, so it\'s in Review.' : ''}`); haptic();
   },
+  bgpts: o => { const v = num(o.v); if (!(v >= 0) || o.v === '') { toast('Type your rewards balance.'); return false; } S.bg.pts = {bal:Math.round(v * 100) / 100, asOf:today()}; toast('Rewards updated.'); },
   bgbill: o => {
     const price = num(o.price); if (!o.name || !(price > 0)) { toast('Add the name and amount.'); return false; } if (!o.start) { toast('Add when it is next due.'); return false; }
     const rec = {name:o.name.trim(), em:(o.em || '').trim(), price:Math.round(price * 100) / 100, cycle:o.cycle || 'month', start:o.start, trial:false, note:''};
@@ -654,7 +658,7 @@ WIDGETS.budget = {n:'Safe to spend', em:'💸', d:'What you can spend today, and
 // The main account is tracked: what you typed, plus money in and Work paychecks since then, minus the spending you've logged
 function bgEst(a) {
   const to = today(), tx = S.bg.tx.filter(x => x.d > a.asOf && x.d <= to);
-  const out = tx.filter(x => x.kind !== 'in').reduce((t, x) => t + x.amt, 0), inn = tx.filter(x => x.kind === 'in').reduce((t, x) => t + x.amt, 0);
+  const out = tx.filter(x => x.kind !== 'in').reduce((t, x) => t + x.amt - (x.pts || 0), 0), inn = tx.filter(x => x.kind === 'in').reduce((t, x) => t + x.amt, 0);
   const pay = a.work && wkReady() ? bgPaychecks(addDays(a.asOf, 1), to, 80).reduce((t, P) => t + payFor(P).net, 0) : 0;
   return {est:a.bal + inn + pay - out, out, inn, pay};
 }
@@ -676,6 +680,13 @@ function bgAcctForm(ed) {
     <label class="setrow"><span>Count my Work paychecks<small class="muted" style="display:block;font-weight:600">Adds each payday after the date you entered</small></span><input type="checkbox" name="work"${!ed || ed.work ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
     <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add account'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
 }
+const bgPtsLeft = () => { const p = S.bg.pts, used = S.bg.tx.filter(x => x.kind !== 'in' && x.d > p.asOf).reduce((t, x) => t + (x.pts || 0), 0); return {left:Math.max(0, p.bal - used), used}; };
+function bgRewardsCard() {
+  const p = S.bg.pts, R = bgPtsLeft();
+  return `<section class="card"><div class="row"><h2>🎁 Card rewards</h2><b>${bgM(R.left)}</b></div>
+    <p class="note">${p.bal || R.used ? `You had ${bgM(p.bal)} on ${esc(fmtShort(p.asOf))}${R.used ? `, and have used ${bgM(R.used)} since` : ''}.` : 'Points or cash back from your cards, counted in dollars.'} When you pay for something with them, add the amount in "Paid with card rewards" on that purchase. That part comes off your rewards and doesn't use up your safe to spend.</p>
+    <form data-form="bgpts" class="field mt"><input class="input" name="v" inputmode="decimal" placeholder="Update what you have now" aria-label="Rewards balance in dollars"><button class="btn ghost" type="submit">Update</button></form></section>`;
+}
 function viewBacct() {
   const A = S.bg.accts, ed = UI.edit && UI.edit.kind === 'bgacct' ? A.find(x => x.id === UI.edit.id) : null, tot = bgTotalBal();
   const start = A.reduce((t, a) => t + a.hist[0].v, 0), since = A.map(a => a.hist[0].d).sort()[0];
@@ -686,6 +697,7 @@ function viewBacct() {
         <form data-form="bgbal" class="field mt"><input type="hidden" name="id" value="${esc(a.id)}"><input class="input" name="v" inputmode="decimal" placeholder="Update what's in it now" aria-label="New balance for ${esc(a.name)}"><button class="btn ghost" type="submit">Update</button></form>
         ${a.hist.length > 1 ? `<p class="small muted mt">${a.hist.slice(-5).map(h => `${esc(fmtShort(h.d))}: ${bgM(h.v)}`).join(' → ')}</p>` : ''}
         <div class="row mt" style="justify-content:flex-start;gap:16px"><button class="link" data-act="bgAcctEdit" data-id="${esc(a.id)}">Edit</button><button class="link danger" data-act="bgAcctDel" data-id="${esc(a.id)}" data-confirm>Delete</button></div></section>`; }).join('')}
+    ${bgRewardsCard()}
     <details class="card" ${det('bgAcctForm', !!ed || !A.length)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add an account'}</h2><span class="small muted">Checking, savings, cash</span></summary>${bgAcctForm(ed)}</details>
     <p class="note">Hibi can't see your bank, so update an account's balance now and then to keep it accurate. Every time you do, the estimate starts fresh from the number you typed.</p>`;
 }

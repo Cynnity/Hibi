@@ -9,6 +9,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.6 — "Points Well Spent" (Oct 26)
+- **Card rewards.** Accounts now has a Card rewards box. Type what your points or cash back are worth, and it counts down as you use them.
+- **Pay with rewards.** Any purchase has a new "Paid with card rewards" amount. That part comes off your rewards instead of your safe to spend, so it acts a bit like extra money without being income. Partial amounts work.
+- Spending shows "$X from rewards" on those purchases, and Overview's "How this is worked out" notes how much rewards covered.
+- Your tracked account's estimate only counts what actually left it, so rewards don't lower it.
+
+---
+
 ## 3.5 — "Money Back" (Oct 26)
 - **Hibi spots refunds.** When money comes in that matches something you bought (same amount or part of it, similar name, within 60 days), it shows up in Review as "Looks like a refund for…". Swipe right to confirm, left if it's something else.
 - **Confirmed refunds cancel the spending.** That purchase comes back off its category and month, so safe to spend goes back up. The refund isn't counted as income. Say no and it stays as normal money in.
