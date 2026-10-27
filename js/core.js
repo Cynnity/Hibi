@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '4.1';
+const APP_VERSION = '4.2';
 
 /* =========================================================
    Constants and reference data
@@ -56,12 +56,7 @@ Hamstrings|Seated forward fold|Legs straight, hinge from the hips toward your to
 Calves|Wall calf stretch|Hands on a wall, back heel down and leg straight, lean in. 30 seconds a side.`.split('\n').map(l => l.split('|'));
 
 const MOODS = [['😞','Rough'],['😕','Meh'],['😐','Okay'],['🙂','Good'],['😄','Great']];
-const THEMES = [
-  ['sakura','Paper','#1C1B1A','#F6F4EF'],['midnight','Midnight','#8B6CFF','#141B2D'],['ocean','Ocean','#0A86AA','#F2A541'],
-  ['forest','Forest','#86D993','#1F2B22'],['sunset','Sunset','#E8590C','#B5179E'],['mono','Mono','#141414','#F3F3F1'],
-  ['ink','Ink','#FFFFFF','#000000'],['matcha','Matcha','#4F8A3C','#D98E73'],['aqua','Aqua','#16A9A3','#E0457B'],
-  ['neon','Neon','#FF2E88','#00E5FF'],['royal','Royal','#F2C14E','#0E1530'],['miku','Miku','#39C5BB','#E4508C'],
-  ['lavender','Lavender','#9B7BEA','#F6F1FF'],['peach','Peach','#F06D4F','#FFF4EE'],['sky','Sky','#2F7BEA','#EEF5FF'],['mocha','Mocha','#D4A373','#2A211C'],['berry','Berry','#FF5D9E','#2A1020']];
+const THEMES = [['sakura','Paper','#1C1B1A','#F6F4EF']];   // 4.0: one look (Paper), light and dark. Older saved themes fall back to it.
 
 const TAB_INFO = {
   workout:{g:'workout',t:'Workout'},

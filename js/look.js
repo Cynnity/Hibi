@@ -105,15 +105,12 @@ function homeSettings() {
 ${musicSettings()}`;
 }
 function lookSettings() {
-  const L = S.look, cur = L.accent || (THEMES.find(t => t[0] === S.theme) || THEMES[0])[2];
+  const L = S.look, cur = L.accent || (S.look.scheme === 'dark' || (S.look.scheme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches) ? '#FF6F94' : '#E5456F');
   return `<section class="card"><h2>Appearance</h2>
       <div class="seg mt" role="tablist" style="margin-bottom:0">${[['auto', 'Match phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, n]) => `<button role="tab" aria-selected="${L.scheme === k}" data-act="lookScheme" data-k="${k}">${n}</button>`).join('')}</div>
-      <p class="note">${S.theme === 'sakura' ? 'Paper has a light and a dark look.' : 'Light and dark only change the Paper theme. The other themes stay fixed.'}</p></section>
-    <section class="card"><h2>Theme</h2>
-      <div class="swatches">${THEMES.map(([id, n, a, b]) => `<button class="swatch" aria-pressed="${S.theme === id}" data-act="theme" data-k="${id}"><i style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></i>${n}</button>`).join('')}</div>
-      <p class="note">Paper is the default. The others are colorful extras.</p></section>
-    <section class="card"><div class="row"><h2>Accent color</h2>${L.accent ? '<button class="link" data-act="lookAccent" data-c="">Use theme color</button>' : ''}</div>
-      <p class="note">Buttons, checkmarks, bars and highlights. Works with any theme.</p>
+      <p class="note">Match phone follows your phone's light or dark setting.</p></section>
+    <section class="card"><div class="row"><h2>Accent color</h2>${L.accent ? '<button class="link" data-act="lookAccent" data-c="">Use default</button>' : ''}</div>
+      <p class="note">Buttons, checkmarks, bars and highlights. The default is dark buttons with a pink touch.</p>
       <div class="accents mt">${ACCENTS.map(c => `<button class="acc${L.accent.toLowerCase() === c.toLowerCase() ? ' on' : ''}" style="background:${c}" data-act="lookAccent" data-c="${c}" aria-label="Accent ${c}" aria-pressed="${L.accent.toLowerCase() === c.toLowerCase()}"></button>`).join('')}
         <label class="acc any" aria-label="Pick any color"><input type="color" data-bind="lookAccent" value="${esc(cur)}">🎨</label></div></section>
     <section class="card"><h2>Card style</h2>

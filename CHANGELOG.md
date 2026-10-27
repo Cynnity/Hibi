@@ -9,6 +9,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.2 — "Just Two" (Oct 27)
+- **Themes are gone.** Hibi now has one look, Paper, in light or dark. Settings › Look › Appearance picks Match phone, Light or Dark. No more color theme list to scroll through.
+- **Accent color still works** if you want a splash of your own color.
+- Anything you had saved with an old theme switches to Paper automatically. Your data is untouched.
+- Badges you already unlocked stay unlocked. The few that were about trying lots of themes can't be earned anymore.
+
+---
+
 ## 4.1 — "Menu Time" (Oct 27)
 - **A new top bar.** Menu button on the left, the screen's name in the middle, search on the right. It stays put when you scroll.
 - **All your modes live in a side menu.** Tap the menu button and a panel slides in with Home, Gym, School, Japan, Budget and the rest, plus Badges, Settings and Find a screen. Your mode icons and order still apply. Hidden modes stay hidden.

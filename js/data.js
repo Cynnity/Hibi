@@ -118,7 +118,6 @@ function addPhoto(file) {
    ========================================================= */
 function applyTheme() {
   const r = document.documentElement;
-  if (S.theme === 'sakura') r.removeAttribute('data-skin'); else r.setAttribute('data-skin', S.theme);
-  const t = THEMES.find(x => x[0] === S.theme); const m = $('meta[name="theme-color"]'); if (m && t) m.content = t[2];
+  r.removeAttribute('data-skin');
   if (typeof applyLook === 'function') applyLook();
 }
