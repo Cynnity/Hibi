@@ -79,14 +79,15 @@ function importHevy(text) {
 /* =========================================================
    Photos (IndexedDB)
    ========================================================= */
-// Version 2 added notebook pages ('nb') and lecture recordings ('rec'). Photos stay in 'p'.
+// Version 2 added notebook pages ('nb') and lecture recordings ('rec'). Version 3 added Budget receipt photos ('rc'). Photos stay in 'p'.
 let idbP = null;
 const idb = () => idbP || (idbP = new Promise((ok, no) => {
-  const r = indexedDB.open('liftlog', 2);
+  const r = indexedDB.open('liftlog', 3);
   r.onupgradeneeded = () => { const db = r.result;
     if (!db.objectStoreNames.contains('p')) db.createObjectStore('p', {keyPath:'id'});
     if (!db.objectStoreNames.contains('nb')) db.createObjectStore('nb', {keyPath:'id'});
-    if (!db.objectStoreNames.contains('rec')) db.createObjectStore('rec', {keyPath:'k'}); };
+    if (!db.objectStoreNames.contains('rec')) db.createObjectStore('rec', {keyPath:'k'});
+    if (!db.objectStoreNames.contains('rc')) db.createObjectStore('rc', {keyPath:'id'}); };
   r.onsuccess = () => { const db = r.result; db.onversionchange = () => { db.close(); idbP = null; }; ok(db); };
   r.onerror = () => { idbP = null; no(r.error); }; r.onblocked = () => { idbP = null; no(new Error('blocked')); };
 }));

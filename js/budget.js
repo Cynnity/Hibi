@@ -43,7 +43,7 @@ function normalizeBg(s) {
     g.cards = [['d1', 'Discover it', '🟧'], ['c1', 'Capital One', '🟦'], ['b1', 'Bank of America', '🟥']].map(([id, name, em]) => ({id, name, em, bal:0, val:1, asOf:today()}));
     if (g.pts.bal > 0 || g.tx.some(x => x.pts > 0)) { g.cards.push({id:'o1', name:'Other rewards', em:'🎁', bal:g.pts.bal, val:1, asOf:g.pts.asOf}); g.tx.forEach(x => { if (x.pts > 0) x.pc = 'o1'; }); }
   }
-  g.cards = g.cards.filter(c => c && c.id && c.name).map(c => ({id:String(c.id), name:String(c.name).slice(0, 24), em:String(c.em || '💳').slice(0, 4), bal:Math.max(0, +c.bal || 0), val:+c.val > 0 ? +c.val : 1, asOf:c.asOf || today(), at:+c.at || 0, lim:Math.max(0, +c.lim || 0), owed:Math.max(0, +c.owed || 0), oas:c.oas || today(), oat:+c.oat || 0}));
+  g.cards = g.cards.filter(c => c && c.id && c.name).map(c => ({id:String(c.id), name:String(c.name).slice(0, 24), em:String(c.em || '💳').slice(0, 4), bal:Math.max(0, +c.bal || 0), val:+c.val > 0 ? +c.val : 1, asOf:c.asOf || today(), at:+c.at || 0, lim:Math.max(0, +c.lim || 0), owed:Math.max(0, +c.owed || 0), oas:c.oas || today(), oat:+c.oat || 0, l4:/^\d{4}$/.test(c.l4 || '') ? c.l4 : ''}));
   g.tx.forEach(x => { if (x.cc && !g.cards.some(c => c.id === x.cc)) x.cc = ''; if (!x.cc) x.cc = ''; });
   g.tx.forEach(x => { if (x.pts > 0 && !g.cards.some(c => c.id === x.pc)) x.pc = g.cards[0] ? g.cards[0].id : ''; });
   ['plan', 'learn', 'paid', 'moved'].forEach(k => { if (!g[k] || typeof g[k] !== 'object' || Array.isArray(g[k])) g[k] = {}; });
@@ -66,7 +66,7 @@ function normalizeBg(s) {
   if (!Array.isArray(g.cpay)) g.cpay = []; g.cpay = g.cpay.filter(p => p && p.id && p.d && typeof p.amt === 'number' && isFinite(p.amt) && p.amt > 0);
   if (!Array.isArray(g.nw)) g.nw = []; g.nw = g.nw.filter(p => p && p.d && isFinite(p.v)).slice(-400);
   if (!g.n || typeof g.n !== 'object') g.n = {};
-  ['rev', 'moved', 'imp'].forEach(k => { if (typeof g.n[k] !== 'number') g.n[k] = 0; });
+  ['rev', 'moved', 'imp', 'scan'].forEach(k => { if (typeof g.n[k] !== 'number') g.n[k] = 0; });
 }
 
 /* ----- Money and names ----- */
@@ -258,7 +258,7 @@ function bgTxForm(ed) {
     ${S.bg.cards.length ? `<label>Which card<select class="input" name="cc"><option value="">Debit or cash</option>${S.bg.cards.map(c => opt(c.id, c.em + ' ' + c.name, ed ? ed.cc : UI.bgCc || '')).join('')}</select></label>` : ''}
     <label>Paid with card rewards ($)<small class="muted" style="display:block;font-weight:600">Points or cash back you used. It comes off your rewards instead of your budget.</small><div class="ff"><input class="input" name="pts" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed && ed.pts ? esc(ed.pts) : ''}" aria-label="Amount paid with rewards"><select class="input" name="pc" aria-label="Which card's rewards">${S.bg.cards.map(c => opt(c.id, c.em + ' ' + c.name, ed && ed.pc ? ed.pc : UI.bgPc || '')).join('')}</select></div></label>
     <label class="setrow"><span>Money coming in<small class="muted" style="display:block;font-weight:600">Like a gift or something you sold</small></span><input type="checkbox" name="kin"${ed && ed.kind === 'in' ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
-    <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
+    <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}${ed && ed.rc ? `<button class="btn ghost" type="button" data-act="rcSee" data-id="${esc(ed.id)}">🧾 Receipt</button>` : ''}</div></form>`;
 }
 function bgCatRow(o, daysLeft) {
   const {c, b, s, left, perDay} = o, pct = b ? Math.min(100, Math.max(0, s / b * 100)) : s ? 100 : 0, over = b > 0 && s > b;
@@ -302,8 +302,9 @@ function viewBgo() {
   return `${bgNavBar()}${hero}
     ${needInc ? '' : bgIncCard(per, view, C, false)}
     ${bgMoneyCard()}
+    ${typeof rcUI === 'function' ? rcUI() : ''}
     ${rv ? `<section class="card bg-rev"><div class="row"><h2>👀 ${plural(rv, 'purchase')} to check</h2><button class="btn sm" data-act="wGo" data-k="budget" data-to="brev">Swipe through</button></div><p class="note">I wasn't sure where ${rv === 1 ? 'this one goes' : 'these go'}. It takes a few seconds.</p></section>` : ''}
-    <details class="card" ${det('bgQuick', !S.bg.tx.length)}><summary class="sum"><h2>➕ Add spending</h2><span class="small muted">I'll sort it for you</span></summary>${bgTxForm(null)}</details>
+    <details class="card" ${det('bgQuick', !S.bg.tx.length)}><summary class="sum"><h2>➕ Add spending</h2><span class="small muted">I'll sort it for you</span></summary>${typeof rcScanBtn === 'function' ? rcScanBtn() : ''}${bgTxForm(null)}</details>
     <section class="card"><div class="row"><h2>Categories</h2><button class="link" data-act="wGo" data-k="budget" data-to="bplan">Edit budgets</button></div>
       ${shown.length ? shown.map(o => bgCatRow(o, C.daysLeft)).join('') : '<p class="note">Set a budget for each category in Plan, or just start adding spending.</p>'}
       ${C.by.some(o => !o.b && !o.s) ? '' : ''}</section>
@@ -348,7 +349,7 @@ function bgImportCard() {
 function viewBtx() {
   const ed = UI.edit && UI.edit.kind === 'bgtx' ? S.bg.tx.find(x => x.id === UI.edit.id) : null, r = UI.bgRange || 'cur', all = bgFiltered(), out = all.filter(x => x.kind !== 'in').reduce((t, x) => t + x.amt, 0);
   const used = S.bg.cats.filter(c => S.bg.tx.some(x => x.cat === c.id && x.kind !== 'in'));
-  return `<details class="card" ${det('bgTxForm', !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : '➕ Add spending'}</h2><span class="small muted">${ed ? '' : "I'll sort it for you"}</span></summary>${bgTxForm(ed)}</details>
+  return `${typeof rcUI === 'function' ? rcUI() : ''}<details class="card" ${det('bgTxForm', !!ed)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : '➕ Add spending'}</h2><span class="small muted">${ed ? '' : "I'll sort it for you"}</span></summary>${!ed && typeof rcScanBtn === 'function' ? rcScanBtn() : ''}${bgTxForm(ed)}</details>
     <section class="card"><div class="chips">${[['cur', 'This ' + bgWord()], ['prev', 'Last ' + bgWord()], ['all', 'All time']].map(([k, l]) => chip(l, r === k, `data-act="bgR" data-v="${k}"`)).join('')}</div>
       <input class="input mt" id="bgSearch" type="search" placeholder="Search spending" value="${esc(UI.bgQ || '')}" aria-label="Search spending" autocomplete="off">
       <div class="chips mt">${chip('All', !UI.bgCat, 'data-act="bgCatF" data-c=""')}${used.map(c => chip(c.em + ' ' + c.name, UI.bgCat === c.id, `data-act="bgCatF" data-c="${esc(c.id)}"`)).join('')}</div>
@@ -573,7 +574,7 @@ Object.assign(XACT, {
     toast(`${c.em} ${c.name}.${n ? ` ${plural(n, 'other purchase')} from them sorted too.` : ' I\'ll remember that.'}`); if (!bgRevList().length) bgCheckEmpty(); },
   bgSkip: d => { UI.bgSkip = [...(UI.bgSkip || []).filter(i => i !== d.id), d.id]; UI.bgPick = null; },
   bgTxEdit: d => { UI.edit = {kind:'bgtx', id:d.id}; UI.open.bgTxForm = true; if (S.tab !== 'btx') go('btx'); setTimeout(() => { const f = $('form[data-form="bgtx"]'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); },
-  bgTxDel: d => { S.bg.tx = S.bg.tx.filter(x => x.id !== d.id); if (UI.edit && UI.edit.id === d.id) UI.edit = null; },
+  bgTxDel: d => { if (typeof rcStore !== 'undefined' && S.bg.tx.some(x => x.id === d.id && x.rc)) rcStore.del(d.id); S.bg.tx = S.bg.tx.filter(x => x.id !== d.id); if (UI.edit && UI.edit.id === d.id) UI.edit = null; },
   bgR: d => { UI.bgRange = d.v; },
   bgCatF: d => { UI.bgCat = d.c || ''; },
   bgCatGo: d => { UI.bgCat = d.c; UI.bgRange = 'cur'; go('btx'); scrollTo(0, 0); },
@@ -639,8 +640,8 @@ Object.assign(SAVE, {
   bgcard: o => {
     const name = (o.name || '').trim(); if (!name) { toast('Give the card a name.'); return false; }
     const ed = UI.edit && UI.edit.kind === 'bgcard' ? S.bg.cards.find(c => c.id === UI.edit.id) : null, val = num(o.val) > 0 ? num(o.val) : 1, em = (o.em || '').trim().slice(0, 4) || '💳';
-    if (ed) { Object.assign(ed, {name:name.slice(0, 24), em, val}); UI.open.bgCardForm = false; toast('Saved.'); return; }
-    S.bg.cards.push({id:'k' + Date.now().toString(36), name:name.slice(0, 24), em, bal:Math.max(0, num(o.bal)), val, asOf:today(), at:Date.now()}); UI.open.bgCardForm = false; toast(`Added ${name}.`);
+    const l4 = /^\d{4}$/.test((o.l4 || '').trim()) ? o.l4.trim() : ''; if (ed) { Object.assign(ed, {name:name.slice(0, 24), em, val, l4}); UI.open.bgCardForm = false; toast('Saved.'); return; }
+    S.bg.cards.push({id:'k' + Date.now().toString(36), name:name.slice(0, 24), em, bal:Math.max(0, num(o.bal)), val, asOf:today(), at:Date.now(), l4}); UI.open.bgCardForm = false; toast(`Added ${name}.`);
   },
   bgbill: o => {
     const price = num(o.price); if (!o.name || !(price > 0)) { toast('Add the name and amount.'); return false; } if (!o.start) { toast('Add when it is next due.'); return false; }
@@ -775,6 +776,7 @@ function bgCardForm(ed) {
   return `<form data-form="bgcard" class="stack">
     <div class="field"><input class="input" name="em" value="${ed ? esc(ed.em) : '💳'}" aria-label="Emoji" style="flex:0 0 58px;text-align:center;font-size:22px" maxlength="4"><input class="input" name="name" placeholder="Card name" value="${ed ? esc(ed.name) : ''}" aria-label="Card name" maxlength="24"></div>
     <label>Each point is worth ($)<small class="muted" style="display:block;font-weight:600">Cash back: 1. Points or miles are often about 0.01.</small><input class="input" name="val" inputmode="decimal" placeholder="1" value="${ed ? esc(ed.val) : ''}"></label>
+    <label>Last 4 digits <small class="muted">(optional)</small><small class="muted" style="display:block;font-weight:600">Lets receipt scanning pick this card for you</small><input class="input" name="l4" inputmode="numeric" maxlength="4" placeholder="1234" autocomplete="off" value="${ed ? esc(ed.l4 || '') : ''}"></label>
     ${ed ? '' : '<label>What you have now<small class="muted" style="display:block;font-weight:600">Dollars of cash back, or your number of points</small><input class="input" name="bal" inputmode="decimal" placeholder="0"></label>'}
     <div class="btns"><button class="btn" type="submit">${ed ? 'Save changes' : 'Add card'}</button>${ed ? '<button class="btn ghost" type="button" data-act="cancelEdit">Cancel</button>' : ''}</div></form>`;
 }

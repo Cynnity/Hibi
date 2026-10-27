@@ -9,6 +9,18 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.8 — "Snap, Read, Done" (Oct 27)
+- **Scan a receipt.** In Budget, tap **📷 Scan a receipt** (Spending tab, or Overview under Add spending). Take a photo or pick one from your library.
+- **It reads the receipt right on your phone.** Nothing is uploaded anywhere. Hibi straightens and cleans up the photo, reads the text, and fills in the **store, date, total, category and which card** you paid with.
+- **You always check it before it's saved.** A confirm card shows the photo and every field. If the total looks uncertain it says so, and it offers the other amounts it saw as one-tap choices.
+- **Smart extras:** it double-checks the total against subtotal + tax (and tip on restaurant receipts), guesses gas stations from the gallons line, and can save the items into the purchase's note.
+- **Cards remember their last 4 digits.** Add them in Budget › Accounts › Card rewards. When a receipt shows "ending 1942", Hibi picks that card for you. The first time, it offers to remember the digits.
+- **Keep the photo.** Receipts you keep stay on your phone. Tap a purchase, then 🧾 Receipt, to see it again.
+- **First scan downloads the reader once (about 13 MB).** After that it works offline, and app updates don't download it again.
+- Receipt photos are not in the Dropbox backup yet.
+
+---
+
 ## 3.7.1 — "Month by Month Savings" (Oct 27)
 - **Savings are now set per month.** In Plan, the Savings card belongs to the month you're looking at (this month, next month, after that). Changing it there no longer changes any other month. You can pick the amount or percent and a savings goal for just that month.
 - **Your usual savings moved to Settings › Budget.** That is what every month uses until you set one in Plan.

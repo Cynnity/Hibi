@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '3.7.1';
+const APP_VERSION = '3.8';
 
 /* =========================================================
    Constants and reference data

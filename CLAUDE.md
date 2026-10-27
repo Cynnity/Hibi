@@ -33,6 +33,9 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/motion.js` | Welcome animation (`#splash` markup lives in index.html), screen transitions, `confetti()`, and the animation switches (`S.fx`) |
 | `js/subs.js` | Subscriptions tab in Savings (`S.subs`), the Renewing soon alert on Home and its widget. Loads after widgets.js. |
 | `js/budget.js` | Budget mode (`S.bg`): categories with sort words, `bgGuess()` auto-sorting, pay-period or month periods (`bgPeriodAt()` uses Work's `periodFor()`), `bgCalc()` safe-to-spend math, bills from `S.subs` plus `S.bg.bills`, plan per period, swipe Review deck, CSV import and export, Home widget. Loads after subs.js. |
+| `js/receipt.js` | Budget receipt scanning: photo cleanup (`rcPrep`: crop, deskew, flatten lighting), the on-device reader driver (`rcEngine`, `rcRecognize`), the parser (`rcParse`: total with subtotal/tax check, date, merchant, card last 4, items), the scan card and `rcsave`. Receipt photos live in IndexedDB store `rc` (keyed by purchase id, `tx.rc=1`). Loads after budget.js. |
+| `js/ocr-worker.js` | Web worker that runs Tesseract (LSTM) from `vendor/ocr/`. Not in `index.html`; `receipt.js` starts it. |
+| `vendor/ocr/` | tesseract.js-core WASM (SIMD and plain) and the English model `eng.traineddata.gz`, with licences. Fetched on first scan and kept in the separate `hibi-ocr` cache, which `sw.js` does not clear on updates. |
 | `js/ideas.js` | Ideas for Hibi list in Settings (`S.ideas`) and its Home widget |
 | `js/recap.js` | Weekly recap on Home and Monthly/Yearly Wrapped slides. Uses `S.alog` (activity log of episodes, chapters and game hours) and `S.wrapSeen`. |
 | `js/app.js` | `render()`, toasts, timers, Gym actions |
@@ -56,7 +59,7 @@ The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also
 
 ## Don't break his data
 
-- Never rename the storage keys: `liftlog:v1` (localStorage), `liftlog` (IndexedDB, version 2: stores `p` photos, `nb` notebook pages, `rec` recordings; only ever add stores), the `liftlog:` passcode salt, `liftlog:dbx` (Dropbox sign-in) or `liftlog:crash` (crash reports).
+- Never rename the storage keys: `liftlog:v1` (localStorage), `liftlog` (IndexedDB, version 3: stores `p` photos, `nb` notebook pages, `rec` recordings, `rc` receipt photos; only ever add stores), the `liftlog:` passcode salt, `liftlog:dbx` (Dropbox sign-in) or `liftlog:crash` (crash reports).
 - Never rename or remove badge ids in `BADGES`; unlocked badges are stored by id in `S.bd`. Secret badges use kind `'secret'` and stay hidden as ??? until unlocked; their counters live in `S.sx`.
 - Never rename widget ids in `WIDGETS`; his Home layout stores them in `S.home.w`. Changing them wipes his data.
 - Never rename the repository or change the Pages path. A new address is a new app on iPhone, with empty storage.
