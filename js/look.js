@@ -173,6 +173,22 @@ function jumpList() {
   return Object.keys(by).map(k => `<div class="jmode"><b>${MODES[k].em} ${esc(MODES[k].label)}</b><div class="chips">${by[k].map(x => `<button class="chip" data-act="jumpGo" data-k="${x.k}" data-t="${x.t}" data-sec="${x.sec || ''}">${esc(x.l)}</button>`).join('')}</div></div>`).join('')
     + `<div class="jmode"><b>⚙️ Settings</b><div class="chips">${L.filter(x => x.set).map(x => `<button class="chip" data-act="jumpGo" data-k="${x.k}" data-t="${x.t}" data-sec="${x.sec}">${esc(x.l.split(':')[0])}</button>`).join('')}</div></div>`;
 }
+/* ----- Top bar and side menu (4.0): menu button, centered title, search; every mode lives in the menu ----- */
+const SVG_MENU = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>', SVG_FIND = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>', SVG_GEAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>';
+const appBar = () => `<div class="appbar"><button class="ab-btn" data-act="menuOpen" aria-label="Open menu">${SVG_MENU}</button><h1 class="ab-title">${esc(TAB_INFO[S.tab].t)}</h1><button class="ab-btn" data-act="jumpOpen" aria-label="Find a screen">${SVG_FIND}</button></div>`;
+const menuSheet = () => {
+  const modes = orderedModes().filter(modeVisible), nm = ((S.home && S.home.name) || '').trim();
+  return `<div id="drawer" data-act="menuClose"><aside class="drawer" data-act="noop" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="dr-top"><b class="dr-brand">Hibi</b><button class="ab-btn" data-act="menuGo" data-m="${S.mode}" data-t="settings" aria-label="Settings">${SVG_GEAR}</button></div>
+    <div class="dr-h">Modes</div>
+    ${modes.map(k => `<button class="dr-i${S.mode === k ? ' on' : ''}" data-act="menuMode" data-k="${k}"><span class="dr-em" aria-hidden="true">${MODES[k].em}</span>${esc(MODES[k].label)}</button>`).join('')}
+    <div class="dr-h">More</div>
+    <button class="dr-i" data-act="menuGo" data-m="home" data-t="badges"><span class="dr-em" aria-hidden="true">🏆</span>Badges</button>
+    <button class="dr-i" data-act="menuGo" data-m="${S.mode}" data-t="settings"><span class="dr-em" aria-hidden="true">⚙️</span>Settings</button>
+    <button class="dr-i" data-act="menuFind"><span class="dr-em" aria-hidden="true">🔎</span>Find a screen</button>
+    <div class="dr-foot"><span class="dr-av" aria-hidden="true">${esc((nm[0] || 'H').toUpperCase())}</span>${esc(nm || 'Hibi')}<small>v${APP_VERSION}</small></div></aside></div>`;
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.menu) { UI.menu = false; render(); } });
 const jumpSheet = () => `<div id="sheet" data-act="closeSheet"><div class="panel" data-act="noop" role="dialog" aria-modal="true" aria-label="Find a screen">
   <div class="row"><h2>Go to</h2><button class="link" data-act="closeSheet">Done</button></div>
   <input class="input mt" id="jumpQ" type="search" placeholder="Search, like water or flights" value="${esc(JQ)}" autocomplete="off" aria-label="Search screens">
@@ -187,6 +203,11 @@ const emSheet = () => { const k = UI.emPick, m = MODES[k];
 /* ----- Actions ----- */
 Object.assign(XACT, {
   lookAccent: d => { S.look.accent = d.c || ''; applyLook(); },
+  menuOpen: () => { UI.menu = true; },
+  menuClose: () => { UI.menu = false; },
+  menuFind: () => { UI.menu = false; XACT.jumpOpen(); },
+  menuMode: d => { UI.menu = false; const f = ACT.mode || JACT.mode || MACT.mode || SACT.mode || XACT.mode; if (S.mode !== d.k && f) f(d); scrollTo(0, 0); },
+  menuGo: d => { UI.menu = false; if (S.mode !== d.m) { S.lastMode[S.mode] = S.tab; S.mode = d.m; } UI.edit = null; go(d.t); scrollTo(0, 0); },
   lookScheme: d => { S.look.scheme = d.k; applyLook(); },
   lookStyle: d => { S.look.style = d.k; applyLook(); },
   lookIcon: d => { S.look.icon = d.k; UI.iconHelp = true; },

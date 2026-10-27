@@ -90,6 +90,7 @@ function plateResult() {
     <p class="note">Using a ${fmtN(r.bar)} ${S.unit} bar. You can change it in Settings.</p>`;
 }
 function sheetHtml() {
+  if (UI.menu) return menuSheet();
   if (UI.wrap) return wrapHtml();
   if (UI.jump) return jumpSheet();
   if (UI.emPick) return emSheet();

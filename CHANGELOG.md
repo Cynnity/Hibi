@@ -9,6 +9,16 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.1 — "Menu Time" (Oct 27)
+- **A new top bar.** Menu button on the left, the screen's name in the middle, search on the right. It stays put when you scroll.
+- **All your modes live in a side menu.** Tap the menu button and a panel slides in with Home, Gym, School, Japan, Budget and the rest, plus Badges, Settings and Find a screen. Your mode icons and order still apply. Hidden modes stay hidden.
+- **The row of mode chips at the top is gone**, so there's more room for what you're actually doing.
+- **Pill tabs.** The tabs inside a screen are now simple text with a soft filled pill on the one you're on.
+- **Simpler bottom bar.** The selected tab is just darker and bolder, with no bubble behind it.
+- **Dark mode is now a neutral charcoal** instead of a warm black.
+
+---
+
 ## 4.0 — "Clean Slate" (Oct 27)
 - **Hibi has a brand new look: Paper.** Warm off-white, near-black text, thin hairline borders and no chunky shadows. Buttons are solid dark, headings are big and tight, and the pink is saved for links and small highlights.
 - **Light and dark mode, your choice.** Settings › Look › Appearance: Match phone, Light or Dark. Dark is a soft near-black, not pure black.

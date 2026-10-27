@@ -40,7 +40,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/recap.js` | Weekly recap on Home and Monthly/Yearly Wrapped slides. Uses `S.alog` (activity log of episodes, chapters and game hours) and `S.wrapSeen`. |
 | `js/app.js` | `render()`, toasts, timers, Gym actions |
 | `js/data.js` | Backup files, restore, Hevy import, photos (IndexedDB), themes |
-| `js/look.js` | Accent color, card style, mode emojis, app icons (`S.look`), the 🔎 screen finder, and the Settings sections |
+| `js/look.js` | Accent color, light/dark (`S.look.scheme`), card style, mode emojis, app icons (`S.look`), the top bar (`appBar()`) and side menu (`menuSheet()`, `UI.menu`) that list every mode, the 🔎 screen finder, and the Settings sections |
 | `js/events.js` | Tap, input and keyboard handling |
 | `js/touch.js` | `haptic()`, swipe rows (`swipeWrap()`), drag to reorder (`data-sort` lists with a `.grip`, saved by `SORT`), Undo after a swipe delete |
 | `js/dropbox.js` | Dropbox auto backup of data, photos and crash reports |

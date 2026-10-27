@@ -13,7 +13,7 @@ function drawApp() {
   try { fxEnter(); } catch (e) {}
   const g = TAB_INFO[S.tab].g, tabs = GROUPS[g];
   const seg = tabs.length > 1 ? `<div class="seg" role="tablist">${tabs.map(t => `<button role="tab" aria-selected="${t === S.tab}" data-act="go" data-to="${t}">${TAB_INFO[t].t}</button>`).join('')}</div>` : '';
-  $('#app').innerHTML = `${updateBanner()}${modeBar()}<header class="top"><h1>${TAB_INFO[S.tab].t}</h1><p>${esc(subtitle())}</p></header>${seg}${S.mode === 'school' ? pomoBanner() : ''}${(VIEWS[S.tab] || JVIEWS[S.tab] || MVIEWS[S.tab] || SVIEWS[S.tab] || XVIEWS[S.tab])()}`;
+  $('#app').innerHTML = `${appBar()}${updateBanner()}${(() => { const st = subtitle(); return st ? `<header class="top"><p>${esc(st)}</p></header>` : ''; })()}${seg}${S.mode === 'school' ? pomoBanner() : ''}${(VIEWS[S.tab] || JVIEWS[S.tab] || MVIEWS[S.tab] || SVIEWS[S.tab] || XVIEWS[S.tab])()}`;
   $('#sheetRoot').innerHTML = sheetHtml();
   { const mb = $('.modes'), sel = mb && mb.querySelector('[aria-selected="true"]'); if (sel && (sel.offsetLeft + sel.offsetWidth > mb.clientWidth + mb.scrollLeft || sel.offsetLeft < mb.scrollLeft)) mb.scrollLeft = Math.max(0, sel.offsetLeft - 16); }
   $('#nav').innerHTML = MODES[S.mode].nav.map(([ng, label, ic]) => `<button data-nav="${ng}"${ng === g ? ' aria-current="page"' : ''}><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg></span>${label}</button>`).join('');
