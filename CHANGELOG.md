@@ -9,6 +9,13 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 3.7.1 — "Month by Month Savings" (Oct 27)
+- **Savings are now set per month.** In Plan, the Savings card belongs to the month you're looking at (this month, next month, after that). Changing it there no longer changes any other month. You can pick the amount or percent and a savings goal for just that month.
+- **Your usual savings moved to Settings › Budget.** That is what every month uses until you set one in Plan.
+- Plan has "Make this my usual" to copy a month's savings to all months, and "Back to my usual" to undo a month's own setting.
+
+---
+
 ## 3.7 — "Worth It" (Oct 26)
 - **Net worth.** Budget › Accounts opens with a Net worth card: what you own minus what you owe, how much it has grown since you started, a little trend line, and a bar splitting spending, savings, investing and owed.
 - **Savings accounts.** Each account can be Checking or cash, Savings or Investing, so your savings have their own slice.

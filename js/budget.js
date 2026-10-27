@@ -182,7 +182,12 @@ function bgIncome(per) {
   if (csvIn > base) note = 'Using the money you actually received';
   return {base, extra, total, note};
 }
-const bgSaveAmt = (per, income) => { const p = S.bg.plan[per.key], s = S.bg.save; if (p && p.save != null && p.save !== '') return Math.max(0, num(p.save)); return Math.max(0, s.mode === 'pct' ? income * num(s.v) / 100 : num(s.v)); };
+// Savings can be set for one month on its own (plan[key].save, .sm mode, .sg goal), otherwise your usual setting applies
+function bgSaveCfg(per) {
+  const p = S.bg.plan[per.key] || {}, own = p.save != null && p.save !== '', g = S.bg.save;
+  return {own, mode:own ? (p.sm === 'pct' ? 'pct' : 'amt') : g.mode, v:own ? num(p.save) : num(g.v), goal:p.sg !== undefined ? p.sg : g.goal, ownGoal:p.sg !== undefined};
+}
+const bgSaveAmt = (per, income) => { const c = bgSaveCfg(per); return Math.max(0, c.mode === 'pct' ? income * c.v / 100 : c.v); };
 const bgBudgetsOf = per => { const p = S.bg.plan[per.key]; return p && p.b ? p.b : S.bg.base.b; };
 // Subscriptions (from Savings) and your own bills share the same shape
 const bgBillsAll = () => [...S.subs.filter(x => !x.off && x.start).map(x => ({x, src:'sub'})), ...S.bg.bills.filter(x => !x.off && x.start).map(x => ({x, src:'bill'}))];
@@ -270,7 +275,7 @@ function bgTrend() {
 }
 function bgSavingsCard(C) {
   if (!(C.sv > 0)) return '';
-  const g = S.bg.save.goal && S.sv.goals.find(x => x.id === S.bg.save.goal), moved = S.bg.moved[C.per.key];
+  const gid = bgSaveCfg(C.per).goal, g = gid && S.sv.goals.find(x => x.id === gid), moved = S.bg.moved[C.per.key];
   return `<section class="card"><div class="row"><h2>🏦 Savings</h2><b>${bgM(C.sv)}</b></div><p class="note">${g ? `Set aside for <b>${esc(g.em || '💰')} ${esc(g.name)}</b> this period.` : 'Set aside before you spend anything else.'}</p>
     ${g ? (moved ? `<p class="small muted">✓ Moved ${bgM(moved)} into ${esc(g.name)}</p>` : `<button class="btn block mt" data-act="bgMove">Move ${bgM(C.sv)} into ${esc(g.name)}</button>`) : '<button class="link mt" data-act="wGo" data-k="budget" data-to="bplan">Pick a savings goal in Plan</button>'}</section>`;
 }
@@ -489,7 +494,7 @@ function viewBbills() {
 
 /* ----- Plan ----- */
 function viewBplan() {
-  const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per), pl = S.bg.plan[per.key] || {}, bud = bgBudgetsOf(per), pv = bgCalc(bgPer(off - 1), true), left = C.pool - C.assigned, goals = S.sv.goals.filter(live);
+  const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per), SV = bgSaveCfg(per), pl = S.bg.plan[per.key] || {}, bud = bgBudgetsOf(per), pv = bgCalc(bgPer(off - 1), true), left = C.pool - C.assigned, goals = S.sv.goals.filter(live);
   const rows = C.by.map(o => { const lp = pv.by.find(x => x.c.id === o.c.id), ls = lp ? lp.s : 0;
     return `<div class="bgplan-row"><span class="bgem" style="--c:${o.c.color}">${esc(o.c.em)}</span><div style="flex:1;min-width:0"><b>${esc(o.c.name)}</b><span class="small muted" style="display:block">${ls ? `Last period: ${bgM(ls)}` : 'Nothing spent last period'}</span></div>
       <input class="input bgin" inputmode="decimal" data-bind="bgb" data-c="${esc(o.c.id)}" value="${bud[o.c.id] ? esc(bud[o.c.id]) : ''}" placeholder="$0" aria-label="Budget for ${esc(o.c.name)}"></div>`; }).join('');
@@ -499,7 +504,6 @@ function viewBplan() {
       <div class="bg-legend"><span><i style="background:#6C5CE7"></i>Bills</span><span><i style="background:#1ABC9C"></i>Savings</span><span><i style="background:var(--accent)"></i>Budgeted</span><span><i style="background:var(--line)"></i>Unassigned</span></div>
       <label class="bgfield">Income this period<small class="muted">${esc(C.inc.note)}${off && S.bg.src === 'work' && wkReady() && !pl.inc ? ', using your typical paycheck for future ones' : ''}</small><input class="input" inputmode="decimal" data-bind="bgpinc" value="${pl.inc != null && pl.inc !== '' ? esc(pl.inc) : ''}" placeholder="${esc(String(Math.round(C.inc.base * 100) / 100))}" aria-label="Income this period"></label>
       <div class="lrow"><span style="text-align:left;color:var(--ink)">Bills and subscriptions<small class="muted">${plural(C.bills.length, 'bill')}</small></span><span>−${bgM(C.billsTotal)}</span></div>
-      <label class="bgfield">Savings this period<small class="muted">${S.bg.save.mode === 'pct' ? `${S.bg.save.v}% of income` : 'Your usual amount'} unless you change it here</small><input class="input" inputmode="decimal" data-bind="bgpsave" value="${pl.save != null && pl.save !== '' ? esc(pl.save) : ''}" placeholder="${esc(String(Math.round(C.sv * 100) / 100))}" aria-label="Savings this period"></label>
       ${C.roll ? `<div class="lrow"><span style="text-align:left;color:var(--ink)">Rolled over</span><span>+${bgM(C.roll)}</span></div>` : ''}
       <div class="lrow"><span style="text-align:left;color:var(--ink)"><b>To spend freely</b></span><span><b>${bgM(C.pool)}</b></span></div></section>
     <section class="card"><div class="row"><h2>Budgets</h2><span class="small muted" style="${left < 0 ? 'color:' + BG_BAD : ''}">${left < 0 ? `${bgM(-left)} over-assigned` : `${bgM(left)} unassigned`}</span></div>
@@ -507,10 +511,11 @@ function viewBplan() {
       <div class="btns mt"><button class="btn" data-act="bgSuggest">✨ Suggest for me</button>${off ? '<button class="btn ghost" data-act="bgCopy">Copy this period</button>' : ''}</div>
       <div class="btns mt"><button class="btn ghost sm" data-act="bgDefault">Use as my default</button><button class="btn ghost sm" data-act="bgClear" data-confirm>Clear</button></div>
       <p class="note">Unassigned money is a cushion. Anything you spend still counts against your safe-to-spend number, even in a category with no budget. Edit the categories themselves in Settings.</p></section>
-    <section class="card"><h2>Savings</h2>
-      <div class="ff"><label>How much<select class="input" data-bind="bgsm">${opt('amt', 'Dollars', S.bg.save.mode)}${opt('pct', '% of income', S.bg.save.mode)}</select></label><label>${S.bg.save.mode === 'pct' ? 'Percent' : 'Amount ($)'}<input class="input" inputmode="decimal" data-bind="bgsv" value="${S.bg.save.v || ''}" placeholder="0" aria-label="Savings amount"></label></div>
-      <label class="mt" style="display:block">Put it toward<select class="input" data-bind="bgsg"><option value="">No goal, just set it aside</option>${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, S.bg.save.goal)).join('')}</select></label>
-      <p class="note">Savings come out before your safe-to-spend number, so you pay yourself first. When a goal is chosen, one tap moves the money into it from Overview.</p></section>`;
+    <section class="card"><div class="row"><h2>Savings</h2><span class="small muted">${esc(bgLabel(per))} only</span></div>
+      <div class="ff"><label>How much<select class="input" data-bind="bgpsm">${opt('amt', 'Dollars', SV.mode)}${opt('pct', '% of income', SV.mode)}</select></label><label>${SV.mode === 'pct' ? 'Percent' : 'Amount ($)'}<input class="input" inputmode="decimal" data-bind="bgpsave" value="${SV.own ? esc(pl.save) : ''}" placeholder="${esc(String(SV.v || 0))}" aria-label="Savings for this ${bgWord()}"></label></div>
+      <label class="mt" style="display:block">Put it toward<select class="input" data-bind="bgpsg"><option value="__d"${SV.ownGoal ? '' : ' selected'}>${SV.ownGoal ? 'Same as usual' : 'Same as usual' + (SV.goal && S.sv.goals.find(x => x.id === SV.goal) ? ' (' + esc(S.sv.goals.find(x => x.id === SV.goal).name) + ')' : '')}</option>${opt('', 'No goal, just set it aside', SV.ownGoal ? SV.goal : '__d')}${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, SV.ownGoal ? SV.goal : '__d')).join('')}</select></label>
+      <p class="note">${SV.own || SV.ownGoal ? `This ${bgWord()} has its own savings. Other months keep your usual (${S.bg.save.mode === 'pct' ? S.bg.save.v + '%' : bgM(S.bg.save.v)}).` : `Using your usual (${S.bg.save.mode === 'pct' ? S.bg.save.v + '%' : bgM(S.bg.save.v)}). Change it here to set just this ${bgWord()}.`} Savings come out before your safe to spend.</p>
+      <div class="btns mt"><button class="btn ghost sm" data-act="bgSaveUsual">Make this my usual</button>${SV.own || SV.ownGoal ? '<button class="btn ghost sm" data-act="bgSaveReset">Back to my usual</button>' : ''}</div></section>`;
 }
 
 /* ----- Settings ----- */
@@ -530,8 +535,12 @@ function bgCatForm(c) {
     <div class="btns"><button class="btn" type="submit">${c ? 'Save' : 'Add category'}</button>${c && !fixed ? `<button class="btn ghost danger" type="button" data-act="bgCatDel" data-id="${esc(c.id)}" data-confirm>Delete</button>` : ''}</div></form>`;
 }
 function bgSettings() {
-  const g = S.bg, learned = Object.entries(g.learn), N = g.tx.length;
-  return `<section class="card"><h2>Budget period</h2>
+  const g = S.bg, learned = Object.entries(g.learn), N = g.tx.length, goals = S.sv.goals.filter(live);
+  return `<section class="card"><h2>Usual savings</h2>
+      <div class="ff"><label>How much<select class="input" data-bind="bgsm">${opt('amt', 'Dollars', g.save.mode)}${opt('pct', '% of income', g.save.mode)}</select></label><label>${g.save.mode === 'pct' ? 'Percent' : 'Amount ($)'}<input class="input" inputmode="decimal" data-bind="bgsv" value="${g.save.v || ''}" placeholder="0" aria-label="Usual savings amount"></label></div>
+      <label class="mt" style="display:block">Put it toward<select class="input" data-bind="bgsg"><option value="">No goal, just set it aside</option>${goals.map(x => opt(x.id, (x.em || '💰') + ' ' + x.name, g.save.goal)).join('')}</select></label>
+      <p class="note">This is what every month uses unless you change one in Plan. Each month in Plan can have its own savings.</p></section>
+    <section class="card"><h2>Budget period</h2>
       <label>Budget runs<select class="input" data-bind="bgper">${opt('pay', 'From payday to payday (uses Work)', g.per)}${opt('month', 'By calendar month', g.per)}</select></label>
       ${g.per === 'pay' && !wkReady() ? '<p class="note">Set your pay in Work settings first. Until then, Hibi uses calendar months.</p>' : ''}
       <label class="mt" style="display:block">Where income comes from<select class="input" data-bind="bgsrc">${opt('entered', 'What I enter for each month', g.src)}${opt('work', 'My Work mode pay', g.src)}${opt('month', 'My predicted monthly income', g.src)}${opt('manual', 'A fixed amount each period', g.src)}</select></label>
@@ -572,7 +581,7 @@ Object.assign(XACT, {
   bgPaid: d => { const per = bgPer(0), b = bgBillsIn(per).concat(bgBillsIn(bgPer(1))).find(x => x.id === d.id); if (!b) return false; const cur = bgPaid(b); S.bg.paid[d.id] = !cur; },
   bgBillEdit: d => { UI.edit = {kind:'bgbill', id:d.id}; UI.open.bgBillForm = true; setTimeout(() => { const f = $('form[data-form="bgbill"]'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); },
   bgBillDel: d => { S.bg.bills = S.bg.bills.filter(x => x.id !== d.id); },
-  bgMove: () => { const per = bgPer(0), C = bgCalc(per), g = S.sv.goals.find(x => x.id === S.bg.save.goal); if (!g || !(C.sv > 0)) return false; if (S.bg.moved[per.key]) return false;
+  bgMove: () => { const per = bgPer(0), C = bgCalc(per), g = S.sv.goals.find(x => x.id === bgSaveCfg(per).goal); if (!g || !(C.sv > 0)) return false; if (S.bg.moved[per.key]) return false;
     const amt = Math.round(C.sv * 100) / 100; if (svAdd(g.id, amt, 'From Budget') === false) return false; S.bg.moved[per.key] = amt; S.bg.n.moved++; },
   bgSuggest: () => {
     const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per, true), pool = Math.max(0, C.pool);
@@ -582,6 +591,8 @@ Object.assign(XACT, {
     const tot = Object.values(w).reduce((a, b) => a + b, 0) || 1, scale = hist.length ? Math.min(pool, tot) / tot : pool * .9 / tot, b = {};
     Object.entries(w).forEach(([id, v]) => { const a = Math.round(v * scale / 5) * 5; if (a > 0) b[id] = a; });
     (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).b = b; toast(hist.length ? 'Budgets set from your recent spending.' : 'Starter budgets set. Change any of them.'); },
+  bgSaveUsual: () => { const per = bgPer(UI.bgOff || 0), c = bgSaveCfg(per); S.bg.save.mode = c.mode; S.bg.save.v = c.v; S.bg.save.goal = c.goal || ''; toast('Saved as your usual savings.'); },
+  bgSaveReset: () => { const p = S.bg.plan[bgPer(UI.bgOff || 0).key]; if (p) { p.save = null; delete p.sm; delete p.sg; } toast('Back to your usual savings.'); },
   bgCopy: () => { const per = bgPer(UI.bgOff || 0); (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).b = Object.assign({}, bgBudgetsOf(bgPer(0))); toast('Copied from this period.'); },
   bgDefault: () => { S.bg.base.b = Object.assign({}, bgBudgetsOf(bgPer(UI.bgOff || 0))); toast('Saved as your default for new periods.'); },
   bgClear: () => { const per = bgPer(UI.bgOff || 0), p = S.bg.plan[per.key]; if (p) delete p.b; S.bg.plan[per.key] = Object.assign({}, p, {b:{}}); toast('Budgets cleared for this period.'); },
@@ -654,7 +665,9 @@ function bgBind(t) {
   switch (k) {
     case 'bgb': { const p = pl(); if (!p.b) p.b = Object.assign({}, bgBudgetsOf(per)); const a = Math.max(0, num(v)); if (a) p.b[t.dataset.c] = Math.round(a * 100) / 100; else delete p.b[t.dataset.c]; break; }
     case 'bgpinc': pl().inc = blank ? null : Math.max(0, num(v)); break;
-    case 'bgpsave': pl().save = blank ? null : Math.max(0, num(v)); break;
+    case 'bgpsave': { const p = pl(); if (blank) { p.save = null; delete p.sm; } else { p.save = Math.max(0, num(v)); if (!p.sm) p.sm = bgSaveCfg(per).mode; } break; }
+    case 'bgpsm': { const p = pl(), c = bgSaveCfg(per), nm = v === 'pct' ? 'pct' : 'amt', inc = bgIncome(per).total; let x = c.v; if (nm !== c.mode) x = inc > 0 ? (nm === 'pct' ? c.v / inc * 100 : inc * c.v / 100) : 0; p.sm = nm; p.save = Math.round(x * 100) / 100; break; }
+    case 'bgpsg': { const p = pl(); if (v === '__d') delete p.sg; else p.sg = v; break; }
     case 'bgper': g.per = v; break;
     case 'bgsrc': g.src = v; break;
     case 'bgminc': g.minc = Math.max(0, num(v)); if (g.minc > 0 && g.src === 'work' && !wkReady()) g.src = 'month'; break;
