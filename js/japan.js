@@ -25,7 +25,7 @@ Other|Coin pouch
 Other|Reusable bag
 Other|Empty space for souvenirs`;
 function jpDefaults() {
-  return {start:'2027-01-12', end:'2027-02-02', budget:0, rate:{v:158.13, d:'2026-10-20', src:'ecb'},
+  return {start:'2027-01-12', end:'2027-02-02', budget:0, useSaved:false, rate:{v:158.13, d:'2026-10-20', src:'ecb'},
     items:[], exp:[], flights:[], stays:[], places:[], notes:'', sel:null, gifts:[], journal:{}, jsel:null, prep:prepSeed(),
     pack:JP_PACK.split('\n').map((l, i) => { const [cat, t] = l.split('|'); return {id:'k' + i, cat, t, done:false}; })};
 }
@@ -212,19 +212,35 @@ function jTotals() {
   J.exp.forEach(x => cats[x.cat || 'other'] = (cats[x.cat || 'other'] || 0) + toUSD(x.amount, x.cur));
   return {booked, spent, planned, cats};
 }
+// Trip fund: Savings goals marked "for this trip" are the same money, so adding or taking out here changes Savings too
+function jpFundCard() {
+  const J = S.jp, FG = S.sv.goals.filter(g => g.jp), others = S.sv.goals.filter(g => !g.jp);
+  if (!FG.length) return `<section class="card"><h2>💰 Trip fund</h2><p class="note">Link a Savings goal and this page uses it: money you add here goes into Savings, and your budget follows what's saved.</p>
+    ${others.length ? `<div class="field mt"><select class="input" id="jfPick" aria-label="Savings goal to link">${others.map(g => `<option value="${esc(g.id)}">${esc(g.em || '💰')} ${esc(g.name)}</option>`).join('')}</select><button class="btn" data-act="jfLink">Link</button></div>` : ''}
+    <button class="btn ghost block mt" data-act="jfNew">Make a Japan trip goal in Savings</button></section>`;
+  const tot = FG.reduce((a, g) => a + svSaved(g), 0), tg = FG.reduce((a, g) => a + num(g.target), 0);
+  return `<section class="card"><div class="row"><h2>💰 Trip fund</h2><b>${usd(tot)}</b></div>
+    <p class="note">Linked to Savings${tg ? `, ${Math.round(tot / tg * 100)}% of ${usd(tg)}` : ''}. Adding or taking out here changes your Savings too.</p>
+    ${FG.map(g => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(g.em || '💰')} ${esc(g.name)}</span><b>${usd(svSaved(g))}</b></div>`).join('')}
+    <div class="field mt">${FG.length > 1 ? `<select class="input" id="jfGoal" aria-label="Which goal" style="flex:0 0 40%">${FG.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select>` : ''}<input class="input" id="jfAmt" inputmode="decimal" placeholder="Amount" autocomplete="off" aria-label="Amount"></div>
+    <div class="btns mt"><button class="btn" data-act="jfAdd">Add</button><button class="btn ghost" data-act="jfOut">Take out</button></div>
+    <label class="setrow mt"><span>Use it as my budget<small class="muted" style="display:block;font-weight:600">Budget and left-to-spend follow what's saved</small></span><input type="checkbox" data-act="jfUse"${J.useSaved ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)" aria-label="Use the trip fund as my budget"></label>
+    <button class="link quiet" data-act="wGo" data-k="save" data-to="vgoals">Open in Savings</button></section>`;
+}
 function viewJMoney() {
-  const J = S.jp, B = num(J.budget), {booked, spent, planned, cats} = jTotals(), used = booked + spent, left = B - used;
+  const J = S.jp, FG = S.sv.goals.filter(g => g.jp), fundOn = !!J.useSaved && FG.length > 0, B = fundOn ? FG.reduce((a, g) => a + svSaved(g), 0) : num(J.budget), {booked, spent, planned, cats} = jTotals(), used = booked + spent, left = B - used;
   const days = tripDays(), t = today(), daysLeft = t < J.start ? days.length : t > J.end ? 0 : days.length - days.indexOf(t);
   const ed = editing('exp'), catList = Object.entries(cats).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]), maxC = Math.max(1, ...catList.map(c => c[1]));
   const byDate = {}; J.exp.forEach(x => (byDate[x.date || ''] = byDate[x.date || ''] || []).push(x));
   return `<section class="card"><h2>Overview</h2>
-      ${B ? `<div class="trend"><b>${money(left, 'USD')}</b><span>${left >= 0 ? 'left' : 'over'} of your ${money(B, 'USD')} budget</span></div>
+      ${B || fundOn ? `<div class="trend"><b>${money(left, 'USD')}</b><span>${left >= 0 ? 'left' : 'over'} of ${fundOn ? 'the' : 'your'} ${money(B, 'USD')} ${fundOn ? 'in your trip fund' : 'budget'}</span></div>
         <div class="meter"><i style="width:${Math.min(100, used / B * 100)}%${left < 0 ? ';background:var(--danger)' : ''}"></i></div>` : '<p class="note">Set a total budget below to track what you have left.</p>'}
       <div class="stats"><div class="stat"><b>${cash0(booked)}</b><span>booked</span></div><div class="stat"><b>${cash0(spent)}</b><span>spent</span></div>
         <div class="stat"><b>${B && daysLeft ? cash0(Math.max(0, left) / daysLeft) : '–'}</b><span>per day left</span></div></div>
-      ${jpSaved()}${planned ? `<p class="note">Your itinerary has ${money(planned, 'USD')} in planned costs. They count once you log them as spending.</p>` : ''}
-      <details class="mt" ${det('jBudget', !B)}><summary class="link">${B ? 'Change budget' : 'Set budget'}</summary>
-        <form data-form="budget" class="field mt"><input class="input" name="budget" inputmode="decimal" placeholder="Total budget in US dollars" value="${B || ''}" aria-label="Total budget in US dollars"><button class="btn" type="submit">Save</button></form></details></section>
+      ${fundOn ? '' : jpSaved()}${planned ? `<p class="note">Your itinerary has ${money(planned, 'USD')} in planned costs. They count once you log them as spending.</p>` : ''}
+      ${fundOn ? '<p class="note">Your budget is what\'s saved in your trip fund below. It updates when your savings change.</p>' : `<details class="mt" ${det('jBudget', !B)}><summary class="link">${B ? 'Change budget' : 'Set budget'}</summary>
+        <form data-form="budget" class="field mt"><input class="input" name="budget" inputmode="decimal" placeholder="Total budget in US dollars" value="${B || ''}" aria-label="Total budget in US dollars"><button class="btn" type="submit">Save</button></form></details>`}</section>
+    ${jpFundCard()}
     ${catList.length ? `<section class="card"><h2>Where it's going</h2>${catList.map(([c, v]) => `<div class="crow"><div class="row"><b>${catEm(c)} ${catLabel(c)}</b><span>${money(v, 'USD')}</span></div><div class="cbar"><i style="width:${v / maxC * 100}%"></i></div></div>`).join('')}</section>` : ''}
     <details class="card" ${det('jExpForm', !!ed || !J.exp.length)}><summary class="sum"><h2>${ed ? 'Edit spending' : 'Log spending'}</h2><span class="small muted">Booked flights and stays are counted for you</span></summary>
       <form data-form="exp" class="stack">
@@ -483,6 +499,11 @@ const JVIEWS = {jprep:viewJPrep, jgifts:viewJGifts, jjournal:viewJJournal, jplan
    ========================================================= */
 const FORM_KEY = {item:'jAdd', exp:'jExpForm', flight:'jFlightForm', stay:'jStayForm'};
 const JACT = {
+  jfLink: () => { const g = svGoal(($('#jfPick') || {}).value); if (!g) return false; g.jp = true; S.jp.useSaved = true; toast(`${g.name} is linked.`); },
+  jfNew: () => { const g = {id:'g' + Date.now(), name:'Japan trip', em:'✈️', target:Math.round(num(S.jp.budget)) || 0, date:S.jp.start || '', jp:true}; S.sv.goals.push(g); S.jp.useSaved = true; toast('Made a Japan trip goal in Savings.'); },
+  jfAdd: () => { const gi = $('#jfGoal'), g = svGoal(gi ? gi.value : (S.sv.goals.find(x => x.jp) || {}).id), v = num(($('#jfAmt') || {}).value); if (!g || !(v > 0)) { toast('Type an amount first.'); return false; } if (svAdd(g.id, v, 'From Japan trip') === false) return false; haptic(); },
+  jfOut: () => { const gi = $('#jfGoal'), g = svGoal(gi ? gi.value : (S.sv.goals.find(x => x.jp) || {}).id), v = num(($('#jfAmt') || {}).value); if (!g || !(v > 0)) { toast('Type an amount first.'); return false; } if (svAdd(g.id, -v, 'To Japan trip') === false) return false; },
+  jfUse: () => { S.jp.useSaved = !S.jp.useSaved; },
   mode: d => {
     if (S.mode === d.k) return false;
     S.lastMode[S.mode] = S.tab; S.mode = d.k; UI.edit = null;

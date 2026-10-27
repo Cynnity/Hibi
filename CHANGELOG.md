@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.3 — "One Pot" (Oct 27)
+- **Your Japan fund now links to Savings.** In Japan › Money there's a new 💰 Trip fund card. Link one of your Savings goals (or make a new "Japan trip" goal in one tap) and the two stay in sync.
+- **Add and Take out right from Japan.** Type an amount and tap Add or Take out. It goes into your Savings goal too, with the same goal-reached celebration, and it won't let you take out more than is saved.
+- **Your budget follows your savings.** Turn on "Use it as my budget" and the left-to-spend number in Japan is what's saved minus what you've booked and spent. Put more in Savings and it updates by itself.
+- Turn it off any time to go back to the budget number you typed.
+
 ## 4.2.1 — "Receipts and Recents" (Oct 27)
 - **New Recent card on Budget Overview.** It shows your latest activity in one list: purchases you added, money in, subscriptions and bills you marked paid, and card payments. Newest first, with the date and category on each line.
 - Tap a purchase to edit it, or tap See all to open the full Spending list.
