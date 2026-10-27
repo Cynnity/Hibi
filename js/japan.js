@@ -220,8 +220,9 @@ function jpFundCard() {
     <button class="btn ghost block mt" data-act="jfNew">Make a Japan trip goal in Savings</button></section>`;
   const tot = FG.reduce((a, g) => a + svSaved(g), 0), tg = FG.reduce((a, g) => a + num(g.target), 0);
   return `<section class="card"><div class="row"><h2>💰 Trip fund</h2><b>${usd(tot)}</b></div>
-    <p class="note">Linked to Savings${tg ? `, ${Math.round(tot / tg * 100)}% of ${usd(tg)}` : ''}. Adding or taking out here changes your Savings too.</p>
-    ${FG.map(g => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(g.em || '💰')} ${esc(g.name)}</span><b>${usd(svSaved(g))}</b></div>`).join('')}
+    <p class="note">Linked to Savings${tg ? `, ${Math.round(tot / tg * 100)}% of ${usd(tg)}` : ''}. Link as many goals as you like. Adding or taking out here changes your Savings too.</p>
+    ${FG.map(g => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(g.em || '💰')} ${esc(g.name)}</span><b>${usd(svSaved(g))}</b><button class="link quiet" data-act="jfUnlink" data-id="${esc(g.id)}" aria-label="Unlink ${esc(g.name)}">Unlink</button></div>`).join('')}
+    ${others.length ? `<div class="field mt"><select class="input" id="jfPick" aria-label="Another Savings goal to link">${others.map(g => `<option value="${esc(g.id)}">${esc(g.em || '💰')} ${esc(g.name)}</option>`).join('')}</select><button class="btn ghost" data-act="jfLink">Link another</button></div>` : ''}
     <div class="field mt">${FG.length > 1 ? `<select class="input" id="jfGoal" aria-label="Which goal" style="flex:0 0 40%">${FG.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select>` : ''}<input class="input" id="jfAmt" inputmode="decimal" placeholder="Amount" autocomplete="off" aria-label="Amount"></div>
     <div class="btns mt"><button class="btn" data-act="jfAdd">Add</button><button class="btn ghost" data-act="jfOut">Take out</button></div>
     <label class="setrow mt"><span>Use it as my budget<small class="muted" style="display:block;font-weight:600">Budget and left-to-spend follow what's saved</small></span><input type="checkbox" data-act="jfUse"${J.useSaved ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)" aria-label="Use the trip fund as my budget"></label>
@@ -500,6 +501,7 @@ const JVIEWS = {jprep:viewJPrep, jgifts:viewJGifts, jjournal:viewJJournal, jplan
 const FORM_KEY = {item:'jAdd', exp:'jExpForm', flight:'jFlightForm', stay:'jStayForm'};
 const JACT = {
   jfLink: () => { const g = svGoal(($('#jfPick') || {}).value); if (!g) return false; g.jp = true; S.jp.useSaved = true; toast(`${g.name} is linked.`); },
+  jfUnlink: d => { const g = svGoal(d.id); if (!g) return false; g.jp = false; if (!S.sv.goals.some(x => x.jp)) S.jp.useSaved = false; toast(`${g.name} is unlinked.`); },
   jfNew: () => { const g = {id:'g' + Date.now(), name:'Japan trip', em:'✈️', target:Math.round(num(S.jp.budget)) || 0, date:S.jp.start || '', jp:true}; S.sv.goals.push(g); S.jp.useSaved = true; toast('Made a Japan trip goal in Savings.'); },
   jfAdd: () => { const gi = $('#jfGoal'), g = svGoal(gi ? gi.value : (S.sv.goals.find(x => x.jp) || {}).id), v = num(($('#jfAmt') || {}).value); if (!g || !(v > 0)) { toast('Type an amount first.'); return false; } if (svAdd(g.id, v, 'From Japan trip') === false) return false; haptic(); },
   jfOut: () => { const gi = $('#jfGoal'), g = svGoal(gi ? gi.value : (S.sv.goals.find(x => x.jp) || {}).id), v = num(($('#jfAmt') || {}).value); if (!g || !(v > 0)) { toast('Type an amount first.'); return false; } if (svAdd(g.id, -v, 'To Japan trip') === false) return false; },

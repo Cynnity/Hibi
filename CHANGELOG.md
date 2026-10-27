@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.3.1 — "Three's Company" (Oct 27)
+- **Link as many Savings goals as you want to your Japan trip fund.** Trip fund now has a "Link another" picker, so you can tie in 3 or more goals (flights, spending money, souvenirs, whatever you've set up in Savings).
+- Each linked goal has an Unlink button. Your budget adds up all the linked goals.
+- When you Add or Take out in Japan with more than one goal linked, you pick which goal it goes to.
+
 ## 4.3 — "One Pot" (Oct 27)
 - **Your Japan fund now links to Savings.** In Japan › Money there's a new 💰 Trip fund card. Link one of your Savings goals (or make a new "Japan trip" goal in one tap) and the two stay in sync.
 - **Add and Take out right from Japan.** Type an amount and tap Add or Take out. It goes into your Savings goal too, with the same goal-reached celebration, and it won't let you take out more than is saved.
