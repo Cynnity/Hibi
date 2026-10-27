@@ -3,7 +3,7 @@
 /* =========================================================
    Look
    ========================================================= */
-const LOOK_STYLES = [['pop','Pop','Bold outlines and offset shadows'],['soft','Soft','No outlines, gentle shadows'],['outline','Outline','Thin lines, no shadows'],['glass','Glass','See-through frosted cards']];
+const LOOK_STYLES = [['pop','Paper','Hairline borders, no shadows'],['soft','Soft','No outlines, gentle shadows'],['outline','Outline','Thin lines, no shadows'],['glass','Glass','See-through frosted cards']];
 const ACCENTS = ['#F0467F','#FF6FA3','#E0457B','#B5179E','#8B6CFF','#6C5CE7','#3B82F6','#0A86AA','#16A9A3','#39C5BB','#2E9E5B','#86D993','#F2C14E','#F5B301','#E8590C','#FF7A59','#C2243F','#5E6B78','#141414','#FFFFFF'];
 const MODE_EMOJI = ['🏠','🏡','🌸','⭐','🏋️','💪','🦍','🏃','🎓','📚','✏️','🧠','🗾','✈️','⛩️','🗼','🍜','📺','📖','🎬','🍿','🎮','🕹️','👾','💰','🐷','💵','🏦','💼','⏱️','🏢','🌿','💧','🌙','✅','🛒','🎁','🛍️','📝','🎧','🎨','🔥','💖','🍀','🌈','🐱','🐶','👑'];
 // App icons: the Hibi flower in different colors. [id, name, gradient light, main, dark, sparkle, petal lines, outline]
@@ -23,6 +23,7 @@ function normalizeLook(s) {
   const L = s.look;
   if (typeof L.accent !== 'string' || (L.accent && !/^#[0-9a-f]{6}$/i.test(L.accent))) L.accent = '';
   if (!LOOK_STYLES.some(x => x[0] === L.style)) L.style = 'pop';
+  if (!['auto', 'light', 'dark'].includes(L.scheme)) L.scheme = 'auto';   // 4.0: Paper can follow the phone, or stay light or dark
   if (!L.em || typeof L.em !== 'object' || Array.isArray(L.em)) L.em = {};
   if (!ICON_SETS.some(x => x[0] === L.icon)) L.icon = 'sakura';
 }
@@ -31,14 +32,16 @@ const lum = hex => { const v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 
 function applyLook() {
   const r = document.documentElement, L = S.look || {};
   if (L.accent) {
-    r.style.setProperty('--accent', L.accent); r.style.setProperty('--panel', L.accent);
-    r.style.setProperty('--on-accent', lum(L.accent) > .4 ? '#16121F' : '#FFFFFF');
-    const m = $('meta[name="theme-color"]'); if (m) m.content = L.accent;
-  } else ['--accent', '--panel', '--on-accent'].forEach(k => r.style.removeProperty(k));
+    const on = lum(L.accent) > .4 ? '#16121F' : '#FFFFFF';
+    r.style.setProperty('--accent', L.accent); r.style.setProperty('--panel', L.accent); r.style.setProperty('--on-accent', on); r.style.setProperty('--btn', L.accent); r.style.setProperty('--on-btn', on);
+  } else ['--accent', '--panel', '--on-accent', '--btn', '--on-btn'].forEach(k => r.style.removeProperty(k));
+  if (L.scheme === 'light' || L.scheme === 'dark') r.setAttribute('data-theme', L.scheme); else r.removeAttribute('data-theme');
   if (L.style && L.style !== 'pop') r.setAttribute('data-style', L.style); else r.removeAttribute('data-style');
+  try { const m = $('meta[name="theme-color"]'), bg = getComputedStyle(r).getPropertyValue('--bg').trim(); if (m && bg) m.content = bg; } catch (e) {}   // the status bar blends into the page
   Object.keys(MODES).forEach(k => { const m = MODES[k]; if (!m.em0) m.em0 = m.em; m.em = (L.em && L.em[k]) || m.em0; });
 }
 applyLook();
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyLook()); } catch (e) {}
 
 /* ----- App icon ----- */
 function iconSvg(id, size) {
@@ -103,9 +106,12 @@ ${musicSettings()}`;
 }
 function lookSettings() {
   const L = S.look, cur = L.accent || (THEMES.find(t => t[0] === S.theme) || THEMES[0])[2];
-  return `<section class="card"><h2>Theme</h2>
+  return `<section class="card"><h2>Appearance</h2>
+      <div class="seg mt" role="tablist" style="margin-bottom:0">${[['auto', 'Match phone'], ['light', 'Light'], ['dark', 'Dark']].map(([k, n]) => `<button role="tab" aria-selected="${L.scheme === k}" data-act="lookScheme" data-k="${k}">${n}</button>`).join('')}</div>
+      <p class="note">${S.theme === 'sakura' ? 'Paper has a light and a dark look.' : 'Light and dark only change the Paper theme. The other themes stay fixed.'}</p></section>
+    <section class="card"><h2>Theme</h2>
       <div class="swatches">${THEMES.map(([id, n, a, b]) => `<button class="swatch" aria-pressed="${S.theme === id}" data-act="theme" data-k="${id}"><i style="background:linear-gradient(135deg,${a} 50%,${b} 50%)"></i>${n}</button>`).join('')}</div>
-      <p class="note">Sakura follows your phone's light or dark mode. The others stay fixed.</p></section>
+      <p class="note">Paper is the default. The others are colorful extras.</p></section>
     <section class="card"><div class="row"><h2>Accent color</h2>${L.accent ? '<button class="link" data-act="lookAccent" data-c="">Use theme color</button>' : ''}</div>
       <p class="note">Buttons, checkmarks, bars and highlights. Works with any theme.</p>
       <div class="accents mt">${ACCENTS.map(c => `<button class="acc${L.accent.toLowerCase() === c.toLowerCase() ? ' on' : ''}" style="background:${c}" data-act="lookAccent" data-c="${c}" aria-label="Accent ${c}" aria-pressed="${L.accent.toLowerCase() === c.toLowerCase()}"></button>`).join('')}
@@ -181,6 +187,7 @@ const emSheet = () => { const k = UI.emPick, m = MODES[k];
 /* ----- Actions ----- */
 Object.assign(XACT, {
   lookAccent: d => { S.look.accent = d.c || ''; applyLook(); },
+  lookScheme: d => { S.look.scheme = d.k; applyLook(); },
   lookStyle: d => { S.look.style = d.k; applyLook(); },
   lookIcon: d => { S.look.icon = d.k; UI.iconHelp = true; },
   emOpen: d => { UI.emPick = d.k; },

@@ -9,6 +9,18 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.0 — "Clean Slate" (Oct 27)
+- **Hibi has a brand new look: Paper.** Warm off-white, near-black text, thin hairline borders and no chunky shadows. Buttons are solid dark, headings are big and tight, and the pink is saved for links and small highlights.
+- **Light and dark mode, your choice.** Settings › Look › Appearance: Match phone, Light or Dark. Dark is a soft near-black, not pure black.
+- **New font.** DM Sans everywhere, so numbers and headings look sharper. Japanese phrases still use the old rounded font.
+- **Everything got the same treatment**: Home widgets, Gym, School, Budget, Badges, the bottom bar and every screen in between. The bottom bar is now a clean, slightly frosted strip.
+- **Accent color still works.** Pick one in Settings › Look and your buttons, tabs and highlights switch to it.
+- **Your old themes are still there** as colorful extras (Midnight, Ocean, Forest and the rest), and the other card styles (Soft, Outline, Glass) still work. The old Sakura theme is now Paper.
+- The Home Screen status bar now matches the page color.
+- Nothing about your data changed.
+
+---
+
 ## 3.8 — "Snap, Read, Done" (Oct 27)
 - **Scan a receipt.** In Budget, tap **📷 Scan a receipt** (Spending tab, or Overview under Add spending). Take a photo or pick one from your library.
 - **It reads the receipt right on your phone.** Nothing is uploaded anywhere. Hibi straightens and cleans up the photo, reads the text, and fills in the **store, date, total, category and which card** you paid with.

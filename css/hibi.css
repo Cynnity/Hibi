@@ -1,20 +1,23 @@
 /* ---------- Theme tokens ---------- */
+/* Paper: warm off-white and near-black, hairline borders, one quiet accent. Light and dark live here. */
 :root{
-  --bg:#FFF0F5;--surface:#FFFFFF;--surface-2:#FBE8F0;--ink:#2B1B52;--mute:#6F5F8F;--line:#EADCF2;
-  --accent:#F0467F;--accent-2:#2BB8D0;--on-accent:#FFFFFF;--good:#0E9F8E;--good-soft:#D6F6F0;--danger:#C2243F;
-  --body:#F5ECF8;--muscle:#DDCDEB;--panel:#F0467F;--g1:rgba(43,184,208,.20);--g2:rgba(240,70,127,.16);
+  --bg:#F6F4EF;--surface:#FFFFFF;--surface-2:#F0EDE6;--ink:#1C1B1A;--mute:#6B6862;--line:#E7E3DA;
+  --accent:#E5456F;--accent-2:#4F63D9;--on-accent:#FFFFFF;--good:#13795B;--good-soft:#DDF1E8;--danger:#C2352D;
+  --body:#EAE6DD;--muscle:#D5D0C4;--panel:#1C1B1A;--g1:transparent;--g2:transparent;
+  --btn:var(--ink);--on-btn:var(--bg);--rim:rgba(28,27,26,.06);
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]):not([data-skin]){
-    --bg:#150F2E;--surface:#201A45;--surface-2:#2A2357;--ink:#F3EEFF;--mute:#A99BD0;--line:#3A3066;
-    --accent:#FF6FA3;--accent-2:#5CE1F5;--on-accent:#1B0F2E;--good:#43E0C8;--good-soft:#12403F;--danger:#FF8097;
-    --body:#2C2560;--muscle:#463C82;--panel:#FF6FA3;--g1:rgba(92,225,245,.14);--g2:rgba(255,111,163,.14);color-scheme:dark}
+    --bg:#121211;--surface:#1B1B1A;--surface-2:#252523;--ink:#F2F0EB;--mute:#A19D94;--line:#2E2D2A;
+    --accent:#FF6F94;--accent-2:#8FA0FF;--on-accent:#1B0F14;--good:#4FD1A1;--good-soft:#16352B;--danger:#FF8A80;
+    --body:#2A2A28;--muscle:#403F3B;--panel:#F2F0EB;--g1:transparent;--g2:transparent;--rim:rgba(255,255,255,.06);color-scheme:dark}
 }
 :root[data-theme="dark"]:not([data-skin]){
-  --bg:#150F2E;--surface:#201A45;--surface-2:#2A2357;--ink:#F3EEFF;--mute:#A99BD0;--line:#3A3066;
-  --accent:#FF6FA3;--accent-2:#5CE1F5;--on-accent:#1B0F2E;--good:#43E0C8;--good-soft:#12403F;--danger:#FF8097;
-  --body:#2C2560;--muscle:#463C82;--panel:#FF6FA3;--g1:rgba(92,225,245,.14);--g2:rgba(255,111,163,.14);color-scheme:dark}
+  --bg:#121211;--surface:#1B1B1A;--surface-2:#252523;--ink:#F2F0EB;--mute:#A19D94;--line:#2E2D2A;
+  --accent:#FF6F94;--accent-2:#8FA0FF;--on-accent:#1B0F14;--good:#4FD1A1;--good-soft:#16352B;--danger:#FF8A80;
+  --body:#2A2A28;--muscle:#403F3B;--panel:#F2F0EB;--g1:transparent;--g2:transparent;--rim:rgba(255,255,255,.06);color-scheme:dark}
+:root[data-skin]{--btn:var(--accent);--on-btn:var(--on-accent);--rim:rgba(0,0,0,.05)}
 :root[data-skin="midnight"]{--bg:#0B0F1A;--surface:#141B2D;--surface-2:#1C2540;--ink:#E8ECF8;--mute:#8F9BB8;--line:#263049;
   --accent:#8B6CFF;--accent-2:#4DD2FF;--on-accent:#0B0F1A;--good:#35D39A;--good-soft:#11352B;--danger:#FF7B8A;
   --body:#1E2742;--muscle:#323E63;--panel:#8B6CFF;--g1:rgba(139,108,255,.22);--g2:rgba(77,210,255,.12);color-scheme:dark}
@@ -55,7 +58,7 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100vh;color:var(--ink);
-  font:500 16px/1.45 "Zen Maru Gothic",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font:500 16px/1.45 "DM Sans","Zen Maru Gothic",system-ui,-apple-system,"Segoe UI",sans-serif;
   background:var(--pat,none),radial-gradient(120% 55% at 100% 0,var(--g1),transparent 60%),radial-gradient(90% 45% at 0 28%,var(--g2),transparent 60%),var(--bg);
   background-attachment:fixed;-webkit-tap-highlight-color:transparent}
 main{max-width:600px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 190px)}
@@ -65,9 +68,9 @@ button{cursor:pointer}
 [hidden]{display:none!important}
 h1,h2,h3,p{margin:0}
 .top{margin:0 0 16px}
-.top h1{font:400 32px/1.1 "Dela Gothic One","Zen Maru Gothic",sans-serif;letter-spacing:.01em}
+.top h1{font:700 32px/1.1 "DM Sans","Zen Maru Gothic",sans-serif;letter-spacing:.01em}
 .top p{margin-top:4px;color:var(--mute);font-size:15px}
-h2{font:400 18px/1.25 "Dela Gothic One","Zen Maru Gothic",sans-serif}
+h2{font:700 18px/1.25 "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 h3{font-size:17px;font-weight:900;line-height:1.25}
 .sec{margin:24px 0 12px}
 .muted{color:var(--mute)}
@@ -78,7 +81,7 @@ h3{font-size:17px;font-weight:900;line-height:1.25}
 .label{display:block;color:var(--mute);font-size:14px;font-weight:700;margin:16px 0 8px}
 
 /* ---------- Surfaces ---------- */
-.card{background:var(--surface);border:2px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--panel);padding:16px;margin:0 0 16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:none;padding:18px;margin:0 0 14px}
 .card.flat{box-shadow:none;border-color:var(--line)}
 .empty{padding:22px 16px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:16px;margin:0 0 16px}
 .empty h2{color:var(--ink);margin-bottom:6px}
@@ -92,11 +95,11 @@ details[open]>.sum{margin-bottom:12px}
 
 /* ---------- Controls ---------- */
 .btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:12px;
-  border:2px solid var(--ink);background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s;white-space:nowrap}
-.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-.btn.ghost{background:var(--surface);color:var(--ink)}
+  border:1px solid var(--btn);background:var(--btn);color:var(--on-btn);font-weight:600;font-size:16px;box-shadow:none;transition:transform .08s,box-shadow .08s;white-space:nowrap}
+.btn:active{transform:scale(.98);box-shadow:none}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
 .btn.block{display:flex;width:100%}
-.btn.sm{min-height:38px;padding:0 14px;font-size:14px;box-shadow:2px 2px 0 var(--ink)}
+.btn.sm{min-height:38px;padding:0 14px;font-size:14px;box-shadow:none}
 .btn.icon{width:46px;padding:0;font-size:22px}
 .btns{display:flex;flex-wrap:wrap;gap:10px}
 .link{appearance:none;background:none;border:0;padding:10px 2px;color:var(--accent);font-weight:700;font-size:15px}
@@ -113,11 +116,11 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:38px;
 .field .input{flex:1;min-width:0}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{appearance:none;min-height:36px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);font-weight:700;font-size:14px}
-.chip.on{background:var(--accent);border-color:var(--ink);color:var(--on-accent)}
-.seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surface);border:2px solid var(--ink);margin:0 0 16px}
+.chip.on{background:var(--btn);border-color:var(--btn);color:var(--on-btn)}
+.seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surface);border:1px solid var(--line);margin:0 0 16px}
 .seg{overflow-x:auto}
 .seg button{flex:1 0 auto;padding:0 10px;min-height:40px;border:0;border-radius:10px;background:none;color:var(--mute);font-weight:700;font-size:15px}
-.seg button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button[aria-selected="true"]{background:var(--btn);color:var(--on-btn)}
 .check{appearance:none;width:46px;height:46px;flex:none;border-radius:12px;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--on-accent);transition:background .15s,border-color .15s}
 .check svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
 .check[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:#fff}
@@ -126,14 +129,14 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:38px;
 /* ---------- Workout ---------- */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
 .stat{background:var(--surface-2);border-radius:12px;padding:10px 12px;min-width:0;overflow:hidden}
-.stat b{display:block;font:400 22px/1.15 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat b{display:block;font:700 22px/1.15 "DM Sans","Zen Maru Gothic",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stat span{font-size:13px;color:var(--mute);font-weight:700}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
-.tile{appearance:none;text-align:left;min-width:0;padding:14px;border-radius:14px;border:2px solid var(--ink);background:var(--surface);box-shadow:3px 3px 0 var(--panel);transition:transform .08s,box-shadow .08s}
-.tile:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--panel)}
-.tile b{display:block;font:400 19px/1.2 "Dela Gothic One",sans-serif}
+.tile{appearance:none;text-align:left;min-width:0;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);box-shadow:none;transition:transform .08s,box-shadow .08s}
+.tile:active{transform:scale(.98);box-shadow:none}
+.tile b{display:block;font:700 19px/1.2 "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 .tile span{font-size:13px;color:var(--mute);font-weight:700}
-.clock{font:400 40px/1.05 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums;margin:2px 0}
+.clock{font:700 40px/1.05 "DM Sans","Zen Maru Gothic",sans-serif;font-variant-numeric:tabular-nums;margin:2px 0}
 .tags{color:var(--mute);font-size:14px;margin-top:2px}
 .howto{margin:10px 0 4px}
 .howto>summary{color:var(--accent);font-weight:700;font-size:14px;padding:4px 0}
@@ -159,9 +162,9 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:38px;
 
 /* ---------- Rest timer ---------- */
 #rest{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);z-index:15;max-width:576px;margin:0 auto;
-  background:var(--ink);color:var(--surface);border-radius:18px;padding:12px 14px 16px;box-shadow:4px 4px 0 var(--panel);display:flex;align-items:center;gap:12px;overflow:hidden}
+  background:var(--ink);color:var(--surface);border-radius:18px;padding:12px 14px 16px;box-shadow:none;display:flex;align-items:center;gap:12px;overflow:hidden}
 #rest .lbl{display:block;font-size:12px;font-weight:700;opacity:.75}
-#rest .t{display:block;font:400 30px/1 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums;min-width:96px}
+#rest .t{display:block;font:700 30px/1 "DM Sans","Zen Maru Gothic",sans-serif;font-variant-numeric:tabular-nums;min-width:96px}
 #rest .rb{display:flex;gap:6px;margin-left:auto}
 #rest .rb button{border:0;border-radius:10px;min-height:40px;padding:0 12px;background:rgba(127,127,127,.28);color:inherit;font-weight:700;font-size:14px}
 #rest .bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(127,127,127,.3)}
@@ -173,9 +176,9 @@ nav.tabs button{flex:1;max-width:120px;display:flex;flex-direction:column;align-
 nav.tabs .ic{display:grid;place-items:center;width:52px;height:30px;border-radius:999px;transition:background .15s}
 nav.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 nav.tabs button[aria-current="page"]{color:var(--ink)}
-nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on-accent)}
+nav.tabs button[aria-current="page"] .ic{background:var(--surface-2);color:var(--ink)}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:30;transform:translate(-50%,-250%);max-width:calc(100% - 32px);
-  background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:14px;font-weight:700;font-size:15px;box-shadow:3px 3px 0 var(--panel);transition:transform .3s cubic-bezier(.2,.9,.3,1.2)}
+  background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:14px;font-weight:700;font-size:15px;box-shadow:none;transition:transform .3s cubic-bezier(.2,.9,.3,1.2)}
 #toast.show{transform:translate(-50%,0)}
 
 /* ---------- Diagrams & charts ---------- */
@@ -183,15 +186,15 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .figure .base{fill:var(--body);stroke:var(--line);stroke-width:1.2;stroke-linejoin:round}
 .figure .m path{fill:var(--muscle);stroke:var(--body);stroke-width:1.1;stroke-linejoin:round;transition:fill .25s}
 .figure .m.on path{fill:var(--accent)}
-.figure text{fill:var(--mute);font:700 10px "Zen Maru Gothic",sans-serif}
+.figure text{fill:var(--mute);font:700 10px "DM Sans","Zen Maru Gothic",sans-serif}
 .chart{display:block;width:100%;height:auto;margin-top:10px;overflow:visible}
 .chart .grid{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
 .chart .ln{fill:none;stroke:var(--accent);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
 .chart .pt{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
 .chart .last{fill:var(--accent);stroke:var(--surface);stroke-width:2.5}
-.chart text{fill:var(--mute);font:700 11px "Zen Maru Gothic",sans-serif}
+.chart text{fill:var(--mute);font:700 11px "DM Sans","Zen Maru Gothic",sans-serif}
 .trend{margin-top:12px}
-.trend b{font:400 28px/1.1 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums}
+.trend b{font:700 28px/1.1 "DM Sans","Zen Maru Gothic",sans-serif;font-variant-numeric:tabular-nums}
 .trend b small{font:700 15px "Zen Maru Gothic",sans-serif;color:var(--mute)}
 .trend span{display:block;color:var(--mute);font-size:14px;font-weight:700}
 .bars{display:flex;gap:6px;height:150px;margin-top:12px}
@@ -208,7 +211,7 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .lrow small{display:block;font-size:12px}
 .photos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
 .photos figure{margin:0}
-.photos img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;border:2px solid var(--ink)}
+.photos img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
 .photos figcaption{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mute);font-weight:700}
 
 /* ---------- Daily ---------- */
@@ -227,7 +230,7 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .meter{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:10px}
 .meter i{display:block;height:100%;background:var(--accent);border-radius:4px}
 .badges{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:8px}
-.badge{border:2px solid var(--ink);border-radius:14px;background:var(--surface);padding:14px 12px;text-align:center;box-shadow:3px 3px 0 var(--panel)}
+.badge{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 12px;text-align:center;box-shadow:none}
 .badge .em{font-size:34px;line-height:1.15}
 .badge b{display:block;font-size:15px;margin-top:4px;line-height:1.25}
 .badge span{display:block;font-size:12px;color:var(--mute);margin-top:2px}
@@ -238,8 +241,8 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 /* ---------- Settings ---------- */
 .swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
 .swatch{appearance:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:700;font-size:14px}
-.swatch i{width:34px;height:34px;border-radius:50%;border:2px solid var(--ink)}
-.swatch[aria-pressed="true"]{border-color:var(--ink);box-shadow:3px 3px 0 var(--panel)}
+.swatch i{width:34px;height:34px;border-radius:50%;border:1px solid var(--line)}
+.swatch[aria-pressed="true"]{border-color:var(--ink);box-shadow:none}
 .setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0}
 .setrow select{width:auto;min-width:110px}
 .file-btn{position:relative;overflow:hidden}
@@ -258,7 +261,7 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .tpl>summary::-webkit-details-marker{display:none}
 .tpl>summary::after{content:"";position:absolute;right:6px;top:50%;width:7px;height:7px;margin-top:-6px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg);transition:transform .2s}
 .tpl[open]>summary::after{transform:rotate(225deg);margin-top:-2px}
-.tpl>summary b{font:400 17px/1.2 "Dela Gothic One",sans-serif;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tpl>summary b{font:700 17px/1.2 "DM Sans","Zen Maru Gothic",sans-serif;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tpl>summary span{font-size:13px;color:var(--mute);font-weight:700;white-space:nowrap}
 .tpl .chip{font-size:11px;line-height:1.5;min-height:0;border:0;box-shadow:none;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--accent);color:var(--on-accent,#fff);white-space:nowrap}
 .tpl ol{margin:0 0 10px;padding-left:22px;font-size:14px;line-height:1.55}
@@ -276,9 +279,9 @@ nav.tabs button[aria-current="page"] .ic{background:var(--accent);color:var(--on
 .modes{position:relative;gap:6px}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .modes button{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--mute);font-weight:700;font-size:14px}
-.modes button[aria-selected="true"]{border-color:var(--ink);background:var(--accent);color:var(--on-accent)}
+.modes button[aria-selected="true"]{border-color:var(--btn);background:var(--btn);color:var(--on-btn)}
 .stack>*+*{margin-top:10px}
-.big{display:block;font:400 46px/1 "Dela Gothic One",sans-serif;font-variant-numeric:tabular-nums;margin:6px 0 2px}
+.big{display:block;font:700 46px/1 "DM Sans","Zen Maru Gothic",sans-serif;font-variant-numeric:tabular-nums;margin:6px 0 2px}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
 .cal>b{text-align:center;font-size:12px;color:var(--mute);padding:4px 0}
@@ -334,7 +337,7 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .gsum{display:flex;align-items:center;gap:10px}
 .gsum>div{flex:1;min-width:0}
 .qacts .link{white-space:nowrap;padding:4px 0;min-height:0}
-.qn{flex:none;width:22px;text-align:center;font:400 18px "Dela Gothic One",sans-serif;color:var(--accent)}
+.qn{flex:none;width:22px;text-align:center;font:700 18px "DM Sans","Zen Maru Gothic",sans-serif;color:var(--accent)}
 .stats.wk{grid-template-columns:repeat(3,minmax(0,1fr))}
 .stats.wk .stat span{white-space:normal}
 #wrap{position:fixed;inset:0;z-index:60;color:#fff;display:flex;flex-direction:column;overflow:hidden;user-select:none;-webkit-user-select:none}
@@ -358,21 +361,21 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 @media (prefers-reduced-motion:reduce){.wbody>*{animation:none}}
 .wem{font-size:64px;line-height:1}
 .weye{margin-top:18px;font-size:14px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.88}
-.wbig{margin-top:8px;font:400 clamp(52px,17vw,96px)/1.02 "Dela Gothic One",sans-serif;word-break:break-word}
-.wunit{margin-top:6px;font:400 24px/1.15 "Dela Gothic One",sans-serif}
+.wbig{margin-top:8px;font:700 clamp(52px,17vw,96px)/1.02 "DM Sans","Zen Maru Gothic",sans-serif;letter-spacing:-.04em;word-break:break-word}
+.wunit{margin-top:6px;font:700 24px/1.15 "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 .wtext{margin-top:18px;font-size:20px;font-weight:800;line-height:1.35}
 .wx{margin-top:10px;font-size:16px;font-weight:700;line-height:1.45;opacity:.95}
 .wimg{display:block;width:100%;max-width:340px;aspect-ratio:3/2;object-fit:cover;margin-top:18px;border-radius:16px;border:3px solid #fff;box-shadow:6px 6px 0 rgba(0,0,0,.25)}
 .wsum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
 .wsum div{background:rgba(255,255,255,.17);border-radius:14px;padding:12px 14px}
-.wsum b{display:block;font:400 26px/1.1 "Dela Gothic One",sans-serif}
+.wsum b{display:block;font:700 26px/1.1 "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 .wsum span{font-size:13px;font-weight:800;opacity:.92}
 .wdone{position:relative;z-index:3;pointer-events:auto;margin-top:22px;min-height:52px;border:0;border-radius:14px;background:#fff;color:#2B1B52;font-weight:900;font-size:17px}
 .clock.paused{opacity:.45}
 #rest.paused .t{opacity:.5}
 .layover{margin:-4px 8px 10px;padding:8px 12px;border-left:3px dashed var(--accent);font-size:14px;color:var(--mute)}
 .mu-art{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 4px;text-align:center}
-.mu-art img,.mu-ph{display:grid;place-items:center;width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;border:2px solid var(--ink);background:var(--surface-2);font:400 28px "Dela Gothic One",sans-serif;color:var(--mute)}
+.mu-art img,.mu-ph{display:grid;place-items:center;width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font:700 28px "DM Sans","Zen Maru Gothic",sans-serif;color:var(--mute)}
 .mu-art b{display:block;margin-top:6px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pomo-wrap{position:relative;width:min(232px,62vw);aspect-ratio:1;margin:6px auto 8px}
 .pomo-wrap svg{position:absolute;inset:0;width:100%;height:100%}
@@ -393,10 +396,10 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
 .wd-slot{min-width:0}.wd-slot.m{grid-column:1/-1}
 .wd-slot>.card{margin:0}
-.wd{position:relative;overflow:hidden;min-height:156px;padding:14px;border-radius:18px;border:2px solid var(--ink);background:var(--surface);box-shadow:4px 4px 0 var(--panel);display:flex;flex-direction:column;cursor:pointer}
-.wd:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--panel)}
+.wd{position:relative;overflow:hidden;min-height:156px;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--surface);box-shadow:none;display:flex;flex-direction:column;cursor:pointer}
+.wd:active{transform:scale(.98);box-shadow:none}
 .wd-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--mute);position:relative;z-index:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.wd-big{margin-top:auto;padding-top:8px;font:400 34px/1.05 "Dela Gothic One",sans-serif;white-space:nowrap;overflow:hidden;color:var(--ink);position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.wd-big{margin-top:auto;padding-top:8px;font:700 34px/1.05 "DM Sans","Zen Maru Gothic",sans-serif;white-space:nowrap;overflow:hidden;color:var(--ink);position:relative;z-index:1;font-variant-numeric:tabular-nums}
 .wd-big small{font-size:16px;color:var(--mute)}
 .wd-big .wd-txt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:19px;line-height:1.2}
 .wd-sub{margin-top:4px;font-size:12.5px;font-weight:700;color:var(--mute);line-height:1.3;position:relative;z-index:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -406,7 +409,7 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .wd-chip{border:1.5px solid var(--line);background:var(--surface-2);border-radius:99px;padding:3px 8px;font-size:11.5px;font-weight:800;color:var(--ink)}
 .wd-chip.on{background:var(--good);border-color:var(--good);color:#fff}
 .wd-cover{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.22}
-.wd-cover.round{inset:auto;top:12px;right:12px;width:52px;height:52px;border-radius:50%;opacity:1;border:2px solid var(--ink)}
+.wd-cover.round{inset:auto;top:12px;right:12px;width:52px;height:52px;border-radius:50%;opacity:1;border:1px solid var(--line)}
 .wd-slot.editing{outline:2px dashed var(--accent);outline-offset:4px;border-radius:18px}
 .wd-slot.editing>section,.wd-slot.editing>.card{pointer-events:none;opacity:.85}
 .wd-edit{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
@@ -414,7 +417,7 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .wd-edit span{display:flex;flex-wrap:wrap;gap:6px}
 .wd-edit .btn.sm{min-height:32px;padding:0 10px;font-size:13px}
 .badge.secret{border-style:dotted}
-.sub-em{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:var(--surface-2);border:2px solid var(--ink)}
+.sub-em{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:var(--surface-2);border:1px solid var(--line)}
 .sub-price{flex:none;text-align:right;font-size:17px}.sub-price small{font-size:12px;color:var(--mute);font-weight:700}
 .sub-price.soon{color:var(--accent)}
 .rcscan{margin-bottom:12px}
@@ -424,13 +427,13 @@ input.input[type="date"],input.input[type="time"],input.input[type="datetime-loc
 .rcview img{max-width:min(100%,640px);height:auto;border-radius:8px;background:#fff}
 .chip-mini{display:inline-block;font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px;background:var(--accent-2);color:#fff;vertical-align:middle}
 .sub-alert{border-color:var(--accent);background:linear-gradient(135deg,var(--surface),var(--surface-2))}
-.gsec{margin:18px 4px 8px;font:400 18px "Dela Gothic One",sans-serif}
+.gsec{margin:18px 4px 8px;font:700 18px "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 .stars{display:inline-flex;gap:2px;align-items:center}
 .star{background:none;border:0;padding:2px 3px;font-size:26px;line-height:1;color:var(--line)}
 span.star{font-size:14px;padding:0}
 .star.on{color:#F5B301}
-.cover{flex:none;width:46px;height:66px;border-radius:8px;object-fit:cover;border:2px solid var(--ink);background:var(--surface-2)}
-.cover.ctile{display:grid;place-items:center;color:#fff;font:400 20px "Dela Gothic One",sans-serif}
+.cover{flex:none;width:46px;height:66px;border-radius:8px;object-fit:cover;border:1px solid var(--line);background:var(--surface-2)}
+.cover.ctile{display:grid;place-items:center;color:#fff;font:700 20px "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 .cover.lg{width:96px;height:136px;border-radius:10px;font-size:36px}
 .mhead{display:flex;gap:12px;align-items:center}
 .mhead>div{min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -447,14 +450,14 @@ span.star{font-size:14px;padding:0}
 .lk{width:100%;max-width:320px;text-align:center}
 .lk-em{font-size:40px}
 .dots4{display:flex;justify-content:center;gap:16px;margin:20px 0 8px}
-.dots4 i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink)}
+.dots4 i{width:16px;height:16px;border-radius:50%;border:1px solid var(--line)}
 .dots4 i.on{background:var(--accent);border-color:var(--accent)}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:10px 0 14px}
-.pad button{aspect-ratio:1;max-width:84px;width:100%;justify-self:center;border-radius:50%;border:2px solid var(--ink);background:var(--surface);color:var(--ink);font:400 26px "Dela Gothic One",sans-serif;box-shadow:3px 3px 0 var(--panel)}
-.pad button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--panel)}
+.pad button{aspect-ratio:1;max-width:84px;width:100%;justify-self:center;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 26px "DM Sans","Zen Maru Gothic",sans-serif;box-shadow:none}
+.pad button:active{transform:scale(.98);box-shadow:none}
 .cdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .lead{color:var(--mute);margin:0 0 16px}
-.notes h3{font:400 19px/1.25 "Dela Gothic One","Zen Maru Gothic",sans-serif;margin:20px 0 4px}
+.notes h3{font:700 19px/1.25 "DM Sans","Zen Maru Gothic",sans-serif;margin:20px 0 4px}
 .notes h4{font-size:16px;font-weight:900;margin:14px 0 4px}
 .notes ul{padding-left:20px;margin:6px 0}
 .notes li{margin:5px 0;line-height:1.45}
@@ -468,9 +471,9 @@ span.star{font-size:14px;padding:0}
 #splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
 .sp-in{display:flex;flex-direction:column;align-items:center;gap:10px}
 .sp-logo{position:relative;width:118px;height:118px}
-.sp-logo img{width:100%;height:100%;border-radius:28px;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--panel);position:relative;z-index:1}
+.sp-logo img{width:100%;height:100%;border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,.12);position:relative;z-index:1}
 .sp-logo i{position:absolute;left:50%;top:50%;width:16px;height:22px;margin:-11px 0 0 -8px;border-radius:50% 50% 50% 0;background:#FF8FB8;opacity:0}
-.sp-name{font:400 40px/1 "Dela Gothic One",sans-serif;color:var(--ink);margin-top:10px;opacity:0}
+.sp-name{font:700 40px/1 "DM Sans","Zen Maru Gothic",sans-serif;color:var(--ink);margin-top:10px;opacity:0}
 .sp-hi{font-weight:800;color:var(--mute);opacity:0;min-height:1.4em}
 #splash.go .sp-logo img{animation:spPop .7s cubic-bezier(.2,1.4,.4,1) both}
 #splash.go .sp-name{animation:spUp .5s .35s ease both}
@@ -506,8 +509,8 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 .confetti i{position:absolute;bottom:0;width:9px;height:13px;border-radius:2px;animation:fxConf 1.5s cubic-bezier(.15,.7,.4,1) forwards}
 @keyframes fxConf{0%{transform:translate(0,0) rotate(0);opacity:1}40%{transform:translate(calc(var(--dx) * .6),var(--dy)) rotate(calc(var(--r) * .4));opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 460px)) rotate(var(--r));opacity:0}}
 /* On/off switch */
-.switch{appearance:none;flex:none;width:52px;height:32px;border-radius:99px;border:2px solid var(--ink);background:var(--surface-2);position:relative;padding:0;transition:background .2s}
-.switch i{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);transition:transform .22s cubic-bezier(.2,1.3,.4,1)}
+.switch{appearance:none;flex:none;width:52px;height:32px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2);position:relative;padding:0;transition:background .2s}
+.switch i{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:1px solid var(--line);transition:transform .22s cubic-bezier(.2,1.3,.4,1)}
 .switch.on{background:var(--accent)}
 .switch.on i{transform:translateX(20px)}
 /* Turned off in Settings */
@@ -575,7 +578,7 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 .stylebtn{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px;border-radius:14px;border:2px solid var(--line);background:var(--surface);text-align:left;min-width:0}
 .stylebtn[aria-pressed="true"]{border-color:var(--accent);background:var(--surface-2)}
 .stylebtn i{display:block;width:100%;height:30px;border-radius:9px;margin-bottom:6px;background:var(--surface)}
-.stylebtn.st-pop i{border:2px solid var(--ink);box-shadow:3px 3px 0 var(--accent)}
+.stylebtn.st-pop i{border:1px solid var(--line)}
 .stylebtn.st-soft i{box-shadow:0 5px 14px rgba(20,10,45,.18)}
 .stylebtn.st-outline i{border:1.5px solid var(--mute)}
 .stylebtn.st-glass i{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 35%,transparent),color-mix(in srgb,var(--accent-2) 35%,transparent));border:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
@@ -586,7 +589,7 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 .iconbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--ink)}
 .steps{background:var(--surface-2);border-radius:14px;padding:12px}
 .steps ol{margin:8px 0 0;padding-left:20px;line-height:1.5}.steps li{margin:4px 0}
-.icon-banner{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:35;display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--surface);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--panel);max-width:560px;margin:0 auto}
+.icon-banner{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:35;display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:none;max-width:560px;margin:0 auto}
 .icon-banner svg{border-radius:10px;display:block}.icon-banner div{flex:1;min-width:0}.icon-banner b{display:block}.icon-banner div span{font-size:13px;color:var(--mute);font-weight:700}
 .icon-banner button{border:0;background:none;font-size:18px;color:var(--mute);padding:6px}
 #toast .undo{margin-left:10px;border:0;border-radius:99px;padding:3px 12px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:14px}
@@ -619,7 +622,7 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 
 /* ---------- 3.0: Lists ---------- */
 .wish{margin:0 0 12px}
-.wish-in{background:var(--surface);border:2px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 var(--panel)}
+.wish-in{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:none}
 :root[data-style="soft"] .wish-in{border-color:transparent;box-shadow:0 6px 20px rgba(20,10,45,.10);border-radius:20px}
 :root[data-style="outline"] .wish-in{border:1.5px solid var(--line);box-shadow:none}
 :root[data-style="glass"] .wish-in{background:color-mix(in srgb,var(--surface) 64%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);box-shadow:none}
@@ -629,7 +632,7 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 .wmain{flex:1;min-width:0;display:flex;flex-direction:column}
 .wmain b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wprice{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-.wprice b{font:400 18px/1.1 "Dela Gothic One",sans-serif}
+.wprice b{font:700 18px/1.1 "DM Sans","DM Sans","Zen Maru Gothic",sans-serif}
 .spark{width:64px;height:20px}.spark polyline{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .wish-body{padding:0 12px 12px}
 .wish-body .btns{flex-wrap:wrap}
@@ -637,10 +640,10 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 
 /* ---------- 3.1: Flashcards ---------- */
 .fcdecks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 16px}
-.fcdeck{appearance:none;display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px;min-width:0;border-radius:16px;border:2px solid var(--ink);background:var(--surface);box-shadow:4px 4px 0 var(--panel);color:var(--ink)}
+.fcdeck{appearance:none;display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px;min-width:0;border-radius:16px;border:1px solid var(--line);background:var(--surface);box-shadow:none;color:var(--ink)}
 .fcdeck b{font-size:17px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fcdeck .meter{margin-top:6px}
-.fcdeck:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--panel)}
+.fcdeck:active{transform:scale(.98);box-shadow:none}
 :root[data-style="soft"] .fcdeck{border-color:transparent;box-shadow:0 8px 24px rgba(20,10,45,.10)}
 :root[data-style="outline"] .fcdeck{border:1.5px solid var(--line);box-shadow:none}
 :root[data-style="glass"] .fcdeck{background:color-mix(in srgb,var(--surface) 64%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);box-shadow:none}
@@ -661,7 +664,7 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 .fc-in{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;-webkit-transform-style:preserve-3d}
 .fcard.flip .fc-in{transform:rotateY(180deg)}
 .fc-face{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:44px 22px 24px;
-  border-radius:22px;background:var(--surface);border:2px solid var(--ink);box-shadow:5px 5px 0 var(--panel);overflow:auto;font-size:clamp(22px,6.4vw,30px);font-weight:800;line-height:1.3;white-space:pre-wrap;color:var(--ink)}
+  border-radius:22px;background:var(--surface);border:1px solid var(--line);box-shadow:none;overflow:auto;font-size:clamp(22px,6.4vw,30px);font-weight:800;line-height:1.3;white-space:pre-wrap;color:var(--ink)}
 .fc-face.mid{font-size:clamp(18px,5vw,22px)}.fc-face.long{font-size:16px;font-weight:700;line-height:1.45;align-items:flex-start}
 .fc-back{transform:rotateY(180deg);background:var(--surface-2)}
 :root[data-style="soft"] .fc-face{border-color:transparent;box-shadow:0 10px 30px rgba(20,10,45,.14)}
@@ -705,7 +708,7 @@ details[open]>*:not(summary){animation:fxIn .28s ease both}
 @media (min-width:700px){
   main{max-width:840px;padding-left:28px;padding-right:28px}
   #rest{max-width:784px}
-  #sheet .panel{max-width:680px;border:2px solid var(--ink);border-bottom:0}
+  #sheet .panel{max-width:680px;border:1px solid var(--line);border-bottom:0}
   .wgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
   .wd-slot.m{grid-column:span 2}
   .tiles,.badges,.photos{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -787,7 +790,7 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 .nb-add{display:flex;margin:0 auto;max-width:900px;width:100%}
 .nb-tip{text-align:center;font-size:12.5px;color:var(--mute);margin:12px auto 0;max-width:600px}
 .nb-rec{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);display:none;align-items:center;gap:8px;max-width:calc(100% - 24px);width:max-content;
-  padding:8px 12px;border-radius:999px;background:var(--surface);border:2px solid var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:2}
+  padding:8px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:2}
 .nb-rec.on{display:flex}
 .nb-rec.play{border-radius:18px;flex-wrap:wrap;justify-content:center}
 .nb-rec input[type=range]{width:min(42vw,320px);accent-color:var(--accent)}
@@ -796,10 +799,10 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 .rec-dot.paused{animation:none;opacity:.4}
 @keyframes recPulse{50%{opacity:.25}}
 .nb-trline{font-size:13px;font-weight:700;color:var(--mute);max-width:min(70vw,560px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;direction:rtl;text-align:left}
-.nb-sel{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:14px;background:var(--surface);border:2px solid var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:3;font-size:13px;font-weight:800}
+.nb-sel{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:3;font-size:13px;font-weight:800}
 .nb-sel[hidden]{display:none}
 .nb-popbg{position:fixed;inset:0;background:rgba(10,6,25,.35);z-index:4}
-.nb-popin{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:5;width:min(420px,calc(100% - 24px));max-height:calc(100% - 90px);overflow:auto;padding:16px;border-radius:18px;background:var(--surface);border:2px solid var(--ink);box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.nb-popin{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:5;width:min(420px,calc(100% - 24px));max-height:calc(100% - 90px);overflow:auto;padding:16px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:0 16px 40px rgba(0,0,0,.3)}
 .nb-popin .btns{flex-wrap:wrap}
 .rec-pill{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:31;display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;border:0;background:var(--danger);color:#fff;font-weight:800;font-size:13.5px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .rec-pill i{width:9px;height:9px;border-radius:50%;background:#fff;animation:recPulse 1.2s ease-in-out infinite}
@@ -845,7 +848,7 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 .bgfield{display:flex;flex-direction:column;gap:4px;margin-top:12px;font-weight:700}
 .bgfield small{font-weight:600;font-size:12px}
 .bgdeck{position:relative;max-width:440px;margin:6px auto 12px;min-height:360px;touch-action:pan-y}
-.bgcard{position:relative;background:var(--surface);border:2px solid var(--ink);border-radius:22px;box-shadow:4px 4px 0 var(--panel);padding:22px 20px;text-align:center;user-select:none;-webkit-user-select:none;transition:transform .22s ease,opacity .22s ease;touch-action:pan-y}
+.bgcard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:none;padding:22px 20px;text-align:center;user-select:none;-webkit-user-select:none;transition:transform .22s ease,opacity .22s ease;touch-action:pan-y}
 .bgcard.drag{transition:none}
 .bgcard.behind{position:absolute;inset:10px 10px auto 10px;transform:scale(.95) translateY(10px);opacity:.7;z-index:0;pointer-events:none}
 .bgcard[data-live]{position:relative;z-index:1}
@@ -866,3 +869,41 @@ body.nb-open #app,body.nb-open #nav,body.nb-open #rest{visibility:hidden}
 .gsum .bgem{width:34px;height:34px;font-size:18px;border-radius:10px}
 .gsum h3{overflow-wrap:anywhere}
 .bgstats .stat b{font-size:clamp(14px,4.6vw,20px);white-space:nowrap}
+
+/* ---------- Paper finish (4.0) ---------- */
+body{letter-spacing:-.005em;font-feature-settings:"ss01","cv11"}
+.top{margin:6px 0 18px}
+.top h1{font-size:36px;line-height:1.06;letter-spacing:-.03em}
+.top p{font-size:14px;font-weight:600;letter-spacing:.01em}
+h2{font-size:17px;letter-spacing:-.015em}
+h3{font-weight:700}
+.input,.num-in{border:1px solid var(--line);background:var(--surface-2);border-radius:14px}
+.input:focus,.num-in:focus{border-color:var(--ink);box-shadow:0 0 0 3px var(--rim)}
+.btn,.input,select.input{min-height:48px}
+.btn.sm{min-height:38px;border-radius:12px}
+.btn{border-radius:14px}
+.chip{border:1px solid var(--line);font-weight:600}
+.seg{border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.seg button{border-radius:12px;font-weight:600}
+.check{border:1px solid var(--line);border-radius:14px}
+.empty{border:1px dashed var(--line);border-radius:22px}
+.stat{border-radius:14px}
+.stat b,.trend b,.clock,.wd-big,.tile b,.wbig{letter-spacing:-.03em}
+.tile,.wd,.badge,.fcdeck,.wish-in{border-radius:20px}
+.wd{min-height:150px;padding:16px}
+.wd-h{font-weight:700;letter-spacing:.01em}
+.tile{border:1px solid var(--line)}
+.link{font-weight:600}
+nav.tabs{border-top:1px solid var(--line);background:color-mix(in srgb,var(--bg) 97%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+nav.tabs button{font-weight:600;font-size:11.5px}
+nav.tabs button[aria-current="page"]{color:var(--ink)}
+nav.tabs .ic{width:48px;height:30px}
+#toast,#rest{border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.sum::after{border-width:2px}
+.chart .ln{stroke-width:2.5}
+.chart .pt{stroke-width:2}
+.badge.lock{background:transparent;border-style:dashed}
+::selection{background:var(--accent);color:var(--on-accent)}
+:root:not([data-skin]) .link,:root:not([data-skin]) .howto>summary{color:var(--accent)}
+:root:not([data-skin]) .bars .col i{background:var(--accent)}
+:root:not([data-skin]) .chip-mini{color:var(--on-accent)}

@@ -1,7 +1,7 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '3.8';
+const APP_VERSION = '4.0';
 
 /* =========================================================
    Constants and reference data
@@ -57,7 +57,7 @@ Calves|Wall calf stretch|Hands on a wall, back heel down and leg straight, lean 
 
 const MOODS = [['😞','Rough'],['😕','Meh'],['😐','Okay'],['🙂','Good'],['😄','Great']];
 const THEMES = [
-  ['sakura','Sakura','#F0467F','#2BB8D0'],['midnight','Midnight','#8B6CFF','#141B2D'],['ocean','Ocean','#0A86AA','#F2A541'],
+  ['sakura','Paper','#1C1B1A','#F6F4EF'],['midnight','Midnight','#8B6CFF','#141B2D'],['ocean','Ocean','#0A86AA','#F2A541'],
   ['forest','Forest','#86D993','#1F2B22'],['sunset','Sunset','#E8590C','#B5179E'],['mono','Mono','#141414','#F3F3F1'],
   ['ink','Ink','#FFFFFF','#000000'],['matcha','Matcha','#4F8A3C','#D98E73'],['aqua','Aqua','#16A9A3','#E0457B'],
   ['neon','Neon','#FF2E88','#00E5FF'],['royal','Royal','#F2C14E','#0E1530'],['miku','Miku','#39C5BB','#E4508C'],

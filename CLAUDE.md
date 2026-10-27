@@ -9,7 +9,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | File | What's in it |
 | --- | --- |
 | `index.html` | The page shell and the list of scripts |
-| `css/hibi.css` | All styles, the 17 themes and the card styles (`data-style`) |
+| `css/hibi.css` | All styles, the Paper look (default theme `sakura`, light and dark, `S.look.scheme`), the other 16 themes and the card styles (`data-style`; `pop` is the Paper hairline style). Buttons and selected chips use `--btn` (ink by default, the accent when one is picked) |
 | `js/crash.js` | Crash reports and the "Something went wrong" screen. Loads first. |
 | `js/core.js` | `APP_VERSION`, constants, helpers, load/normalize/save, the mode list |
 | `js/japan.js` | Japan trip mode (also defines `SAVE` and the form handler). Flights use airport time zones (`AIRPORT_TZ`, `zoned()`), and flights sharing a confirmation code count as one booking price (`flightBookings()`). |
