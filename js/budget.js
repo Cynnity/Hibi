@@ -250,6 +250,23 @@ const bgNavBar = () => { const v = UI.bgView || 0, per = bgPer(v); return `<div 
 const BG_BAD = 'var(--danger)';
 const bgBar = (parts, total) => `<div class="bgstack" role="img" aria-label="Where this period's money goes">${parts.map(([v, col]) => v > 0 && total > 0 ? `<i style="width:${Math.min(100, v / total * 100)}%;background:${col}"></i>` : '').join('')}</div>`;
 const bgCatOpts = (cur, auto) => `${auto ? '<option value="">✨ Auto-sort</option>' : ''}${S.bg.cats.map(c => opt(c.id, c.em + ' ' + c.name, cur)).join('')}`;
+// Recent activity: what you added, bills and subscriptions you marked paid, card payments, newest first
+function bgRecent(max) {
+  const it = [];
+  S.bg.tx.forEach(x => it.push({d:x.d, t:(bgMadeAt(x) || 0), em:x.kind === 'in' ? '💵' : bgCat(x.cat).em, name:x.name, sub:(x.kind === 'in' ? (x.rf === 'yes' && bgRefundOn(x) ? 'Refund' : 'Money in') : bgCat(x.cat).name) + (x.cc ? ' · ' + ((S.bg.cards.find(c => c.id === x.cc) || {}).name || 'card') : ''), amt:x.kind === 'in' ? '+' + cash2(x.amt) : cash2(x.amt), inn:x.kind === 'in', act:'bgTxEdit', id:x.id}));
+  const bills = bgBillsAll();
+  Object.keys(S.bg.paid).forEach(k => {
+    if (S.bg.paid[k] !== true) return; const at = k.lastIndexOf('@'), b = bills.find(q => q.x.id === k.slice(0, at)); if (!b) return;
+    it.push({d:k.slice(at + 1), t:0, em:b.x.em || '✅', name:b.x.name, sub:(b.src === 'sub' ? 'Subscription' : 'Bill') + ' marked paid', amt:cash2(num(b.x.price)), paid:true});
+  });
+  S.bg.cpay.forEach(p => { const c = S.bg.cards.find(x => x.id === p.card); it.push({d:p.d, t:0, em:'💳', name:(c ? c.name : 'Card') + ' payment', sub:'Card payment', amt:cash2(p.amt)}); });
+  return it.filter(x => x.d <= today()).sort((a, b) => b.d.localeCompare(a.d) || b.t - a.t).slice(0, max || 6);
+}
+function bgRecentCard() {
+  const L = bgRecent(6); if (!L.length) return '';
+  return `<section class="card"><div class="row"><h2>🕘 Recent</h2><button class="link" data-act="wGo" data-k="budget" data-to="btx">See all</button></div>
+    ${L.map(x => `<div class="lrow"${x.act ? ` data-act="${x.act}" data-id="${esc(x.id)}" role="button" tabindex="0"` : ''}><span style="text-align:left;color:var(--ink)">${esc(x.em)} <b>${esc(x.name)}</b><small class="muted">${esc(fmtShort(x.d))} · ${esc(x.sub)}</small></span><span${x.inn ? ' class="bg-good"' : ''}>${x.paid ? '✓ ' : ''}${x.amt}</span></div>`).join('')}</section>`;
+}
 function bgTxForm(ed) {
   return `<form data-form="bgtx" class="stack">
     <div class="ff"><label>Amount ($)<input class="input" name="amt" inputmode="decimal" placeholder="0.00" autocomplete="off" value="${ed ? esc(ed.amt) : ''}"></label><label>Date<input class="input" type="date" name="d" value="${esc(ed ? ed.d : today())}"></label></div>
@@ -305,6 +322,7 @@ function viewBgo() {
     ${typeof rcUI === 'function' ? rcUI() : ''}
     ${rv ? `<section class="card bg-rev"><div class="row"><h2>👀 ${plural(rv, 'purchase')} to check</h2><button class="btn sm" data-act="wGo" data-k="budget" data-to="brev">Swipe through</button></div><p class="note">I wasn't sure where ${rv === 1 ? 'this one goes' : 'these go'}. It takes a few seconds.</p></section>` : ''}
     <details class="card" ${det('bgQuick', !S.bg.tx.length)}><summary class="sum"><h2>➕ Add spending</h2><span class="small muted">I'll sort it for you</span></summary>${typeof rcScanBtn === 'function' ? rcScanBtn() : ''}${bgTxForm(null)}</details>
+    ${bgRecentCard()}
     <section class="card"><div class="row"><h2>Categories</h2><button class="link" data-act="wGo" data-k="budget" data-to="bplan">Edit budgets</button></div>
       ${shown.length ? shown.map(o => bgCatRow(o, C.daysLeft)).join('') : '<p class="note">Set a budget for each category in Plan, or just start adding spending.</p>'}
       ${C.by.some(o => !o.b && !o.s) ? '' : ''}</section>

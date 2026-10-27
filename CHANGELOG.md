@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.2.1 — "Receipts and Recents" (Oct 27)
+- **New Recent card on Budget Overview.** It shows your latest activity in one list: purchases you added, money in, subscriptions and bills you marked paid, and card payments. Newest first, with the date and category on each line.
+- Tap a purchase to edit it, or tap See all to open the full Spending list.
+
+---
+
 ## 4.2 — "Just Two" (Oct 27)
 - **Themes are gone.** Hibi now has one look, Paper, in light or dark. Settings › Look › Appearance picks Match phone, Light or Dark. No more color theme list to scroll through.
 - **Accent color still works** if you want a splash of your own color.
