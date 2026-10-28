@@ -60,7 +60,7 @@ function normalizeBg(s) {
   if (!['amt', 'pct'].includes(g.save.mode)) g.save.mode = 'amt';
   if (typeof g.save.v !== 'number') g.save.v = 0;
   if (typeof g.save.goal !== 'string') g.save.goal = '';
-  g.save.split = (Array.isArray(g.save.split) ? g.save.split : []).filter(x => x && typeof x.id === 'string' && (num(x.pct) > 0 || num(x.amt) > 0)).slice(0, 3).map(x => ({id:x.id, pct:num(x.pct), amt:num(x.amt)}));
+  g.save.split = (Array.isArray(g.save.split) ? g.save.split : []).filter(x => x && typeof x.id === 'string' && (num(x.pct) > 0 || num(x.amt) > 0)).slice(0, 20).map(x => ({id:x.id, pct:num(x.pct), amt:num(x.amt)}));
   if (!['amt', 'pct'].includes(g.save.splitMode)) g.save.splitMode = 'amt';
   if (!Array.isArray(g.accts)) g.accts = [];
   g.accts = g.accts.filter(a => a && a.id && a.name);
@@ -190,6 +190,7 @@ function bgSaveCfg(per) {
   return {own, mode:own ? (p.sm === 'pct' ? 'pct' : 'amt') : g.mode, v:own ? num(p.save) : num(g.v), goal:p.sg !== undefined ? p.sg : g.goal, ownGoal:p.sg !== undefined};
 }
 // Who the savings go to: one goal, or up to 3 goals split by percent (the usual split applies unless a month picks its own single goal)
+const bgSplitRows = () => Math.max(3, UI.bgSplitRows || 0, ((UI.bgSplitDraft || S.bg.save.split || []).length) + 1);
 function bgShares(per) {
   const c = bgSaveCfg(per); let sp = c.ownGoal ? [] : (S.bg.save.split || []).filter(x => S.sv.goals.some(g => g.id === x.id));
   if (S.bg.save.splitMode === 'amt') { const t = sp.reduce((a, x) => a + num(x.amt), 0); sp = t > 0 ? sp.filter(x => num(x.amt) > 0).map(x => ({id:x.id, pct:num(x.amt) / t * 100, amt:num(x.amt)})) : []; }
@@ -548,10 +549,11 @@ function viewBplan() {
       <p class="note">${SV.own || SV.ownGoal ? `This ${bgWord()} has its own savings. Other months keep your usual (${S.bg.save.mode === 'pct' ? S.bg.save.v + '%' : bgM(S.bg.save.v)}).` : `Using your usual (${S.bg.save.mode === 'pct' ? S.bg.save.v + '%' : bgM(S.bg.save.v)}). Change it here to set just this ${bgWord()}.`} Savings come out before your safe to spend.</p>
       <div class="btns mt"><button class="btn ghost sm" data-act="bgSaveUsual">Make this my usual</button>${SV.own || SV.ownGoal ? '<button class="btn ghost sm" data-act="bgSaveReset">Back to my usual</button>' : ''}</div>
       <details class="mt" ${det('bgSplit', (S.bg.save.split || []).length > 0)}><summary class="link">Split between goals${(S.bg.save.split || []).length ? ` (${S.bg.save.split.length})` : ''}</summary>
-        <form data-form="bgsplit" class="mt"><p class="note">Give up to 3 goals their own share of your savings. This is your usual split for every ${bgWord()} unless you pick a single goal above for one.</p>
+        <form data-form="bgsplit" class="mt"><p class="note">Give as many goals as you like their own share of your savings. This is your usual split for every ${bgWord()} unless you pick a single goal above for one.</p>
         <label style="display:block">Split by<select class="input" data-bind="bgspm">${opt('amt', 'Dollars (set an amount for each)', S.bg.save.splitMode)}${opt('pct', 'Percent of my savings', S.bg.save.splitMode)}</select></label>
-        ${[0, 1, 2].map(i => { const x = (S.bg.save.split || [])[i] || {}, dl = S.bg.save.splitMode === 'amt'; return `<div class="ff mt"><label>Goal ${i + 1}<select class="input" name="g${i}"><option value="">None</option>${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, x.id || '')).join('')}</select></label><label>${dl ? 'Amount ($)' : 'Percent'}<input class="input" name="p${i}" inputmode="decimal" value="${(dl ? x.amt : x.pct) || ''}" placeholder="0" aria-label="${dl ? 'Dollars' : 'Percent'} for goal ${i + 1}"></label></div>`; }).join('')}
+        ${Array.from({length:bgSplitRows()}, (_, i) => i).map(i => { const x = (UI.bgSplitDraft || S.bg.save.split || [])[i] || {}, dl = S.bg.save.splitMode === 'amt'; return `<div class="ff mt"><label>Goal ${i + 1}<select class="input" name="g${i}"><option value="">None</option>${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, x.id || '')).join('')}</select></label><label>${dl ? 'Amount ($)' : 'Percent'}<input class="input" name="p${i}" inputmode="decimal" value="${(dl ? x.amt : x.pct) || ''}" placeholder="0" aria-label="${dl ? 'Dollars' : 'Percent'} for goal ${i + 1}"></label></div>`; }).join('')}
         ${S.bg.save.splitMode === 'amt' ? `<p class="note">${bgSplitTotal() > 0 ? `Your goals add up to <b>${bgM(bgSplitTotal())}</b>, so that's what you save each ${bgWord()}. ` : ''}The dollar amounts set your savings total, so the "How much" box above only matters for a month you set on its own.</p>` : ''}
+        <button class="link mt" type="button" data-act="bgSplitMore">+ Add another goal</button>
         <div class="btns mt"><button class="btn" type="submit">Save split</button>${(S.bg.save.split || []).length ? '<button class="btn ghost" type="button" data-act="bgSplitClear">Use one goal</button>' : ''}</div></form></details></section>`;
 }
 
@@ -622,6 +624,7 @@ Object.assign(XACT, {
     const tot = Math.round(C.sv * 100) / 100; let left = tot;
     sh.forEach((x, i) => { const a = i === sh.length - 1 ? left : Math.round(tot * x.pct) / 100; left = Math.round((left - a) * 100) / 100; if (a > 0) svAdd(x.id, a, 'From Budget'); });
     S.bg.moved[per.key] = tot; S.bg.n.moved++; },
+  bgSplitMore: () => { const f = $('form[data-form="bgsplit"]'), dl = S.bg.save.splitMode === 'amt', n = bgSplitRows(), d = []; if (f) for (let i = 0; i < n; i++) { const id = (f.elements['g' + i] || {}).value || '', v = num((f.elements['p' + i] || {}).value); d.push(id || v ? (dl ? {id, amt:v} : {id, pct:v}) : {}); } UI.bgSplitDraft = d; UI.bgSplitRows = n + 1; UI.open.bgSplit = true; },
   bgSplitClear: () => { S.bg.save.split = []; toast('Back to one goal.'); },
   bgSuggest: () => {
     const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per, true), pool = Math.max(0, C.pool);
@@ -677,10 +680,10 @@ Object.assign(SAVE, {
     S.bg.cpay.push({id:'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d:o.d || today(), amt, card:o.card}); UI.bgPayCard = o.card; const c = S.bg.cards.find(x => x.id === o.card); toast(`${cash2(amt)} paid to ${c.name}. You owe ${bgM(bgOwed(c).owed)}.`); haptic();
   },
   bgsplit: o => {
-    const dl = S.bg.save.splitMode === 'amt', sp = [], seen = {}; for (let i = 0; i < 3; i++) { const id = o['g' + i], v = Math.round(num(o['p' + i]) * 100) / 100; if (id && v > 0 && !seen[id]) { seen[id] = 1; sp.push(dl ? {id, amt:v, pct:0} : {id, pct:v, amt:0}); } }
+    const dl = S.bg.save.splitMode === 'amt', sp = [], seen = {}; for (let i = 0; i < 30; i++) { const id = o['g' + i], v = Math.round(num(o['p' + i]) * 100) / 100; if (id && v > 0 && !seen[id]) { seen[id] = 1; sp.push(dl ? {id, amt:v, pct:0} : {id, pct:v, amt:0}); } }
     if (!sp.length) { S.bg.save.split = []; toast('Back to one goal.'); return; }
     const t = Math.round(sp.reduce((a, x) => a + (dl ? x.amt : x.pct), 0) * 100) / 100; if (!dl && t !== 100) { toast(`Percents add up to ${t}. Make it 100.`); return false; }
-    S.bg.save.split = sp; UI.open.bgSplit = true; toast(dl ? `Savings split saved: ${bgM(t)} a ${bgWord()}.` : 'Savings split saved.');
+    S.bg.save.split = sp; UI.bgSplitDraft = null; UI.bgSplitRows = 0; UI.open.bgSplit = true; toast(dl ? `Savings split saved: ${bgM(t)} a ${bgWord()}.` : 'Savings split saved.');
   },
   bgcard: o => {
     const name = (o.name || '').trim(); if (!name) { toast('Give the card a name.'); return false; }
