@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.4.1 — "Dollar by Dollar" (Oct 27)
+- **Split your savings by dollars.** In Budget › Plan › Savings › Split between goals, you now type a dollar amount for each goal (up to 3), like $300 to Japan, $150 to Ado, $75 to a car. That's the default.
+- **Your savings total follows your split.** The amounts add up to what you save each month, so you don't have to set a separate total.
+- Prefer percents? Switch "Split by" to Percent of my savings and use shares that add up to 100.
+- The Savings card on the Budget overview shows each goal's dollars, and one tap moves each amount into the right goal in Savings.
+
 ## 4.4 — "Split the Stash" (Oct 27)
 - **Your monthly savings can go to up to 3 goals now.** In Budget › Plan › Savings there's a new "Split between goals" section. Pick up to 3 Savings goals and the percent each one gets (it has to add up to 100).
 - **One tap moves it all.** On the Budget overview, the Savings card lists each goal with its share, and "Move into your goals" puts the right amount into each one in Savings.
