@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.4 — "Split the Stash" (Oct 27)
+- **Your monthly savings can go to up to 3 goals now.** In Budget › Plan › Savings there's a new "Split between goals" section. Pick up to 3 Savings goals and the percent each one gets (it has to add up to 100).
+- **One tap moves it all.** On the Budget overview, the Savings card lists each goal with its share, and "Move into your goals" puts the right amount into each one in Savings.
+- Picking a single goal for one month still works and overrides the split for that month. "Use one goal" goes back to the old way.
+- (The Japan fund link from 4.3 is still there in Japan › Money.)
+
 ## 4.3.1 — "Three's Company" (Oct 27)
 - **Link as many Savings goals as you want to your Japan trip fund.** Trip fund now has a "Link another" picker, so you can tie in 3 or more goals (flights, spending money, souvenirs, whatever you've set up in Savings).
 - Each linked goal has an Unlink button. Your budget adds up all the linked goals.
