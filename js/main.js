@@ -26,22 +26,6 @@ window.addEventListener('hashchange', () => { if (openLink()) { save(); render()
 render();
 locked = !!S.pin; drawLock();
 if (locked && S.faceId) setTimeout(() => { if (locked && FID_OK) faceUnlock(true); }, 400);
-// Keeps the bottom bar on the bottom of what you can see. iPhone's browser can leave a fixed bar stranded mid-screen after scrolling or switching apps,
-// so this measures it against the visible area and slides it back (it leaves the bar alone while you're typing, since the keyboard covers the bottom).
-let navBusy = 0;
-function navPin() {
-  navBusy = 0;
-  const n = $('#nav'), vv = window.visualViewport; if (!n || !vv || !n.offsetHeight) return;
-  const ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
-  const b = parseFloat(n.style.bottom) || 0, d = n.getBoundingClientRect().bottom - (vv.offsetTop + vv.height);
-  if (Math.abs(d) > 1.5) n.style.bottom = (b + d) + 'px';
-}
-const navSoon = () => { if (!navBusy) navBusy = requestAnimationFrame(navPin); };
-['scroll', 'resize', 'orientationchange', 'pageshow', 'focusin', 'touchend'].forEach(e => window.addEventListener(e, navSoon, {passive:true}));
-document.addEventListener('visibilitychange', navSoon);
-document.addEventListener('focusout', () => setTimeout(navSoon, 350));
-if (window.visualViewport) { visualViewport.addEventListener('resize', navSoon); visualViewport.addEventListener('scroll', navSoon); }
-setInterval(navSoon, 1000);
 setInterval(tick, 250);
 loadPhotos();
 if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);

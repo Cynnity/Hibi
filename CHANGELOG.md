@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.5.2 — "Sticky Situation" (Oct 28)
+- **Rebuilt the bottom bar so it can't drift.** The bar with Today, Shifts, Pay and Settings (and the Budget, Gym and other tab bars) used to be pinned to the screen, which iPhone's browser sometimes gets wrong. It's now part of the page and sticks to the bottom as you scroll, the way the top bar does.
+- Took out the self-correcting code from 4.5.1. It could fight the browser and make the bar move further, so it's gone.
+- Pages with only a little on them still keep the bar at the very bottom.
+
 ## 4.5.1 — "Pinned" (Oct 28)
 - **The bottom bar now fixes itself.** If the bar (Today, Shifts, Pay, Settings and the rest) ever ends up in the middle of the screen, Hibi measures where it is against what you can actually see and slides it back to the bottom. It checks when you scroll, tap, rotate, or come back to the app.
 - **Month by Month savings (4.5) is now in the real app.** It had only been on the preview page. See the 4.5 notes below.
