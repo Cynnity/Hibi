@@ -9,6 +9,10 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.4.3 — "Stay Down" (Oct 28)
+- **Fixed the bottom bar floating up the screen.** After scrolling a long list (like your Work shifts), the bar with Today, Shifts, Pay and Settings could end up in the middle of the screen instead of staying at the bottom. It's now a solid bar on its own layer, and the page no longer uses a fixed background, which were the things that confuse iPhone's browser.
+- If it still ever floats after an update, tell me which screen you were on and what you did just before.
+
 ## 4.4.2 — "As Many As You Want" (Oct 27)
 - **No more limit of 3 on your savings split.** In Budget › Plan › Savings › Split between goals, tap "+ Add another goal" to add as many rows as you need. What you've already typed stays put when you add a row.
 - Dollar and percent splits both work with any number of goals, and the overview's "Move into your goals" sends each one its share.
