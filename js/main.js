@@ -44,6 +44,8 @@ document.addEventListener('visibilitychange', navSoon);
 document.addEventListener('focusout', () => [150, 500, 1100].forEach(ms => setTimeout(() => { scrollTo(scrollX, scrollY + 1); scrollTo(scrollX, scrollY - 1 < 0 ? 0 : scrollY - 1); navSoon(); }, ms)));
 if (window.visualViewport) { visualViewport.addEventListener('resize', navSoon); visualViewport.addEventListener('scroll', navSoon); }
 setInterval(navSoon, 1500);
+// Boxes that already hold a number (balances, what you owe) select it when you tap in, so typing replaces it instead of adding to it
+document.addEventListener('focusin', e => { const t = e.target; if (t && t.matches && t.matches('input[data-sel]')) setTimeout(() => { try { t.select(); t.setSelectionRange(0, 9999); } catch (x) {} }, 0); });
 setInterval(tick, 250);
 loadPhotos();
 if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);

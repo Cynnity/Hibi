@@ -9,6 +9,10 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.6.1 — "Type Over" (Oct 28)
+- **Fixed typing over a balance.** Since 4.6 the "what you owe", "credit limit" and account balance boxes show the current number. On iPhone, typing into one added your digits to the old number (268.76 plus 151.11 became a mess) so it looked like it wouldn't change. Tapping the box now selects the whole number, so what you type replaces it.
+- After saving what you owe on a card, the message now says the new amount, like "Capital One: you owe $151.11 now."
+
 ## 4.6 — "Connected Accounts" (Oct 28)
 - **Your accounts and credit cards are connected now.** Paying a credit card takes the money out of the account you pick (it remembers your last choice), and what you owe goes down at the same time. Both balances update by themselves.
 - **Move money between accounts.** Budget › Accounts has a new "Move money between accounts" card. Pick From, To and an amount, and both balances change. Swipe a move to delete it and the balances go back.

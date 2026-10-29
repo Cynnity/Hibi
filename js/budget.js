@@ -723,7 +723,7 @@ Object.assign(SAVE, {
     const c = S.bg.cards.find(x => x.id === o.id); if (!c) return false; const oS = String(o.owed || '').trim(), lS = String(o.lim || '').trim();
     if (!oS && !lS) { toast('Type what you owe or the limit.'); return false; }
     if (oS) { c.owed = Math.max(0, Math.round(num(oS) * 100) / 100); c.oas = today(); c.oat = Date.now(); }
-    if (lS) c.lim = Math.max(0, Math.round(num(lS) * 100) / 100); toast(`${c.name} saved.`); haptic();
+    if (lS) c.lim = Math.max(0, Math.round(num(lS) * 100) / 100); toast(oS ? `${c.name}: you owe ${cash2(bgOwed(c).owed)} now.` : `${c.name} saved.`); haptic();
   },
   bgpay: o => {
     const amt = Math.round(num(o.amt) * 100) / 100; if (!(amt > 0)) { toast('Add the payment amount.'); return false; } if (!S.bg.cards.some(c => c.id === o.card)) return false;
@@ -849,7 +849,7 @@ function bgCreditCard() {
     <p class="note">${lim ? `${bgM(tot)} owed of ${bgM(lim)} in total limits (${Math.round(tot / lim * 100)}%). ` : ''}Pick the card on each purchase and log your payments, and what you owe updates on its own. Under about 30% of a limit is a healthy range.</p>
     ${C.map(c => { const o = bgOwed(c), pc = Math.min(100, o.util * 100), col = o.util > 0.5 ? BG_BAD : o.util > 0.3 ? '#F39C12' : 'var(--good)'; return `<div class="bgcardrow"><div class="row"><b>${esc(c.em)} ${esc(c.name)}</b><b>${bgM(o.owed)}</b></div>
       ${c.lim ? `<div class="meter"><i style="width:${pc}%;background:${col}"></i></div><span class="small muted">${Math.round(o.util * 100)}% of ${bgM(c.lim)} used, ${bgM(o.avail)} available</span>` : '<span class="small muted">Add the credit limit to see how much you have used.</span>'}
-      <form data-form="bgowed" class="stack mt"><input type="hidden" name="id" value="${esc(c.id)}"><div class="ff"><label>What you owe now ($)<input class="input" name="owed" inputmode="decimal" value="${esc(String(o.owed))}"></label><label>Credit limit ($)<input class="input" name="lim" inputmode="decimal" value="${c.lim ? esc(String(c.lim)) : ''}" placeholder="0"></label></div><button class="btn ghost" type="submit">Save</button></form></div>`; }).join('')}
+      <form data-form="bgowed" class="stack mt"><input type="hidden" name="id" value="${esc(c.id)}"><div class="ff"><label>What you owe now ($)<input class="input" name="owed" data-sel inputmode="decimal" value="${esc(String(o.owed))}"></label><label>Credit limit ($)<input class="input" name="lim" data-sel inputmode="decimal" value="${c.lim ? esc(String(c.lim)) : ''}" placeholder="0"></label></div><button class="btn ghost" type="submit">Save</button></form></div>`; }).join('')}
     <h3 class="bgday mt">Log a payment</h3>
     <form data-form="bgpay" class="stack"><div class="ff"><label>Card<select class="input" name="card">${C.map(c => opt(c.id, c.em + ' ' + c.name, UI.bgPayCard || '')).join('')}</select></label><label>Amount ($)<input class="input" name="amt" inputmode="decimal" placeholder="0.00" autocomplete="off"></label></div>
       ${S.bg.accts.length ? `<label>Pay it from<select class="input" name="from">${S.bg.accts.map(a => opt(a.id, a.em + ' ' + a.name, UI.bgPayFrom || (S.bg.accts.find(x => x.main) || {}).id || '')).join('')}${opt('none', "Don't take it from an account", UI.bgPayFrom || '')}</select></label>` : ''}
@@ -910,7 +910,7 @@ function viewBacct() {
     ${A.map(a => { const e = bgEst(a);
       return `<section class="card"><div class="row"><div class="mhead"><span class="gem" aria-hidden="true">${esc(a.em)}</span><div><h3>${esc(a.name)}${a.type === 'save' ? ' <span class="chip-mini">Savings</span>' : a.type === 'invest' ? ' <span class="chip-mini">Investing</span>' : ''}${a.main ? ' <span class="chip-mini">Tracked</span>' : ''}</h3><span class="small muted">You entered ${bgM(a.bal)} on ${esc(fmtShort(a.asOf))}</span></div></div><b>${bgM(bgNow(a))}</b></div>
         ${a.main || e.cp || e.xin || e.xout ? `<p class="note">Now: ${bgM(a.bal)}${e.pay ? ` + ${bgM(e.pay)} paychecks` : ''}${e.inn ? ` + ${bgM(e.inn)} money in` : ''}${e.xin ? ` + ${bgM(e.xin)} moved in` : ''}${e.spent ? ` − ${bgM(e.spent)} spent` : ''}${e.cp ? ` − ${bgM(e.cp)} card payments` : ''}${e.xout ? ` − ${bgM(e.xout)} moved out` : ''}.</p>` : ''}
-        <form data-form="bgbal" class="field mt"><input type="hidden" name="id" value="${esc(a.id)}"><input class="input" name="v" inputmode="decimal" value="${esc(String(Math.round(e.est * 100) / 100))}" aria-label="Balance for ${esc(a.name)}"><button class="btn ghost" type="submit">Save balance</button></form>
+        <form data-form="bgbal" class="field mt"><input type="hidden" name="id" value="${esc(a.id)}"><input class="input" name="v" data-sel inputmode="decimal" value="${esc(String(Math.round(e.est * 100) / 100))}" aria-label="Balance for ${esc(a.name)}"><button class="btn ghost" type="submit">Save balance</button></form>
         ${a.hist.length > 1 ? `<p class="small muted mt">${a.hist.slice(-5).map(h => `${esc(fmtShort(h.d))}: ${bgM(h.v)}`).join(' → ')}</p>` : ''}
         <div class="row mt" style="justify-content:flex-start;gap:16px"><button class="link" data-act="bgAcctEdit" data-id="${esc(a.id)}">Edit</button><button class="link danger" data-act="bgAcctDel" data-id="${esc(a.id)}" data-confirm>Delete</button></div></section>`; }).join('')}
     ${bgXferCard()}
