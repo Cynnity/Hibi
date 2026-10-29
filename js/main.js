@@ -26,6 +26,24 @@ window.addEventListener('hashchange', () => { if (openLink()) { save(); render()
 render();
 locked = !!S.pin; drawLock();
 if (locked && S.faceId) setTimeout(() => { if (locked && FID_OK) faceUnlock(true); }, 400);
+// iPhone's Home Screen apps can lose track of the screen height after the keyboard closes, leaving the bottom bar stranded mid-screen.
+// This compares the page's idea of the screen height with what's really visible and nudges the bar by the difference (it never adds up over time).
+let NAVDBG = {}, navBusy = 0;
+function navFix() {
+  navBusy = 0;
+  const n = $('#nav'), vv = window.visualViewport; if (!n || !vv) return;
+  const ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+  let d = Math.round(vv.offsetTop + vv.height - innerHeight);
+  NAVDBG = {inner:Math.round(innerHeight), visual:Math.round(vv.height), top:Math.round(vv.offsetTop), scale:+vv.scale.toFixed(2), screen:screen.height, y:Math.round(scrollY), d};
+  if (Math.abs(d) < 2 || Math.abs(d) > 500 || Math.abs(vv.scale - 1) > .01) d = 0;
+  n.style.transform = d ? `translateY(${d}px)` : '';
+}
+const navSoon = () => { if (!navBusy) navBusy = requestAnimationFrame(navFix); };
+['scroll', 'resize', 'orientationchange', 'pageshow', 'touchend'].forEach(e => window.addEventListener(e, navSoon, {passive:true}));
+document.addEventListener('visibilitychange', navSoon);
+document.addEventListener('focusout', () => [150, 500, 1100].forEach(ms => setTimeout(() => { scrollTo(scrollX, scrollY + 1); scrollTo(scrollX, scrollY - 1 < 0 ? 0 : scrollY - 1); navSoon(); }, ms)));
+if (window.visualViewport) { visualViewport.addEventListener('resize', navSoon); visualViewport.addEventListener('scroll', navSoon); }
+setInterval(navSoon, 1500);
 setInterval(tick, 250);
 loadPhotos();
 if (DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 2500);

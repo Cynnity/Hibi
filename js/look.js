@@ -143,7 +143,7 @@ function modesSettings() {
 function settingsAbout() {
   return `${ideasCard()}    <section class="card"><div class="mhead"><span data-act="logoTap" style="cursor:pointer;display:flex">${HIBI_LOGO}</span><div><h2>Hibi</h2><span class="small muted">Everyday life, all in one place. Version ${APP_VERSION}</span></div></div>
       <button class="btn ghost block mt" data-act="openNotes">What's new: patch notes</button>
-      <p class="note">When a new version is on GitHub, the app gets it the next time it opens with internet and shows a Reload button.</p></section>`;
+      <p class="note">When a new version is on GitHub, the app gets it the next time it opens with internet and shows a Reload button.</p><p class="note">Screen check: ${typeof NAVDBG === 'object' && NAVDBG.inner ? `window ${NAVDBG.inner}, visible ${NAVDBG.visual}, offset ${NAVDBG.top}, zoom ${NAVDBG.scale}, shift ${NAVDBG.d}` : 'not measured yet'}</p></section>`;
 }
 
 /* ----- Screen finder ----- */

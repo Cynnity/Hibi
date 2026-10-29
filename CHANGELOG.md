@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.5.3 — "Keyboard Hangover" (Oct 28)
+- **Another fix for the bottom bar floating up.** Your screenshots show the bar stranded about as high as a keyboard, so I think iPhone isn't re-measuring the screen after the keyboard closes. Hibi now compares the screen height it was told with what's really visible and moves the bar down by the difference. It recalculates from scratch each time, so it can't drift the way 4.5.1 could.
+- After you tap out of a text box, Hibi also gives the page a tiny scroll nudge a few times, which makes iPhone re-measure.
+- **Settings › About now has a "Screen check" line.** If the bar ever floats again, open About and tell me what it says (window, visible, offset, shift). That tells me exactly what iPhone thinks.
+
 ## 4.5.2 — "Sticky Situation" (Oct 28)
 - **Rebuilt the bottom bar so it can't drift.** The bar with Today, Shifts, Pay and Settings (and the Budget, Gym and other tab bars) used to be pinned to the screen, which iPhone's browser sometimes gets wrong. It's now part of the page and sticks to the bottom as you scroll, the way the top bar does.
 - Took out the self-correcting code from 4.5.1. It could fight the browser and make the bar move further, so it's gone.
