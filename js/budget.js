@@ -75,7 +75,8 @@ function normalizeBg(s) {
   });
   if (!Array.isArray(g.accts)) g.accts = [];
   g.accts = g.accts.filter(a => a && a.id && a.name);
-  g.accts.forEach(a => { a.bal = num(a.bal); if (!a.asOf) a.asOf = dk(new Date()); if (!Array.isArray(a.hist)) a.hist = [{d:a.asOf, v:a.bal}]; a.main = !!a.main; if (typeof a.work !== 'boolean') a.work = true; if (!a.em) a.em = '🏦'; if (!['spend', 'save', 'invest'].includes(a.type)) a.type = /sav|reserve|emergency/i.test(a.name) ? 'save' : 'spend'; });
+  g.accts.forEach(a => { a.bal = num(a.bal); if (!a.asOf) a.asOf = dk(new Date()); if (!Array.isArray(a.hist)) a.hist = [{d:a.asOf, v:a.bal}]; a.at = +a.at || 0; a.main = !!a.main; if (typeof a.work !== 'boolean') a.work = true; if (!a.em) a.em = '🏦'; if (!['spend', 'save', 'invest'].includes(a.type)) a.type = /sav|reserve|emergency/i.test(a.name) ? 'save' : 'spend'; });
+  if (!Array.isArray(g.xfer)) g.xfer = []; g.xfer = g.xfer.filter(x => x && x.id && x.d && x.from && x.to && x.from !== x.to && typeof x.amt === 'number' && x.amt > 0);
   if (!Array.isArray(g.cpay)) g.cpay = []; g.cpay = g.cpay.filter(p => p && p.id && p.d && typeof p.amt === 'number' && isFinite(p.amt) && p.amt > 0);
   if (!Array.isArray(g.nw)) g.nw = []; g.nw = g.nw.filter(p => p && p.d && isFinite(p.v)).slice(-400);
   if (!g.n || typeof g.n !== 'object') g.n = {};
@@ -662,7 +663,9 @@ Object.assign(XACT, {
   bgBillDel: d => { S.bg.bills = S.bg.bills.filter(x => x.id !== d.id); },
   bgMove: () => { const per = bgPer(0), C = bgCalc(per), sh = bgShares(per); if (!sh.length || !(C.sv > 0)) return false; if (S.bg.moved[per.key]) return false;
     const tot = Math.round(sh.reduce((a, x) => a + x.amt, 0) * 100) / 100;
-    sh.forEach(x => { const a = Math.round(x.amt * 100) / 100; if (a > 0) svAdd(x.id, a, 'From Budget'); });
+    const main = S.bg.accts.find(x => x.main), moved = [];
+    sh.forEach(x => { const a = Math.round(x.amt * 100) / 100; if (a > 0) { svAdd(x.id, a, 'From Budget'); const g = svGoal(x.id), dest = g && g.acct && S.bg.accts.find(y => y.id === g.acct); if (main && dest && dest.id !== main.id) { S.bg.xfer.push({id:'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d:today(), from:main.id, to:dest.id, amt:a, note:'Savings'}); moved.push(dest.name); } } });
+    if (moved.length) toast(`Moved savings out of ${main.name} into ${[...new Set(moved)].join(', ')}.`);
     S.bg.moved[per.key] = tot; S.bg.n.moved++; },
   bgSplitMore: () => { const f = $('form[data-form="bgsplit"]'), dl = S.bg.save.splitMode === 'amt', n = bgSplitRows(), d = []; if (f) for (let i = 0; i < n; i++) { const id = (f.elements['g' + i] || {}).value || '', v = num((f.elements['p' + i] || {}).value); d.push(id || v ? (dl ? {id, amt:v} : {id, pct:v}) : {}); } UI.bgSplitDraft = d; UI.bgSplitRows = n + 1; UI.open.bgSplit = true; },
   bgSvAdd: () => { bgSvOwn(bgPer(UI.bgOff || 0)).split.push({id:'', amt:0}); },
@@ -724,7 +727,7 @@ Object.assign(SAVE, {
   },
   bgpay: o => {
     const amt = Math.round(num(o.amt) * 100) / 100; if (!(amt > 0)) { toast('Add the payment amount.'); return false; } if (!S.bg.cards.some(c => c.id === o.card)) return false;
-    S.bg.cpay.push({id:'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d:o.d || today(), amt, card:o.card}); UI.bgPayCard = o.card; const c = S.bg.cards.find(x => x.id === o.card); toast(`${cash2(amt)} paid to ${c.name}. You owe ${bgM(bgOwed(c).owed)}.`); haptic();
+    const fa = S.bg.accts.find(x => x.id === o.from); S.bg.cpay.push({id:'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d:o.d || today(), amt, card:o.card, from:fa ? fa.id : (S.bg.accts.length ? 'none' : undefined)}); UI.bgPayCard = o.card; if (o.from) UI.bgPayFrom = o.from; const c = S.bg.cards.find(x => x.id === o.card); toast(`${cash2(amt)} paid to ${c.name}${fa ? ' from ' + fa.name : ''}. You owe ${bgM(bgOwed(c).owed)}.`); haptic();
   },
   bgsplit: o => {
     const dl = S.bg.save.splitMode === 'amt', sp = [], seen = {}; for (let i = 0; i < 30; i++) { const id = o['g' + i], v = Math.round(num(o['p' + i]) * 100) / 100; if (id && v > 0 && !seen[id]) { seen[id] = 1; sp.push(dl ? {id, amt:v, pct:0} : {id, pct:v, amt:0}); } }
@@ -797,12 +800,16 @@ WIDGETS.budget = {n:'Safe to spend', em:'💸', d:'What you can spend today, and
 /* ----- Accounts (money on hand) ----- */
 // The main account is tracked: what you typed, plus money in and Work paychecks since then, minus the spending you've logged
 function bgEst(a) {
-  const to = today(), tx = S.bg.tx.filter(x => x.d > a.asOf && x.d <= to);
-  const out = tx.filter(x => x.kind !== 'in' && !x.cc).reduce((t, x) => t + x.amt - (x.pts || 0), 0) + S.bg.cpay.filter(p => p.d > a.asOf && p.d <= to).reduce((t, p) => t + p.amt, 0), inn = tx.filter(x => x.kind === 'in').reduce((t, x) => t + x.amt, 0);
+  const to = today(), tx = S.bg.tx.filter(x => x.d > a.asOf && x.d <= to), sum = L => L.reduce((t, x) => t + x.amt, 0);
+  // Card payments and transfers count after the day you typed the balance (on that day, only if logged after typing it)
+  const cnt = x => x.d <= to && (x.d > a.asOf || (x.d === a.asOf && bgMadeAt(x) >= (a.at || 0)));
+  const cp = sum(S.bg.cpay.filter(p => (p.from === undefined ? !!a.main : p.from === a.id) && cnt(p))), xin = sum(S.bg.xfer.filter(x => x.to === a.id && cnt(x))), xout = sum(S.bg.xfer.filter(x => x.from === a.id && cnt(x)));
+  if (!a.main) return {est:a.bal + xin - xout - cp, spent:0, cp, xin, xout, out:cp + xout, inn:0, pay:0};
+  const spent = tx.filter(x => x.kind !== 'in' && !x.cc).reduce((t, x) => t + x.amt - (x.pts || 0), 0), inn = tx.filter(x => x.kind === 'in').reduce((t, x) => t + x.amt, 0);
   const pay = a.work && wkReady() ? bgPaychecks(addDays(a.asOf, 1), to, 80).reduce((t, P) => t + payFor(P).net, 0) : 0;
-  return {est:a.bal + inn + pay - out, out, inn, pay};
+  return {est:a.bal + inn + pay + xin - spent - cp - xout, spent, cp, xin, xout, out:spent + cp + xout, inn, pay};
 }
-const bgNow = a => a.main ? bgEst(a).est : a.bal;
+const bgNow = a => bgEst(a).est;
 const bgTotalBal = () => S.bg.accts.reduce((t, a) => t + bgNow(a), 0);
 /* ----- Credit cards and net worth ----- */
 const bgAfter = (c, d, x) => d > c.oas || (d === c.oas && bgMadeAt(x) >= (c.oat || 0));
@@ -842,11 +849,12 @@ function bgCreditCard() {
     <p class="note">${lim ? `${bgM(tot)} owed of ${bgM(lim)} in total limits (${Math.round(tot / lim * 100)}%). ` : ''}Pick the card on each purchase and log your payments, and what you owe updates on its own. Under about 30% of a limit is a healthy range.</p>
     ${C.map(c => { const o = bgOwed(c), pc = Math.min(100, o.util * 100), col = o.util > 0.5 ? BG_BAD : o.util > 0.3 ? '#F39C12' : 'var(--good)'; return `<div class="bgcardrow"><div class="row"><b>${esc(c.em)} ${esc(c.name)}</b><b>${bgM(o.owed)}</b></div>
       ${c.lim ? `<div class="meter"><i style="width:${pc}%;background:${col}"></i></div><span class="small muted">${Math.round(o.util * 100)}% of ${bgM(c.lim)} used, ${bgM(o.avail)} available</span>` : '<span class="small muted">Add the credit limit to see how much you have used.</span>'}
-      <form data-form="bgowed" class="stack mt"><input type="hidden" name="id" value="${esc(c.id)}"><div class="ff"><label>What you owe now ($)<input class="input" name="owed" inputmode="decimal" placeholder="${esc(String(o.owed))}"></label><label>Credit limit ($)<input class="input" name="lim" inputmode="decimal" placeholder="${c.lim ? esc(String(c.lim)) : '0'}"></label></div><button class="btn ghost" type="submit">Save</button></form></div>`; }).join('')}
+      <form data-form="bgowed" class="stack mt"><input type="hidden" name="id" value="${esc(c.id)}"><div class="ff"><label>What you owe now ($)<input class="input" name="owed" inputmode="decimal" value="${esc(String(o.owed))}"></label><label>Credit limit ($)<input class="input" name="lim" inputmode="decimal" value="${c.lim ? esc(String(c.lim)) : ''}" placeholder="0"></label></div><button class="btn ghost" type="submit">Save</button></form></div>`; }).join('')}
     <h3 class="bgday mt">Log a payment</h3>
     <form data-form="bgpay" class="stack"><div class="ff"><label>Card<select class="input" name="card">${C.map(c => opt(c.id, c.em + ' ' + c.name, UI.bgPayCard || '')).join('')}</select></label><label>Amount ($)<input class="input" name="amt" inputmode="decimal" placeholder="0.00" autocomplete="off"></label></div>
+      ${S.bg.accts.length ? `<label>Pay it from<select class="input" name="from">${S.bg.accts.map(a => opt(a.id, a.em + ' ' + a.name, UI.bgPayFrom || (S.bg.accts.find(x => x.main) || {}).id || '')).join('')}${opt('none', "Don't take it from an account", UI.bgPayFrom || '')}</select></label>` : ''}
       <label>Date<input class="input" type="date" name="d" value="${esc(today())}"></label><button class="btn" type="submit">Add payment</button></form>
-    ${pays.length ? `<div class="mt">${pays.map(p => { const c = C.find(x => x.id === p.card); return swipeWrap(`<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(c ? c.em + ' ' + c.name : 'Card')}<small class="muted">${esc(fmtShort(p.d))} · payment</small></span><span>−${cash2(p.amt)}</span></div>`, {l:['bgPayDel', 'Delete'], data:{id:p.id}}); }).join('')}</div>` : ''}</section>`;
+    ${pays.length ? `<div class="mt">${pays.map(p => { const c = C.find(x => x.id === p.card); return swipeWrap(`<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(c ? c.em + ' ' + c.name : 'Card')}<small class="muted">${esc(fmtShort(p.d))} · payment${(() => { const f = S.bg.accts.find(x => x.id === (p.from === undefined ? (S.bg.accts.find(y => y.main) || {}).id : p.from)); return f ? ' from ' + esc(f.name) : ''; })()}</small></span><span>−${cash2(p.amt)}</span></div>`, {l:['bgPayDel', 'Delete'], data:{id:p.id}}); }).join('')}</div>` : ''}</section>`;
 }
 function bgMoneyCard() {
   const A = S.bg.accts;
@@ -887,16 +895,25 @@ function bgRewardsCard() {
       <div class="row mt" style="justify-content:flex-start;gap:16px"><button class="link" data-act="bgCardEdit" data-id="${esc(c.id)}">Edit</button><button class="link danger" data-act="bgCardDel" data-id="${esc(c.id)}" data-confirm>Delete</button></div></div>`; }).join('')}
     <details class="mt" ${det('bgCardForm', !!ed)}><summary class="link">${ed ? 'Edit ' + esc(ed.name) : 'Add a card'}</summary>${bgCardForm(ed)}</details></section>`;
 }
+function bgXferCard() {
+  const A = S.bg.accts; if (A.length < 2) return '';
+  const main = A.find(a => a.main) || A[0], other = A.find(a => a !== main) || A[1], L = S.bg.xfer.slice().sort((a, b) => b.d.localeCompare(a.d) || String(b.id).localeCompare(String(a.id))).slice(0, 6), nm = id => { const a = A.find(x => x.id === id); return a ? a.em + ' ' + a.name : 'Account'; };
+  return `<section class="card"><h2>Move money between accounts</h2><p class="note">Moves take money out of one account and put it in another, so both balances update. Paying a credit card does the same from the account you pick, and moving your monthly savings into a goal takes it from your main account when that goal is held in one of your accounts.</p>
+    <form data-form="bgxfer" class="stack"><div class="ff"><label>From<select class="input" name="from">${A.map(a => opt(a.id, a.em + ' ' + a.name, main.id)).join('')}</select></label><label>To<select class="input" name="to">${A.map(a => opt(a.id, a.em + ' ' + a.name, other.id)).join('')}</select></label></div>
+      <div class="ff"><label>Amount ($)<input class="input" name="amt" inputmode="decimal" placeholder="0.00" autocomplete="off"></label><label>Date<input class="input" type="date" name="d" value="${esc(today())}"></label></div><button class="btn" type="submit">Move it</button></form>
+    ${L.length ? `<div class="mt">${L.map(x => swipeWrap(`<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(nm(x.from))} → ${esc(nm(x.to))}<small class="muted">${esc(fmtShort(x.d))}</small></span><span>${cash2(x.amt)}</span></div>`, {l:['bgXferDel', 'Delete'], data:{id:x.id}})).join('')}</div>` : ''}</section>`;
+}
 function viewBacct() {
   const A = S.bg.accts, ed = UI.edit && UI.edit.kind === 'bgacct' ? A.find(x => x.id === UI.edit.id) : null, tot = bgTotalBal();
   const start = A.reduce((t, a) => t + a.hist[0].v, 0), since = A.map(a => a.hist[0].d).sort()[0];
   return `${bgWorthCard()}${bgCreditCard()}${A.length ? `<section class="card"><h2>Accounts total</h2><div class="bg-big">${bgM(tot)}</div>${A.length && since ? `<p class="bg-sub">${tot - start >= 0 ? '+' : '−'}<b>${bgM(Math.abs(tot - start))}</b> since ${esc(fmtShort(since))}, when you first added your accounts.</p>` : ''}</section>` : ''}
-    ${A.map(a => { const e = a.main ? bgEst(a) : null;
+    ${A.map(a => { const e = bgEst(a);
       return `<section class="card"><div class="row"><div class="mhead"><span class="gem" aria-hidden="true">${esc(a.em)}</span><div><h3>${esc(a.name)}${a.type === 'save' ? ' <span class="chip-mini">Savings</span>' : a.type === 'invest' ? ' <span class="chip-mini">Investing</span>' : ''}${a.main ? ' <span class="chip-mini">Tracked</span>' : ''}</h3><span class="small muted">You entered ${bgM(a.bal)} on ${esc(fmtShort(a.asOf))}</span></div></div><b>${bgM(bgNow(a))}</b></div>
-        ${e ? `<p class="note">Now: ${bgM(a.bal)}${e.pay ? ` + ${bgM(e.pay)} paychecks` : ''}${e.inn ? ` + ${bgM(e.inn)} money in` : ''} − ${bgM(e.out)} spent since then.</p>` : ''}
-        <form data-form="bgbal" class="field mt"><input type="hidden" name="id" value="${esc(a.id)}"><input class="input" name="v" inputmode="decimal" placeholder="Update what's in it now" aria-label="New balance for ${esc(a.name)}"><button class="btn ghost" type="submit">Update</button></form>
+        ${a.main || e.cp || e.xin || e.xout ? `<p class="note">Now: ${bgM(a.bal)}${e.pay ? ` + ${bgM(e.pay)} paychecks` : ''}${e.inn ? ` + ${bgM(e.inn)} money in` : ''}${e.xin ? ` + ${bgM(e.xin)} moved in` : ''}${e.spent ? ` − ${bgM(e.spent)} spent` : ''}${e.cp ? ` − ${bgM(e.cp)} card payments` : ''}${e.xout ? ` − ${bgM(e.xout)} moved out` : ''}.</p>` : ''}
+        <form data-form="bgbal" class="field mt"><input type="hidden" name="id" value="${esc(a.id)}"><input class="input" name="v" inputmode="decimal" value="${esc(String(Math.round(e.est * 100) / 100))}" aria-label="Balance for ${esc(a.name)}"><button class="btn ghost" type="submit">Save balance</button></form>
         ${a.hist.length > 1 ? `<p class="small muted mt">${a.hist.slice(-5).map(h => `${esc(fmtShort(h.d))}: ${bgM(h.v)}`).join(' → ')}</p>` : ''}
         <div class="row mt" style="justify-content:flex-start;gap:16px"><button class="link" data-act="bgAcctEdit" data-id="${esc(a.id)}">Edit</button><button class="link danger" data-act="bgAcctDel" data-id="${esc(a.id)}" data-confirm>Delete</button></div></section>`; }).join('')}
+    ${bgXferCard()}
     ${bgRewardsCard()}
     <details class="card" ${det('bgAcctForm', !!ed || !A.length)}><summary class="sum"><h2>${ed ? 'Edit ' + esc(ed.name) : 'Add an account'}</h2><span class="small muted">Checking, savings, cash</span></summary>${bgAcctForm(ed)}</details>
     <p class="note">Hibi can't see your bank, so update an account's balance now and then to keep it accurate. Every time you do, the estimate starts fresh from the number you typed.</p>`;
@@ -930,7 +947,7 @@ function viewBtot() {
     : emptyCard(y === 'all' ? 'Nothing tracked yet' : `Nothing in ${y}`, 'Add or import your spending and your year and lifetime totals show up here.', 'Add spending', 'data-act="go" data-to="btx"')}`;
 }
 Object.assign(XVIEWS, {btot:viewBtot, bacct:viewBacct});
-Object.assign(FORM_KEY, {bgacct:'bgAcctForm', bgcard:'bgCardForm', bgsplit:'bgSplitForm'});
+Object.assign(FORM_KEY, {bgxfer:'bgXferForm', bgacct:'bgAcctForm', bgcard:'bgCardForm', bgsplit:'bgSplitForm'});
 Object.assign(XACT, {
   bgIncWork: d => { const per = bgPer(+d.v || 0), v = bgWorkIn(per); if (!(v > 0)) { toast('No Work paychecks land in that time.'); return false; } (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).inc = Math.round(v * 100) / 100; toast('Income set from your Work pay.'); },
   bgIncPrev: d => { const per = bgPer(+d.v || 0), pv = bgPer((+d.v || 0) - 1), p = S.bg.plan[pv.key], v = p && p.inc != null && p.inc !== '' ? num(p.inc) : bgIncome(pv).base; if (!(v > 0)) { toast('Last one has no income to copy.'); return false; } (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).inc = Math.round(v * 100) / 100; toast(`Income set to ${bgM(v)}.`); },
@@ -941,19 +958,26 @@ Object.assign(XACT, {
   bgPayDel: d => { S.bg.cpay = S.bg.cpay.filter(p => p.id !== d.id); },
   bgCardEdit: d => { UI.edit = {kind:'bgcard', id:d.id}; UI.open.bgCardForm = true; },
   bgCardDel: d => { S.bg.cards = S.bg.cards.filter(c => c.id !== d.id); S.bg.tx.forEach(x => { if (x.pc === d.id) { x.pts = 0; x.pc = ''; } if (x.cc === d.id) x.cc = ''; }); S.bg.cpay = S.bg.cpay.filter(p => p.card !== d.id); UI.edit = null; },
-  bgAcctDel: d => { S.bg.accts = S.bg.accts.filter(a => a.id !== d.id); UI.edit = null; },
+  bgAcctDel: d => { S.bg.accts = S.bg.accts.filter(a => a.id !== d.id); S.bg.xfer = S.bg.xfer.filter(x => x.from !== d.id && x.to !== d.id); S.bg.cpay.forEach(p => { if (p.from === d.id) p.from = 'none'; }); S.sv.goals.forEach(g => { if (g.acct === d.id) g.acct = ''; }); UI.edit = null; },
+  bgXferDel: d => { S.bg.xfer = S.bg.xfer.filter(x => x.id !== d.id); },
 });
 Object.assign(SAVE, {
   bgacct: o => {
     const name = (o.name || '').trim(); if (!name) { toast('Give the account a name.'); return false; }
     const ed = UI.edit && UI.edit.kind === 'bgacct' ? S.bg.accts.find(a => a.id === UI.edit.id) : null, main = o.main === 'on', work = o.work === 'on';
     if (ed) { Object.assign(ed, {name:name.slice(0, 24), em:(o.em || '').trim().slice(0, 4) || '🏦', main, work, type:['spend', 'save', 'invest'].includes(o.type) ? o.type : 'spend'}); if (main) S.bg.accts.forEach(a => { if (a !== ed) a.main = false; }); UI.open.bgAcctForm = false; toast('Saved.'); return; }
-    const bal = Math.round(num(o.bal) * 100) / 100, a = {id:'a' + Date.now().toString(36), name:name.slice(0, 24), em:(o.em || '').trim().slice(0, 4) || '🏦', bal, asOf:today(), hist:[{d:today(), v:bal}], main, work, type:['spend', 'save', 'invest'].includes(o.type) ? o.type : 'spend'};
+    const bal = Math.round(num(o.bal) * 100) / 100, a = {id:'a' + Date.now().toString(36), name:name.slice(0, 24), em:(o.em || '').trim().slice(0, 4) || '🏦', bal, asOf:today(), at:Date.now(), hist:[{d:today(), v:bal}], main, work, type:['spend', 'save', 'invest'].includes(o.type) ? o.type : 'spend'};
     if (main) S.bg.accts.forEach(x => { x.main = false; }); S.bg.accts.push(a); if (!S.bg.accts.some(x => x.main)) a.main = true; UI.open.bgAcctForm = false; toast(`Added ${a.name}.`);
+  },
+  bgxfer: o => {
+    const amt = Math.round(num(o.amt) * 100) / 100; if (!(amt > 0)) { toast('Add the amount to move.'); return false; }
+    if (o.from === o.to || !S.bg.accts.some(a => a.id === o.from) || !S.bg.accts.some(a => a.id === o.to)) { toast('Pick two different accounts.'); return false; }
+    S.bg.xfer.push({id:'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d:o.d || today(), from:o.from, to:o.to, amt, note:''});
+    const f = S.bg.accts.find(a => a.id === o.from), t = S.bg.accts.find(a => a.id === o.to); toast(`Moved ${cash2(amt)} from ${f.name} to ${t.name}.`); haptic();
   },
   bgbal: o => {
     const a = S.bg.accts.find(x => x.id === o.id); if (!a) return false; if (String(o.v || '').trim() === '') { toast('Type what is in it now.'); return false; }
-    a.bal = Math.round(num(o.v) * 100) / 100; a.asOf = today(); a.hist = [...a.hist.filter(h => h.d !== today()), {d:today(), v:a.bal}].slice(-60); toast(`${a.name} is now ${bgM(a.bal)}.`); haptic();
+    a.bal = Math.round(num(o.v) * 100) / 100; a.asOf = today(); a.at = Date.now(); a.hist = [...a.hist.filter(h => h.d !== today()), {d:today(), v:a.bal}].slice(-60); toast(`${a.name} is now ${bgM(a.bal)}.`); haptic();
   },
 });
 

@@ -56,6 +56,7 @@ function goalCard(g) {
     ${target ? `<div class="meter"><i style="width:${pct}%"></i></div>` : ''}
     ${num(g.dream) > target && target ? `<p class="small mt">Dream amount <b>${usd(num(g.dream))}</b>: ${Math.min(100, Math.round(s / num(g.dream) * 100))}% there</p><div class="cbar"><i style="width:${Math.min(100, s / num(g.dream) * 100)}%;background:var(--accent-2)"></i></div>` : ''}
     ${g.jp ? '<p class="small mt">🗾 Counts toward your Japan trip budget</p>' : ''}
+    ${g.acct && typeof S.bg === 'object' && S.bg.accts.some(a => a.id === g.acct) ? `<p class="small mt">🏦 Held in ${esc(S.bg.accts.find(a => a.id === g.acct).name)}</p>` : ''}
     <p class="note">${svPlan(g)}</p>
     ${svDone(g) && !(num(g.dream) > s) ? '' : `<div class="chips mt">${[5, 10, 20, 50, 100].map(v => `<button class="chip" data-act="sQuick" data-id="${esc(g.id)}" data-v="${v}">+$${v}</button>`).join('')}</div>`}
     <details class="mt" ${det('sv-' + g.id)}><summary class="link">Other amount, notes and edit</summary>
@@ -98,6 +99,7 @@ function viewVAdd() {
       <div class="ff"><label>Dream amount ($)<input class="input" name="dream" inputmode="decimal" placeholder="Optional stretch" value="${v.dream || ''}"></label>
         <label>Payday share (%)<input class="input" name="pct" inputmode="decimal" placeholder="Optional" value="${v.pct || ''}"></label></div>
       <label class="setrow"><span>Counts toward my Japan trip budget</span><input type="checkbox" name="jp"${v.jp ? ' checked' : ''} style="width:24px;height:24px;accent-color:var(--accent)"></label>
+      ${typeof S.bg === 'object' && S.bg.accts && S.bg.accts.length ? `<label class="ff one"><span class="small muted" style="font-weight:700">Held in account (optional)</span><select class="input" name="acct"><option value="">Not linked</option>${S.bg.accts.map(a => `<option value="${esc(a.id)}"${v.acct === a.id ? ' selected' : ''}>${esc(a.em)} ${esc(a.name)}</option>`).join('')}</select></label>` : ''}
       ${ed ? '' : '<label class="ff one"><span class="small muted" style="font-weight:700">Already saved ($)</span><input class="input" name="start" inputmode="decimal" placeholder="0"></label>'}
       <input class="input" name="link" placeholder="Link, like the ticket or product page (optional)" value="${esc(v.link || '')}" inputmode="url" autocapitalize="off" aria-label="Link">
       <textarea class="input" name="notes" style="min-height:80px" placeholder="Notes (optional)" aria-label="Notes">${esc(v.notes || '')}</textarea>
@@ -132,7 +134,7 @@ const SACT = {
 Object.assign(SAVE, {
   sgoal: o => {
     if (!o.name) { toast('Name your goal first.'); return false; }
-    const rec = {name:o.name, em:o.em || '💰', target:num(o.target), date:o.date || '', link:o.link || '', notes:o.notes || '', dream:num(o.dream), pct:num(o.pct), jp:o.jp === 'on'};
+    const rec = {name:o.name, em:o.em || '💰', target:num(o.target), date:o.date || '', link:o.link || '', notes:o.notes || '', dream:num(o.dream), pct:num(o.pct), jp:o.jp === 'on', acct:o.acct || ''};
     const ed = UI.edit && UI.edit.kind === 'goal' ? svGoal(UI.edit.id) : null;
     if (ed) { Object.assign(ed, rec); toast('Goal updated.'); }
     else {

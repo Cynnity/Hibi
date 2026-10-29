@@ -9,6 +9,14 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.6 — "Connected Accounts" (Oct 28)
+- **Your accounts and credit cards are connected now.** Paying a credit card takes the money out of the account you pick (it remembers your last choice), and what you owe goes down at the same time. Both balances update by themselves.
+- **Move money between accounts.** Budget › Accounts has a new "Move money between accounts" card. Pick From, To and an amount, and both balances change. Swipe a move to delete it and the balances go back.
+- **Link a savings goal to an account.** When you edit a goal in Savings, "Held in account" lets you say where that money lives. Then "Move into your goals" on the Budget overview takes the savings out of your main account and into that account, and adds it to the goal.
+- **Balances are easy to change.** Each account's balance and each card's "what you owe" box now shows the current number, so you just type over it and save.
+- Payments you logged before this still come out of your main account like they did. Deleting an account cleans up its moves and links.
+- Accounts you haven't moved money in or paid a card from stay exactly as you entered them.
+
 ## 4.5.3 — "Keyboard Hangover" (Oct 28)
 - **Another fix for the bottom bar floating up.** Your screenshots show the bar stranded about as high as a keyboard, so I think iPhone isn't re-measuring the screen after the keyboard closes. Hibi now compares the screen height it was told with what's really visible and moves the bar down by the difference. It recalculates from scratch each time, so it can't drift the way 4.5.1 could.
 - After you tap out of a text box, Hibi also gives the page a tiny scroll nudge a few times, which makes iPhone re-measure.
