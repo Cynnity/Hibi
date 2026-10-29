@@ -889,3 +889,9 @@ nav.tabs{padding-top:8px}
 @keyframes drFade{from{opacity:0}to{opacity:1}}
 @keyframes drIn{from{transform:translateX(-100%)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.drawer,#drawer{animation:none}}
+/* 4.5: per-month savings rows */
+.bgsv-head{display:grid;grid-template-columns:minmax(0,1fr) 104px 34px;gap:8px;margin-top:12px;font-size:12px;font-weight:700;color:var(--mute)}
+.bgsv-row{display:grid;grid-template-columns:minmax(0,1fr) 104px 34px;gap:8px;align-items:center;margin-top:8px}
+.bgsv-row .input{width:100%;min-width:0;margin:0}
+.bgsv-x{width:34px;height:34px;border:0;border-radius:99px;background:transparent;color:var(--mute);font-size:15px;cursor:pointer}
+.bgsv-x:active{background:var(--line)}

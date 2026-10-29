@@ -62,6 +62,17 @@ function normalizeBg(s) {
   if (typeof g.save.goal !== 'string') g.save.goal = '';
   g.save.split = (Array.isArray(g.save.split) ? g.save.split : []).filter(x => x && typeof x.id === 'string' && (num(x.pct) > 0 || num(x.amt) > 0)).slice(0, 20).map(x => ({id:x.id, pct:num(x.pct), amt:num(x.amt)}));
   if (!['amt', 'pct'].includes(g.save.splitMode)) g.save.splitMode = 'amt';
+  // 4.5: each month keeps its own savings split (plan[key].split = [{id, amt}]). Old one-month amount/goal overrides become a one-row split.
+  Object.values(g.plan).forEach(p => {
+    if (!p || typeof p !== 'object') return;
+    if (Array.isArray(p.split)) p.split = p.split.filter(x => x && typeof x === 'object').slice(0, 30).map(x => ({id:typeof x.id === 'string' ? x.id : '', amt:Math.max(0, num(x.amt))}));
+    else if ((p.save != null && p.save !== '') || p.sg !== undefined) {
+      const usualAmt = g.save.splitMode === 'amt' && g.save.split.length ? g.save.split.reduce((a, x) => a + num(x.amt), 0) : g.save.mode === 'amt' ? num(g.save.v) : 0;
+      const amt = p.save != null && p.save !== '' ? (p.sm === 'pct' ? num(p.inc) * num(p.save) / 100 : num(p.save)) : usualAmt;
+      if (amt > 0) p.split = [{id:p.sg !== undefined ? p.sg : g.save.goal, amt:Math.round(amt * 100) / 100}];
+    }
+    delete p.save; delete p.sm; delete p.sg;
+  });
   if (!Array.isArray(g.accts)) g.accts = [];
   g.accts = g.accts.filter(a => a && a.id && a.name);
   g.accts.forEach(a => { a.bal = num(a.bal); if (!a.asOf) a.asOf = dk(new Date()); if (!Array.isArray(a.hist)) a.hist = [{d:a.asOf, v:a.bal}]; a.main = !!a.main; if (typeof a.work !== 'boolean') a.work = true; if (!a.em) a.em = '🏦'; if (!['spend', 'save', 'invest'].includes(a.type)) a.type = /sav|reserve|emergency/i.test(a.name) ? 'save' : 'spend'; });
@@ -189,17 +200,28 @@ function bgSaveCfg(per) {
   const p = S.bg.plan[per.key] || {}, own = p.save != null && p.save !== '', g = S.bg.save;
   return {own, mode:own ? (p.sm === 'pct' ? 'pct' : 'amt') : g.mode, v:own ? num(p.save) : num(g.v), goal:p.sg !== undefined ? p.sg : g.goal, ownGoal:p.sg !== undefined};
 }
-// Who the savings go to: one goal, or up to 3 goals split by percent (the usual split applies unless a month picks its own single goal)
-const bgSplitRows = () => Math.max(3, UI.bgSplitRows || 0, ((UI.bgSplitDraft || S.bg.save.split || []).length) + 1);
-function bgShares(per) {
-  const c = bgSaveCfg(per); let sp = c.ownGoal ? [] : (S.bg.save.split || []).filter(x => S.sv.goals.some(g => g.id === x.id));
-  if (S.bg.save.splitMode === 'amt') { const t = sp.reduce((a, x) => a + num(x.amt), 0); sp = t > 0 ? sp.filter(x => num(x.amt) > 0).map(x => ({id:x.id, pct:num(x.amt) / t * 100, amt:num(x.amt)})) : []; }
-  if (sp.length > 1 || (sp.length === 1 && !c.goal)) return sp;
-  return c.goal && S.sv.goals.some(g => g.id === c.goal) ? [{id:c.goal, pct:100}] : [];
+// 4.5: every month has its own list of goals and dollars. A month you haven't set follows your usual split.
+const bgGoalOk = id => !id || S.sv.goals.some(g => g.id === id);
+function bgUsualRows(income) {
+  const g = S.bg.save, sp = (g.split || []).filter(x => bgGoalOk(x.id)), whole = Math.max(0, g.mode === 'pct' ? num(income) * num(g.v) / 100 : num(g.v));
+  if (sp.length) return g.splitMode === 'amt' ? sp.filter(x => num(x.amt) > 0).map(x => ({id:x.id, amt:num(x.amt)})) : sp.map(x => ({id:x.id, amt:Math.round(whole * num(x.pct)) / 100})).filter(x => x.amt > 0);
+  return whole > 0 ? [{id:bgGoalOk(g.goal) ? g.goal : '', amt:Math.round(whole * 100) / 100}] : [];
 }
-// With a dollar split, the goals' amounts add up to your usual savings (unless this month sets its own amount)
-const bgSplitTotal = () => S.bg.save.splitMode === 'amt' ? (S.bg.save.split || []).filter(x => S.sv.goals.some(g => g.id === x.id)).reduce((a, x) => a + num(x.amt), 0) : 0;
-const bgSaveAmt = (per, income) => { const c = bgSaveCfg(per); if (!c.own && !c.ownGoal && bgSplitTotal() > 0) return bgSplitTotal(); return Math.max(0, c.mode === 'pct' ? income * c.v / 100 : c.v); };
+// Rows as typed (for the editor) and the clean rows the math uses
+function bgMonthSave(per, income) {
+  const p = S.bg.plan[per.key], own = !!p && Array.isArray(p.split);
+  const raw = own ? p.split : bgUsualRows(income != null ? income : bgIncome(per).total);
+  const rows = raw.filter(x => num(x.amt) > 0).map(x => ({id:bgGoalOk(x.id) ? x.id : '', amt:num(x.amt)}));
+  return {own, raw, rows, total:Math.round(rows.reduce((a, x) => a + x.amt, 0) * 100) / 100};
+}
+// The goals that get money this period (rows with no goal are just set aside)
+function bgShares(per) {
+  const M = bgMonthSave(per), byId = {};
+  M.rows.filter(x => x.id).forEach(x => { byId[x.id] = (byId[x.id] || 0) + x.amt; });
+  return Object.entries(byId).map(([id, amt]) => ({id, amt, pct:M.total ? amt / M.total * 100 : 0}));
+}
+const bgSaveAmt = (per, income) => bgMonthSave(per, income).total;
+const bgSaveRows = (A, total) => A.map(x => ({id:x.id || '', amt:Math.round(num(x.amt) * 100) / 100}));
 const bgBudgetsOf = per => { const p = S.bg.plan[per.key]; return p && p.b ? p.b : S.bg.base.b; };
 // Subscriptions (from Savings) and your own bills share the same shape
 const bgBillsAll = () => [...S.subs.filter(x => !x.off && x.start).map(x => ({x, src:'sub'})), ...S.bg.bills.filter(x => !x.off && x.start).map(x => ({x, src:'bill'}))];
@@ -304,10 +326,11 @@ function bgTrend() {
 }
 function bgSavingsCard(C) {
   if (!(C.sv > 0)) return '';
-  const sh = bgShares(C.per), moved = S.bg.moved[C.per.key], gn = x => S.sv.goals.find(g => g.id === x.id), amtOf = x => Math.round(C.sv * x.pct) / 100;
+  const sh = bgShares(C.per), moved = S.bg.moved[C.per.key], gn = x => S.sv.goals.find(g => g.id === x.id), amtOf = x => x.amt, aside = Math.round((C.sv - sh.reduce((a, x) => a + x.amt, 0)) * 100) / 100;
   return `<section class="card"><div class="row"><h2>🏦 Savings</h2><b>${bgM(C.sv)}</b></div><p class="note">${sh.length ? `Set aside this period for ${sh.length > 1 ? 'your goals' : `<b>${esc(gn(sh[0]).em || '💰')} ${esc(gn(sh[0]).name)}</b>`}.` : 'Set aside before you spend anything else.'}</p>
-    ${sh.length > 1 ? sh.map(x => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(gn(x).em || '💰')} ${esc(gn(x).name)} <small class="muted">${S.bg.save.splitMode === 'amt' && !S.bg.plan[C.per.key]?.save ? bgM(x.amt) : Math.round(x.pct) + '%'}</small></span><b>${bgM(amtOf(x))}</b></div>`).join('') : ''}
-    ${sh.length ? (moved ? `<p class="small muted">✓ Moved ${bgM(moved)} into ${sh.length > 1 ? 'your goals' : esc(gn(sh[0]).name)}</p>` : `<button class="btn block mt" data-act="bgMove">Move ${bgM(C.sv)} into ${sh.length > 1 ? 'your goals' : esc(gn(sh[0]).name)}</button>`) : '<button class="link mt" data-act="wGo" data-k="budget" data-to="bplan">Pick a savings goal in Plan</button>'}</section>`;
+    ${sh.length > 1 ? sh.map(x => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(gn(x).em || '💰')} ${esc(gn(x).name)} </span><b>${bgM(amtOf(x))}</b></div>`).join('') : ''}
+    ${sh.length && aside > 0 ? `<div class="lrow"><span style="text-align:left;color:var(--ink)">🏦 Just set aside</span><b>${bgM(aside)}</b></div>` : ''}
+    ${sh.length ? (moved ? `<p class="small muted">✓ Moved ${bgM(moved)} into ${sh.length > 1 ? 'your goals' : esc(gn(sh[0]).name)}</p>` : `<button class="btn block mt" data-act="bgMove">Move ${bgM(sh.reduce((a, x) => a + x.amt, 0))} into ${sh.length > 1 ? 'your goals' : esc(gn(sh[0]).name)}</button>`) : '<button class="link mt" data-act="wGo" data-k="budget" data-to="bplan">Pick a savings goal in Plan</button>'}</section>`;
 }
 function viewBgo() {
   const view = UI.bgView || 0, per = bgPer(view), C = bgCalc(per), rv = bgRevList().length, over = C.left < 0, none = !C.inc.total && !S.bg.tx.length;
@@ -526,7 +549,7 @@ function viewBbills() {
 
 /* ----- Plan ----- */
 function viewBplan() {
-  const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per), SV = bgSaveCfg(per), pl = S.bg.plan[per.key] || {}, bud = bgBudgetsOf(per), pv = bgCalc(bgPer(off - 1), true), left = C.pool - C.assigned, goals = S.sv.goals.filter(live);
+  const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per), pl = S.bg.plan[per.key] || {}, bud = bgBudgetsOf(per), pv = bgCalc(bgPer(off - 1), true), left = C.pool - C.assigned, goals = S.sv.goals.filter(live);
   const rows = C.by.map(o => { const lp = pv.by.find(x => x.c.id === o.c.id), ls = lp ? lp.s : 0;
     return `<div class="bgplan-row"><span class="bgem" style="--c:${o.c.color}">${esc(o.c.em)}</span><div style="flex:1;min-width:0"><b>${esc(o.c.name)}</b><span class="small muted" style="display:block">${ls ? `Last period: ${bgM(ls)}` : 'Nothing spent last period'}</span></div>
       <input class="input bgin" inputmode="decimal" data-bind="bgb" data-c="${esc(o.c.id)}" value="${bud[o.c.id] ? esc(bud[o.c.id]) : ''}" placeholder="$0" aria-label="Budget for ${esc(o.c.name)}"></div>`; }).join('');
@@ -543,19 +566,35 @@ function viewBplan() {
       <div class="btns mt"><button class="btn" data-act="bgSuggest">✨ Suggest for me</button>${off ? '<button class="btn ghost" data-act="bgCopy">Copy this period</button>' : ''}</div>
       <div class="btns mt"><button class="btn ghost sm" data-act="bgDefault">Use as my default</button><button class="btn ghost sm" data-act="bgClear" data-confirm>Clear</button></div>
       <p class="note">Unassigned money is a cushion. Anything you spend still counts against your safe-to-spend number, even in a category with no budget. Edit the categories themselves in Settings.</p></section>
-    <section class="card"><div class="row"><h2>Savings</h2><span class="small muted">${esc(bgLabel(per))} only</span></div>
-      <div class="ff"><label>How much<select class="input" data-bind="bgpsm">${opt('amt', 'Dollars', SV.mode)}${opt('pct', '% of income', SV.mode)}</select></label><label>${SV.mode === 'pct' ? 'Percent' : 'Amount ($)'}<input class="input" inputmode="decimal" data-bind="bgpsave" value="${SV.own ? esc(pl.save) : ''}" placeholder="${esc(String(SV.v || 0))}" aria-label="Savings for this ${bgWord()}"></label></div>
-      <label class="mt" style="display:block">Put it toward<select class="input" data-bind="bgpsg"><option value="__d"${SV.ownGoal ? '' : ' selected'}>${SV.ownGoal ? 'Same as usual' : 'Same as usual' + (SV.goal && S.sv.goals.find(x => x.id === SV.goal) ? ' (' + esc(S.sv.goals.find(x => x.id === SV.goal).name) + ')' : '')}</option>${opt('', 'No goal, just set it aside', SV.ownGoal ? SV.goal : '__d')}${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, SV.ownGoal ? SV.goal : '__d')).join('')}</select></label>
-      <p class="note">${SV.own || SV.ownGoal ? `This ${bgWord()} has its own savings. Other months keep your usual (${S.bg.save.mode === 'pct' ? S.bg.save.v + '%' : bgM(S.bg.save.v)}).` : `Using your usual (${S.bg.save.mode === 'pct' ? S.bg.save.v + '%' : bgM(S.bg.save.v)}). Change it here to set just this ${bgWord()}.`} Savings come out before your safe to spend.</p>
-      <div class="btns mt"><button class="btn ghost sm" data-act="bgSaveUsual">Make this my usual</button>${SV.own || SV.ownGoal ? '<button class="btn ghost sm" data-act="bgSaveReset">Back to my usual</button>' : ''}</div>
-      <details class="mt" ${det('bgSplit', (S.bg.save.split || []).length > 0)}><summary class="link">Split between goals${(S.bg.save.split || []).length ? ` (${S.bg.save.split.length})` : ''}</summary>
-        <form data-form="bgsplit" class="mt"><p class="note">Give as many goals as you like their own share of your savings. This is your usual split for every ${bgWord()} unless you pick a single goal above for one.</p>
-        <label style="display:block">Split by<select class="input" data-bind="bgspm">${opt('amt', 'Dollars (set an amount for each)', S.bg.save.splitMode)}${opt('pct', 'Percent of my savings', S.bg.save.splitMode)}</select></label>
-        ${Array.from({length:bgSplitRows()}, (_, i) => i).map(i => { const x = (UI.bgSplitDraft || S.bg.save.split || [])[i] || {}, dl = S.bg.save.splitMode === 'amt'; return `<div class="ff mt"><label>Goal ${i + 1}<select class="input" name="g${i}"><option value="">None</option>${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, x.id || '')).join('')}</select></label><label>${dl ? 'Amount ($)' : 'Percent'}<input class="input" name="p${i}" inputmode="decimal" value="${(dl ? x.amt : x.pct) || ''}" placeholder="0" aria-label="${dl ? 'Dollars' : 'Percent'} for goal ${i + 1}"></label></div>`; }).join('')}
-        ${S.bg.save.splitMode === 'amt' ? `<p class="note">${bgSplitTotal() > 0 ? `Your goals add up to <b>${bgM(bgSplitTotal())}</b>, so that's what you save each ${bgWord()}. ` : ''}The dollar amounts set your savings total, so the "How much" box above only matters for a month you set on its own.</p>` : ''}
-        <button class="link mt" type="button" data-act="bgSplitMore">+ Add another goal</button>
-        <div class="btns mt"><button class="btn" type="submit">Save split</button>${(S.bg.save.split || []).length ? '<button class="btn ghost" type="button" data-act="bgSplitClear">Use one goal</button>' : ''}</div></form></details></section>`;
+    ${bgSaveCard(per, off, C)}`;
 }
+
+
+// 4.5: one clean savings card per month: goals and dollars, a total, and copy buttons
+function bgSaveCard(per, off, C) {
+  const M = bgMonthSave(per, C.inc.total), goals = S.sv.goals.filter(live), name = bgLabel(per), short = per.pay ? 'this period' : keyDate(per.from).toLocaleDateString(undefined, {month:'long'});
+  const pvPer = bgPer(off - 1), pv = bgMonthSave(pvPer), pvName = pvPer.pay ? 'last period' : keyDate(pvPer.from).toLocaleDateString(undefined, {month:'long'});
+  const usual = bgUsualRows(C.inc.total), sig = R => R.map(x => (x.id || '') + ':' + num(x.amt)).join('|'), isUsual = sig(M.rows) === sig(usual);
+  const raw = M.raw.length ? M.raw : [{id:'', amt:0}];
+  const rows = raw.map((x, i) => `<div class="bgsv-row"><select class="input" data-bind="bgsvg" data-i="${i}" aria-label="Goal ${i + 1}"><option value="">🏦 Just set aside</option>${goals.map(g => opt(g.id, (g.em || '💰') + ' ' + g.name, x.id || '')).join('')}</select>
+      <input class="input" inputmode="decimal" data-bind="bgsva" data-i="${i}" value="${num(x.amt) ? esc(String(num(x.amt))) : ''}" placeholder="$0" aria-label="Dollars for goal ${i + 1}">
+      <button class="bgsv-x" type="button" data-act="bgSvDel" data-i="${i}" aria-label="Remove this goal">✕</button></div>`).join('');
+  const btn = (act, label) => `<button class="btn ghost sm" type="button" data-act="${act}">${label}</button>`;
+  const tools = [
+    pv.rows.length && sig(pv.rows) !== sig(M.rows) ? btn('bgSvCopy', `Copy from ${esc(pvName)}`) : '',
+    M.own && usual.length ? btn('bgSvReset', 'Use my usual') : '',
+    !isUsual && M.rows.length ? btn('bgSvMakeUsual', 'Make this my usual') : ''].filter(Boolean);
+  return `<section class="card"><div class="row"><h2>Savings</h2><span class="chip-mini" style="${M.own ? '' : 'background:var(--line);color:var(--mute)'}">${M.own ? 'Just ' + esc(short) : 'Your usual'}</span></div>
+      <p class="note">${M.own ? `${esc(name)} has its own savings. Other months aren't changed.` : `${esc(name)} follows your usual savings. Change anything below to give it its own.`}</p>
+      <div class="bgsv-head"><span>Goal</span><span>Amount</span><span></span></div>
+      ${rows}
+      <button class="link mt" type="button" data-act="bgSvAdd">+ Add a goal</button>
+      <div class="lrow mt"><span style="text-align:left;color:var(--ink)"><b>Saving in ${esc(short)}</b></span><span><b>${bgM(M.total)}</b></span></div>
+      ${tools.length ? `<div class="btns mt">${tools.join('')}</div>` : ''}
+      <p class="note">Savings come out before your safe to spend.</p></section>`;
+}
+// Give this month its own copy of the rows before changing them
+const bgSvOwn = per => { const p = S.bg.plan[per.key] = S.bg.plan[per.key] || {}; if (!Array.isArray(p.split)) p.split = bgSaveRows(bgMonthSave(per).raw); return p; };
 
 /* ----- Settings ----- */
 function bgCatItem(c) {
@@ -575,10 +614,11 @@ function bgCatForm(c) {
 }
 function bgSettings() {
   const g = S.bg, learned = Object.entries(g.learn), N = g.tx.length, goals = S.sv.goals.filter(live);
+  const U = bgUsualRows(bgIncome(bgPer(0)).total), gnm = id => { const x = S.sv.goals.find(q => q.id === id); return x ? (x.em || '💰') + ' ' + x.name : '🏦 Just set aside'; };
   return `<section class="card"><h2>Usual savings</h2>
-      <div class="ff"><label>How much<select class="input" data-bind="bgsm">${opt('amt', 'Dollars', g.save.mode)}${opt('pct', '% of income', g.save.mode)}</select></label><label>${g.save.mode === 'pct' ? 'Percent' : 'Amount ($)'}<input class="input" inputmode="decimal" data-bind="bgsv" value="${g.save.v || ''}" placeholder="0" aria-label="Usual savings amount"></label></div>
-      <label class="mt" style="display:block">Put it toward<select class="input" data-bind="bgsg"><option value="">No goal, just set it aside</option>${goals.map(x => opt(x.id, (x.em || '💰') + ' ' + x.name, g.save.goal)).join('')}</select></label>
-      <p class="note">This is what every month uses unless you change one in Plan. Each month in Plan can have its own savings.</p></section>
+      ${U.length ? U.map(x => `<div class="lrow"><span style="text-align:left;color:var(--ink)">${esc(gnm(x.id))}</span><span>${bgM(x.amt)}</span></div>`).join('') + `<div class="lrow"><span style="text-align:left;color:var(--ink)"><b>Each ${bgWord()}</b></span><span><b>${bgM(U.reduce((a, x) => a + x.amt, 0))}</b></span></div>` : '<p class="note">No usual savings yet.</p>'}
+      <p class="note">Months you haven't changed use this. To change it, set up a month in Plan › Savings and tap "Make this my usual".</p>
+      <button class="btn ghost sm mt" data-act="wGo" data-k="budget" data-to="bplan">Open Plan</button></section>
     <section class="card"><h2>Budget period</h2>
       <label>Budget runs<select class="input" data-bind="bgper">${opt('pay', 'From payday to payday (uses Work)', g.per)}${opt('month', 'By calendar month', g.per)}</select></label>
       ${g.per === 'pay' && !wkReady() ? '<p class="note">Set your pay in Work settings first. Until then, Hibi uses calendar months.</p>' : ''}
@@ -621,10 +661,17 @@ Object.assign(XACT, {
   bgBillEdit: d => { UI.edit = {kind:'bgbill', id:d.id}; UI.open.bgBillForm = true; setTimeout(() => { const f = $('form[data-form="bgbill"]'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); },
   bgBillDel: d => { S.bg.bills = S.bg.bills.filter(x => x.id !== d.id); },
   bgMove: () => { const per = bgPer(0), C = bgCalc(per), sh = bgShares(per); if (!sh.length || !(C.sv > 0)) return false; if (S.bg.moved[per.key]) return false;
-    const tot = Math.round(C.sv * 100) / 100; let left = tot;
-    sh.forEach((x, i) => { const a = i === sh.length - 1 ? left : Math.round(tot * x.pct) / 100; left = Math.round((left - a) * 100) / 100; if (a > 0) svAdd(x.id, a, 'From Budget'); });
+    const tot = Math.round(sh.reduce((a, x) => a + x.amt, 0) * 100) / 100;
+    sh.forEach(x => { const a = Math.round(x.amt * 100) / 100; if (a > 0) svAdd(x.id, a, 'From Budget'); });
     S.bg.moved[per.key] = tot; S.bg.n.moved++; },
   bgSplitMore: () => { const f = $('form[data-form="bgsplit"]'), dl = S.bg.save.splitMode === 'amt', n = bgSplitRows(), d = []; if (f) for (let i = 0; i < n; i++) { const id = (f.elements['g' + i] || {}).value || '', v = num((f.elements['p' + i] || {}).value); d.push(id || v ? (dl ? {id, amt:v} : {id, pct:v}) : {}); } UI.bgSplitDraft = d; UI.bgSplitRows = n + 1; UI.open.bgSplit = true; },
+  bgSvAdd: () => { bgSvOwn(bgPer(UI.bgOff || 0)).split.push({id:'', amt:0}); },
+  bgSvDel: d => { const p = bgSvOwn(bgPer(UI.bgOff || 0)); p.split.splice(+d.i, 1); },
+  bgSvCopy: () => { const off = UI.bgOff || 0, per = bgPer(off), pv = bgPer(off - 1), R = bgMonthSave(pv).rows; if (!R.length) { toast('Nothing saved last time to copy.'); return false; }
+    (S.bg.plan[per.key] = S.bg.plan[per.key] || {}).split = bgSaveRows(R); toast(`Copied ${bgM(R.reduce((a, x) => a + x.amt, 0))} of savings.`); },
+  bgSvReset: () => { const p = S.bg.plan[bgPer(UI.bgOff || 0).key]; if (p) delete p.split; toast('Back to your usual savings.'); },
+  bgSvMakeUsual: () => { const per = bgPer(UI.bgOff || 0), R = bgMonthSave(per).rows; S.bg.save.split = R.map(x => ({id:x.id, amt:x.amt, pct:0})); S.bg.save.splitMode = 'amt'; S.bg.save.mode = 'amt'; S.bg.save.v = R.reduce((a, x) => a + x.amt, 0); S.bg.save.goal = '';
+    const p = S.bg.plan[per.key]; if (p) delete p.split; toast(`Saved as your usual: ${bgM(S.bg.save.v)} a ${bgWord()}.`); },
   bgSplitClear: () => { S.bg.save.split = []; toast('Back to one goal.'); },
   bgSuggest: () => {
     const off = UI.bgOff || 0, per = bgPer(off), C = bgCalc(per, true), pool = Math.max(0, C.pool);
@@ -716,6 +763,7 @@ function bgBind(t) {
     case 'bgpinc': pl().inc = blank ? null : Math.max(0, num(v)); break;
     case 'bgpsave': { const p = pl(); if (blank) { p.save = null; delete p.sm; } else { p.save = Math.max(0, num(v)); if (!p.sm) p.sm = bgSaveCfg(per).mode; } break; }
     case 'bgpsm': { const p = pl(), c = bgSaveCfg(per), nm = v === 'pct' ? 'pct' : 'amt', inc = bgIncome(per).total; let x = c.v; if (nm !== c.mode) x = inc > 0 ? (nm === 'pct' ? c.v / inc * 100 : inc * c.v / 100) : 0; p.sm = nm; p.save = Math.round(x * 100) / 100; break; }
+    case 'bgsvg': case 'bgsva': { const p = bgSvOwn(per), i = +t.dataset.i; while (p.split.length <= i) p.split.push({id:'', amt:0}); if (k === 'bgsvg') p.split[i].id = v; else p.split[i].amt = Math.max(0, Math.round(num(v) * 100) / 100); break; }
     case 'bgpsg': { const p = pl(); if (v === '__d') delete p.sg; else p.sg = v; break; }
     case 'bgper': g.per = v; break;
     case 'bgsrc': g.src = v; break;

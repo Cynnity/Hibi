@@ -9,6 +9,19 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.5.1 — "Pinned" (Oct 28)
+- **The bottom bar now fixes itself.** If the bar (Today, Shifts, Pay, Settings and the rest) ever ends up in the middle of the screen, Hibi measures where it is against what you can actually see and slides it back to the bottom. It checks when you scroll, tap, rotate, or come back to the app.
+- **Month by Month savings (4.5) is now in the real app.** It had only been on the preview page. See the 4.5 notes below.
+
+## 4.5 — "Month by Month" (Oct 27)
+- **Every month has its own savings now.** In Budget › Plan › Savings, each month shows its own list of goals and dollars, with the total right under it. Change November and October stays exactly how it was.
+- **Copy from last month.** One tap copies last month's goals and amounts into the month you're looking at.
+- **Your usual is the starting point.** A month you haven't touched follows your usual split. "Make this my usual" saves the month you're on as the usual for the rest, and "Use my usual" puts a month back.
+- **Cleaner card.** The old "How much" box, the "Put it toward" picker and the separate split section are gone. It's one list: pick a goal, type the dollars, tap ✕ to remove a row. "🏦 Just set aside" covers money that isn't for a goal.
+- A label at the top tells you whether the month is using your usual or has its own.
+- Months you'd already set on their own (like November's $400 to Japan) carried over as that month's list.
+- Settings › Usual savings now just shows your usual split and points you to Plan to change it.
+
 ## 4.4.3 — "Stay Down" (Oct 28)
 - **Fixed the bottom bar floating up the screen.** After scrolling a long list (like your Work shifts), the bar with Today, Shifts, Pay and Settings could end up in the middle of the screen instead of staying at the bottom. It's now a solid bar on its own layer, and the page no longer uses a fixed background, which were the things that confuse iPhone's browser.
 - If it still ever floats after an update, tell me which screen you were on and what you did just before.
