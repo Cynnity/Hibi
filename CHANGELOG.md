@@ -9,6 +9,10 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.6.2 — "Exactly This Much" (Oct 28)
+- **Setting what you owe on a card is exact now.** When you type "What you owe now" (like 151.11) and save, that becomes the balance, no matter what purchases or payments were already in the app. Before, some already-logged purchases could get added on top, so it jumped back up (268.76 instead of 151.11).
+- Only purchases and payments you log after saving change the balance from there.
+
 ## 4.6.1 — "Type Over" (Oct 28)
 - **Fixed typing over a balance.** Since 4.6 the "what you owe", "credit limit" and account balance boxes show the current number. On iPhone, typing into one added your digits to the old number (268.76 plus 151.11 became a mess) so it looked like it wouldn't change. Tapping the box now selects the whole number, so what you type replaces it.
 - After saving what you owe on a card, the message now says the new amount, like "Capital One: you owe $151.11 now."

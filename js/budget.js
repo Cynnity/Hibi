@@ -43,7 +43,7 @@ function normalizeBg(s) {
     g.cards = [['d1', 'Discover it', '🟧'], ['c1', 'Capital One', '🟦'], ['b1', 'Bank of America', '🟥']].map(([id, name, em]) => ({id, name, em, bal:0, val:1, asOf:today()}));
     if (g.pts.bal > 0 || g.tx.some(x => x.pts > 0)) { g.cards.push({id:'o1', name:'Other rewards', em:'🎁', bal:g.pts.bal, val:1, asOf:g.pts.asOf}); g.tx.forEach(x => { if (x.pts > 0) x.pc = 'o1'; }); }
   }
-  g.cards = g.cards.filter(c => c && c.id && c.name).map(c => ({id:String(c.id), name:String(c.name).slice(0, 24), em:String(c.em || '💳').slice(0, 4), bal:Math.max(0, +c.bal || 0), val:+c.val > 0 ? +c.val : 1, asOf:c.asOf || today(), at:+c.at || 0, lim:Math.max(0, +c.lim || 0), owed:Math.max(0, +c.owed || 0), oas:c.oas || today(), oat:+c.oat || 0, l4:/^\d{4}$/.test(c.l4 || '') ? c.l4 : ''}));
+  g.cards = g.cards.filter(c => c && c.id && c.name).map(c => ({id:String(c.id), name:String(c.name).slice(0, 24), em:String(c.em || '💳').slice(0, 4), bal:Math.max(0, +c.bal || 0), val:+c.val > 0 ? +c.val : 1, asOf:c.asOf || today(), at:+c.at || 0, lim:Math.max(0, +c.lim || 0), owed:Math.max(0, +c.owed || 0), oas:c.oas || today(), oat:+c.oat || 0, incl:Array.isArray(c.incl) ? c.incl.map(String).slice(-3000) : [], l4:/^\d{4}$/.test(c.l4 || '') ? c.l4 : ''}));
   g.tx.forEach(x => { if (x.cc && !g.cards.some(c => c.id === x.cc)) x.cc = ''; if (!x.cc) x.cc = ''; });
   g.tx.forEach(x => { if (x.pts > 0 && !g.cards.some(c => c.id === x.pc)) x.pc = g.cards[0] ? g.cards[0].id : ''; });
   ['plan', 'learn', 'paid', 'moved'].forEach(k => { if (!g[k] || typeof g[k] !== 'object' || Array.isArray(g[k])) g[k] = {}; });
@@ -722,7 +722,7 @@ Object.assign(SAVE, {
   bgowed: o => {
     const c = S.bg.cards.find(x => x.id === o.id); if (!c) return false; const oS = String(o.owed || '').trim(), lS = String(o.lim || '').trim();
     if (!oS && !lS) { toast('Type what you owe or the limit.'); return false; }
-    if (oS) { c.owed = Math.max(0, Math.round(num(oS) * 100) / 100); c.oas = today(); c.oat = Date.now(); }
+    if (oS) { c.owed = Math.max(0, Math.round(num(oS) * 100) / 100); c.oas = today(); c.oat = Date.now(); c.incl = [...S.bg.tx.filter(x => x.cc === c.id).map(x => x.id), ...S.bg.cpay.filter(p => p.card === c.id).map(p => p.id)]; }
     if (lS) c.lim = Math.max(0, Math.round(num(lS) * 100) / 100); toast(oS ? `${c.name}: you owe ${cash2(bgOwed(c).owed)} now.` : `${c.name} saved.`); haptic();
   },
   bgpay: o => {
@@ -814,7 +814,8 @@ const bgTotalBal = () => S.bg.accts.reduce((t, a) => t + bgNow(a), 0);
 /* ----- Credit cards and net worth ----- */
 const bgAfter = (c, d, x) => d > c.oas || (d === c.oas && bgMadeAt(x) >= (c.oat || 0));
 function bgOwed(c) {
-  const ch = S.bg.tx.filter(x => x.kind !== 'in' && x.cc === c.id && bgAfter(c, x.d, x)).reduce((t, x) => t + bgNet(x), 0), pay = S.bg.cpay.filter(p => p.card === c.id && bgAfter(c, p.d, p)).reduce((t, p) => t + p.amt, 0);
+  // Anything logged when you last set the balance is already counted in it, whatever its date
+  const was = new Set(c.incl || []), ch = S.bg.tx.filter(x => x.kind !== 'in' && x.cc === c.id && !was.has(x.id) && bgAfter(c, x.d, x)).reduce((t, x) => t + bgNet(x), 0), pay = S.bg.cpay.filter(p => p.card === c.id && !was.has(p.id) && bgAfter(c, p.d, p)).reduce((t, p) => t + p.amt, 0);
   const owed = Math.max(0, Math.round((c.owed + ch - pay) * 100) / 100);
   return {owed, ch, pay, avail:c.lim ? Math.max(0, c.lim - owed) : 0, util:c.lim ? owed / c.lim : 0};
 }
