@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.12 — "Class Dismissed" (Nov 12)
+- **Hibi School is now its own app.** Open https://cynnity.github.io/Hibi/school/ in Safari, then Add to Home Screen. It shows only School: Due, Classes, Study (flashcards and notebooks), Focus and Settings.
+- **Shares everything through Dropbox**, the same way Budget, Gym and Japan do. Connect Dropbox once in the School app (Settings › Backup) and your classes, tasks, flashcards, Focus timer and notebooks come across, including notebook pages and lecture recordings.
+- Newest change wins if two apps change the same thing, and the older copy is kept in Dropbox › conflicts.
+- The School app asks for microphone access on its own the first time you record a lecture in it.
+
 ## 4.11 — "Everything Follows You" (Nov 12)
 - **Photos now travel between your Hibi apps.** Progress photos, Budget receipt photos and School notebooks (pages and lecture recordings) go through Dropbox, so a receipt scanned in the Budget app also shows in the full Hibi, and the other way round.
 - Each app only brings down what it uses: Budget gets receipts, Gym gets progress photos, the full Hibi gets all of it.
