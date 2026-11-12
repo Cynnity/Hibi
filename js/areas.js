@@ -100,3 +100,50 @@ async function areaSync(opts) {
 setTimeout(() => { if (DBX.rt && !DBX.ask) dbxSync(); }, 1500);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && DBX.rt && !DBX.ask) setTimeout(() => dbxSync(), 400); });
 setInterval(() => { if (document.visibilityState === 'visible' && navigator.onLine && DBX.rt && !DBX.ask && !dbxBusy) dbxSync(); }, 60000);
+
+/* =========================================================
+   Photos, receipts and notebooks (they live in IndexedDB, not in the area files)
+   Each kind has its own Dropbox folder. Anything new on one app is sent up, and anything missing here is brought down.
+   Deleting something in one app does not delete it in the others.
+   ========================================================= */
+const MEDIA_ALL = ['p', 'rc', 'nb'];
+const mediaKinds = () => SOLO ? (SOLO.media || []) : MEDIA_ALL;
+const dbxList = async path => { let r; try { r = await (await dbxCall('api', 'files/list_folder', {path})).json(); } catch (e) { if (e.status === 409) return []; throw e; } let f = r.entries; while (r.has_more) { r = await (await dbxCall('api', 'files/list_folder/continue', {cursor:r.cursor})).json(); f = f.concat(r.entries); } return f.filter(x => x['.tag'] === 'file'); };
+const blobUrl = b => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(b); });
+async function photoSync() {
+  DBX.photos = DBX.photos || {};
+  const mine = await pAll();
+  for (const p of mine) if (!DBX.photos[p.id]) { await dbxUp(`/photos/${p.id}.jpg`, await (await fetch(p.url)).blob()); DBX.photos[p.id] = 1; dbxSave(); }
+  const have = new Set(mine.map(p => String(p.id))); let added = 0;
+  for (const f of await dbxList('/photos')) {
+    const id = f.name.replace(/\.jpg$/, ''); if (!/^\d+$/.test(id) || have.has(id)) continue;
+    const blob = await (await dbxCall('content', 'files/download', {path:f.path_lower})).blob();
+    await pPut({id:+id, d:dk(new Date(+id)), url:await blobUrl(blob)}); DBX.photos[id] = 1; added++;
+  }
+  if (added) loadPhotos();
+  return added;
+}
+async function receiptSync() {
+  DBX.rcs = DBX.rcs || {};
+  const keys = (await sdo('rc', 'readonly', s => s.getAllKeys()).catch(() => [])) || [];
+  for (const id of keys) if (!DBX.rcs[id]) { const o = await rcStore.get(id); if (!o || !o.blob) continue; await dbxUp(`/receipts/${id}.jpg`, o.blob); DBX.rcs[id] = 1; dbxSave(); }
+  const have = new Set(keys.map(String)); let added = 0;
+  for (const f of await dbxList('/receipts')) {
+    const id = f.name.replace(/\.jpg$/, ''); if (!id || have.has(id)) continue;
+    const blob = await (await dbxCall('content', 'files/download', {path:f.path_lower})).blob();
+    await rcStore.put(id, blob); DBX.rcs[id] = 1; added++;
+  }
+  if (added && typeof render === 'function') render();
+  return added;
+}
+let mediaAt = 0;
+// Sends new pictures up, then brings down what other apps added. Looking for new things in Dropbox happens at most every 5 minutes unless you tap Sync now.
+async function mediaSync(manual) {
+  const kinds = mediaKinds(); if (!kinds.length || (!manual && Date.now() - mediaAt < 3e5)) return 0;
+  mediaAt = Date.now(); let n = 0;
+  if (kinds.includes('p')) n += await photoSync();
+  if (kinds.includes('rc')) n += await receiptSync();
+  if (kinds.includes('nb') && typeof nbDbxUp === 'function') { await nbDbxUp(); const k = await nbDbxDown(); n += k; if (k) { try { render(); } catch (e) {} } }
+  if (n) toast(`Got ${plural(n, 'new item')} from Dropbox.`);
+  return n;
+}

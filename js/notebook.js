@@ -517,7 +517,8 @@ window.addEventListener('resize', () => { if (UI.nb) setTimeout(repaintAll, 120)
 async function nbDbxUp() {
   DBX.nbv = DBX.nbv || {}; DBX.recs = DBX.recs || {};
   let pages = []; try { pages = await sdo('nb', 'readonly', s => s.getAll()); } catch (e) {}
-  for (const p of pages) if (DBX.nbv[p.id] !== p.v) { await dbxUp(`/notebooks/${p.id}.json`, JSON.stringify(p)); DBX.nbv[p.id] = p.v; dbxSave(); }
+  DBX.nbh = DBX.nbh || {};
+  for (const p of pages) if (DBX.nbv[p.id] !== p.v) { const res = await (await dbxUp(`/notebooks/${p.id}.json`, JSON.stringify(p))).json().catch(() => ({})); DBX.nbv[p.id] = p.v; DBX.nbh[p.id] = res.content_hash || ''; dbxSave(); }
   for (const b of S.nb.books) for (const r of b.recs) if (!DBX.recs[r.id]) {
     const bl = await recBlob(r); if (!bl.size) continue;
     await dbxUp(`/recordings/${r.id}.${recExt(r)}`, bl); await dbxUp(`/recordings/${r.id} transcript.txt`, trText(b, r)); DBX.recs[r.id] = 1; dbxSave(); }
@@ -526,8 +527,11 @@ async function nbDbxDown() {
   const list = async path => { let r = await (await dbxCall('api', 'files/list_folder', {path})).json(), f = r.entries; while (r.has_more) { r = await (await dbxCall('api', 'files/list_folder/continue', {cursor:r.cursor})).json(); f = f.concat(r.entries); } return f; };
   let n = 0;
   try { const have = new Set((await sdo('nb', 'readonly', s => s.getAllKeys())) || []);
-    for (const f of await list('/notebooks')) { const id = f.name.replace(/\.json$/, ''); if (have.has(id) || !/\.json$/.test(f.name)) continue;
-      const p = await (await dbxCall('content', 'files/download', {path:f.path_lower})).json(); if (p && p.id) { await pagePut(p); DBX.nbv = DBX.nbv || {}; DBX.nbv[p.id] = p.v; n++; } } } catch (e) { if (e.status !== 409) throw e; }
+    DBX.nbh = DBX.nbh || {};
+    for (const f of await list('/notebooks')) { const id = f.name.replace(/\.json$/, ''); if (!/\.json$/.test(f.name)) continue;
+      // new here, or changed in another app since this app last sent or got it (anything changed here was already sent first)
+      if (have.has(id) && f.content_hash === DBX.nbh[id]) continue;
+      const p = await (await dbxCall('content', 'files/download', {path:f.path_lower})).json(); if (p && p.id) { await pagePut(p); DBX.nbv = DBX.nbv || {}; DBX.nbv[p.id] = p.v; DBX.nbh[p.id] = f.content_hash || ''; n++; } } } catch (e) { if (e.status !== 409) throw e; }
   try { for (const f of await list('/recordings')) { const m = /^(r\d+)\.(m4a|webm)$/.exec(f.name); if (!m) continue;
       const got = await recParts(m[1]); if (got && got.length) continue;
       const buf = await (await dbxCall('content', 'files/download', {path:f.path_lower})).arrayBuffer();

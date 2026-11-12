@@ -9,6 +9,13 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.11 — "Everything Follows You" (Nov 12)
+- **Photos now travel between your Hibi apps.** Progress photos, Budget receipt photos and School notebooks (pages and lecture recordings) go through Dropbox, so a receipt scanned in the Budget app also shows in the full Hibi, and the other way round.
+- Each app only brings down what it uses: Budget gets receipts, Gym gets progress photos, the full Hibi gets all of it.
+- **Notebook edits carry over too.** If you change a notebook page in one app, the other app picks up the newer version.
+- New things are checked for in Dropbox every few minutes, or right away when you tap Sync now.
+- Deleting a photo or receipt in one app does not delete it in the other apps.
+
 ## 4.10 — "X Marks the Spot" (Nov 12)
 - **Map for each day.** On the Japan plan, a new Map card sketches that day's stops as numbered pins joined by a dotted line. It's a rough picture, not to scale.
 - **Google Maps links.** Tap any stop in the list to open it in Google Maps, or use "Open this day's route in Google Maps" for the whole day (up to 10 stops).

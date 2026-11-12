@@ -62,7 +62,11 @@ async function dbxSync(manual) {
   try { await areaSync(); }
   catch (e) { DBX.err = dbxErr(e); if (manual) toast(DBX.err); dbxBusy = false; dbxSave(); dbxShow(); return; }
   dbxBusy = false;
-  if (SOLO) { DBX.last = Date.now(); DBX.err = ''; dbxSave(); dbxShow(); if (manual) toast('Synced with Dropbox.'); if (dbxAgain) { dbxAgain = false; dbxSchedule(1500); } return; }
+  if (SOLO) {
+    dbxBusy = true; dbxShow(); DBX.err = '';
+    try { await mediaSync(manual); } catch (e) { DBX.err = dbxErr(e); }
+    dbxBusy = false; if (!DBX.err) DBX.last = Date.now(); dbxSave(); dbxShow(); if (manual) toast(DBX.err || 'Synced with Dropbox.'); if (dbxAgain) { dbxAgain = false; dbxSchedule(1500); } return;
+  }
   const json = JSON.stringify(backup()), hash = hashStr(json);
   let ph = []; try { ph = await pAll(); } catch (e) {}
   DBX.photos = DBX.photos || {};
@@ -78,6 +82,7 @@ async function dbxSync(manual) {
     for (const p of newPh) { await dbxUp(`/photos/${p.id}.jpg`, await (await fetch(p.url)).blob()); DBX.photos[p.id] = 1; dbxSave(); }
     if (typeof nbDbxUp === 'function') await nbDbxUp();
     await dbxCrashUpload();
+    await mediaSync(manual);
     DBX.nph = ph.length; DBX.last = Date.now(); DBX.err = ''; S.lb = DBX.last; saveRaw();
     if (manual) toast('Backed up to Dropbox.');
   } catch (e) { DBX.err = dbxErr(e); if (manual) toast(DBX.err); }
