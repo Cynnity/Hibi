@@ -171,3 +171,34 @@ function jpInfoExtra() {
 }
 const jpFileCard = () => `<section class="card"><h2>Trip file</h2><p class="note">Bring in your trip from the old Japan app (japan-trip-data.json). Your spending, journal and anything you added yourself stay put. Importing again updates the trip without losing what you ticked off.</p>
   <input type="file" id="jpFile" accept=".json,application/json" hidden><button class="btn block" data-act="jpPick">Import trip file</button></section>`;
+
+/* ----- Map: a simple picture of the day's stops, with links into Google Maps ----- */
+const jpG = 'https://www.google.com/maps/';
+const jpAt = o => o.lat != null && o.lon != null && !o.approx ? `${o.lat},${o.lon}` : (o.place || o.address || o.name || o.title || '');
+const jpPin = o => o.lat != null && o.lon != null && !o.approx ? `${jpG}search/?api=1&query=${o.lat},${o.lon}` : mapsLink(o.place || o.address || [o.name, o.area, 'Japan'].filter(Boolean).join(' '));
+function jpSvg(pts) {
+  const W = 340, H = 230, P = 26, la = pts.map(p => p.lat), lo = pts.map(p => p.lon), k = Math.cos(la.reduce((a, b) => a + b, 0) / la.length * Math.PI / 180);
+  const x0 = Math.min(...lo), x1 = Math.max(...lo), y0 = Math.min(...la), y1 = Math.max(...la);
+  const w = Math.max((x1 - x0) * k, .01), h = Math.max(y1 - y0, .01), sc = Math.min((W - 2 * P) / w, (H - 2 * P) / h);
+  const ox = (W - w * sc) / 2, oy = (H - h * sc) / 2;
+  const xy = p => [ox + (p.lon - x0) * k * sc, H - oy - (p.lat - y0) * sc];
+  const line = pts.length > 1 ? `<polyline points="${pts.map(p => xy(p).map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4" opacity=".7"/>` : '';
+  const dots = pts.map((p, i) => { const [x, y] = xy(p); return `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="var(--btn)" stroke="var(--bg)" stroke-width="2"/><text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${p.n}</text></g>`; }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sketch of where the stops are" style="width:100%;height:auto;background:var(--soft,rgba(128,128,128,.08));border-radius:12px">${line}${dots}</svg>`;
+}
+function jpMapCard(k, ev) {
+  const pts = []; (ev || []).forEach(e => { if (e.kind === 'item' && e.lat != null && e.lon != null && !pts.some(p => p.lat === e.lat && p.lon === e.lon)) pts.push({lat:e.lat, lon:e.lon, n:pts.length + 1, e}); });
+  if (!pts.length) return '';
+  const use = pts.slice(0, 10), route = use.length > 1 ? `${jpG}dir/?api=1&travelmode=transit&origin=${encodeURIComponent(jpAt(use[0].e))}&destination=${encodeURIComponent(jpAt(use[use.length - 1].e))}${use.length > 2 ? '&waypoints=' + use.slice(1, -1).map(p => encodeURIComponent(jpAt(p.e))).join('%7C') : ''}` : '';
+  return `<details class="card" ${det('jMap', false)}><summary class="sum"><h2>Map</h2><span class="small muted">${plural(pts.length, 'stop')} on a sketch</span></summary>
+    ${jpSvg(pts)}<p class="note">A rough picture of where things are, not to scale. Tap a stop to open it in Google Maps.</p>
+    ${pts.map(p => `<div class="lrow"><a class="maplink" style="text-align:left" href="${jpPin(p.e)}" target="_blank" rel="noopener"><b>${p.n}</b> · ${esc(p.e.title)}</a><span class="muted">${p.e.time ? fmtTime(p.e.time) : ''}</span></div>`).join('')}
+    ${route ? `<a class="btn block mt" href="${route}" target="_blank" rel="noopener" style="text-decoration:none;display:flex;align-items:center;justify-content:center">Open this day's route in Google Maps</a>${pts.length > 10 ? '<p class="note">Google Maps takes up to 10 stops, so the route covers the first 10.</p>' : ''}` : ''}</details>`;
+}
+function jpSpotMap() {
+  const L = (S.jp.places || []).filter(p => p.lat != null && p.lon != null && !p.done).map((p, i) => ({lat:p.lat, lon:p.lon, n:i + 1, e:p}));
+  if (!L.length) return '';
+  return `<details class="card" ${det('jSpotMap', false)}><summary class="sum"><h2>Map of your spots</h2><span class="small muted">${plural(L.length, 'spot')} you haven't been to yet</span></summary>${jpSvg(L)}
+    <p class="note">A rough picture, not to scale. Tap a spot to open it in Google Maps.</p>
+    ${L.map(p => `<div class="lrow"><a class="maplink" style="text-align:left" href="${jpPin(p.e)}" target="_blank" rel="noopener"><b>${p.n}</b> · ${p.e.em ? esc(p.e.em) + ' ' : ''}${esc(p.e.name)}</a></div>`).join('')}</details>`;
+}

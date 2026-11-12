@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.10 — "X Marks the Spot" (Nov 12)
+- **Map for each day.** On the Japan plan, a new Map card sketches that day's stops as numbered pins joined by a dotted line. It's a rough picture, not to scale.
+- **Google Maps links.** Tap any stop in the list to open it in Google Maps, or use "Open this day's route in Google Maps" for the whole day (up to 10 stops).
+- **Map of your spots.** Lists › Places has a sketch of the spots you haven't been to yet, each linking to Google Maps.
+- Every place link in the Japan app now opens Google Maps instead of Apple Maps.
+
 ## 4.9 — "Welcome Home, Japan" (Nov 12)
 - **Hibi Japan is now its own app, and it replaces the old Japan trip app.** Open https://cynnity.github.io/Hibi/japan/ in Safari, then Add to Home Screen.
 - **Import your trip file.** In Lists › Info, tap Import trip file and pick japan-trip-data.json. Everything comes in: all 23 days with their stops and how to get there, flights, stays, bookings, to-dos with due dates, packing lists, spots, shopping list, budget plan, emergency numbers, taxi cards and tips.

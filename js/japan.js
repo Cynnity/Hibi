@@ -57,7 +57,7 @@ const both = (a, cur) => cur === 'JPY' ? `${money(a, 'JPY')} <span class="muted"
 const fmtTime = t => { if (!t) return ''; let [h, m] = t.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(m)} ${ap}`; };
 const fmtDay = k => keyDate(k).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
 const fmtDT = s => s ? `${fmtDay(s.slice(0, 10))}${s.length > 10 ? ', ' + fmtTime(s.slice(11, 16)) : ''}` : 'Not set';
-const mapsLink = q => `https://maps.apple.com/?q=${encodeURIComponent(q)}`;
+const mapsLink = q => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 const safeUrl = u => !u ? '' : /^https?:\/\//i.test(u) ? u : 'https://' + u;
 const opt = (v, label, cur) => `<option value="${esc(v)}"${cur === v ? ' selected' : ''}>${esc(label)}</option>`;
 const curSel = (cur, dflt) => `<select class="input" name="cur" aria-label="Currency" style="flex:0 0 104px">${opt('JPY', '¥ yen', cur || dflt)}${opt('USD', '$ USD', cur || dflt)}</select>`;
@@ -187,7 +187,7 @@ function viewJPlan() {
   if (!S.jp.sel) S.jp.sel = days.includes(t) ? t : (days[0] || t);
   const k = S.jp.sel, idx = days.indexOf(k), ev = dayEvents(k), ed = editing('item');
   const evRow = e => `<div class="ev${e.auto ? ' auto' : ''}"><span class="ev-t">${e.time ? fmtTime(e.time) : 'Any time'}${e.end ? `<small>to ${fmtTime(e.end)}</small>` : ''}${e.zone && e.time ? `<small>${esc(e.zone)}</small>` : ''}</span>
-    <div class="ev-b"><b>${e.auto ? '' : catEm(e.cat) + ' '}${esc(e.title)}</b>${e.st ? ` <button class="pill" data-act="jBook" data-id="${esc(e.id)}" aria-label="${e.st === 'booked' ? 'Booked. Tap to mark as still to book' : 'Still to book. Tap to mark booked'}">${e.st === 'booked' ? '✓ Booked' : 'To book'}</button>` : ''}${e.place ? `<a href="${mapsLink(e.place)}" target="_blank" rel="noopener">📍 ${esc(e.place)}</a>` : ''}
+    <div class="ev-b"><b>${e.auto ? '' : catEm(e.cat) + ' '}${esc(e.title)}</b>${e.st ? ` <button class="pill" data-act="jBook" data-id="${esc(e.id)}" aria-label="${e.st === 'booked' ? 'Booked. Tap to mark as still to book' : 'Still to book. Tap to mark booked'}">${e.st === 'booked' ? '✓ Booked' : 'To book'}</button>` : ''}${e.place ? `<a href="${jpPin(e)}" target="_blank" rel="noopener">📍 ${esc(e.place)}</a>` : ''}
     ${e.note ? `<span class="small muted" style="white-space:pre-line">${esc(e.note)}</span>` : ''}${e.cost ? `<span class="small">${both(e.cost, e.cur)}</span>` : ''}${e.vf ? jpVf(e) : ''}${jpTipLinks(e)}${jpTransit(e)}</div>
     ${e.auto ? '' : `<div class="ev-a"><button class="link" data-act="jEdit" data-kind="item" data-id="${esc(e.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="item" data-id="${esc(e.id)}" data-confirm>Delete</button></div>`}</div>`;
   return `${countdownCard()}${todayCard()}${calendar()}
@@ -202,6 +202,7 @@ function viewJPlan() {
           <div class="field"><input class="input" name="cost" inputmode="decimal" placeholder="Cost (optional)" value="${ed && ed.cost ? ed.cost : ''}" aria-label="Cost">${curSel(ed && ed.cur, 'JPY')}</div>
           <textarea class="input" name="note" style="min-height:70px" placeholder="Notes, like book tickets ahead" aria-label="Notes">${fval(ed, 'note')}</textarea>
           ${formActions('item')}</form></details></section>
+    ${jpMapCard(k, ev)}
     <button class="btn ghost block" data-act="jIcs">Add plans to iPhone Calendar</button>
     <p class="note">Adds your plans, check-ins and check-outs in Tokyo time, plus your flights and layovers at their real times.</p>`;
 }
@@ -365,9 +366,9 @@ function viewJPlaces() {
     ${L.length ? `<section class="card"><h2>Want to go</h2>${L.map(p => `<div class="pk${p.done ? ' done' : ''}">
       <button class="check sm" aria-pressed="${!!p.done}" aria-label="Been there: ${esc(p.name)}" data-act="jToggle" data-kind="place" data-id="${esc(p.id)}">${ICON_CHECK}</button>
       <span><b>${p.em ? esc(p.em) + ' ' : ''}${esc(p.name)}</b>${p.area ? `<span class="small muted">, ${esc(p.area)}</span>` : ''}${p.note ? `<span class="small muted" style="display:block;white-space:pre-line">${esc(p.note)}</span>` : ''}
-        <a class="maplink" href="${mapsLink(p.address || [p.name, p.area, 'Japan'].filter(Boolean).join(' '))}" target="_blank" rel="noopener">Map</a></span>
+        <a class="maplink" href="${jpPin(p)}" target="_blank" rel="noopener">Google Maps</a></span>
       <button class="link quiet" data-act="jDel" data-kind="place" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.name)}">✕</button></div>`).join('')}</section>`
-      : emptyCard('No places yet', 'Save spots you want to see. Check them off once you go.')}${jpInfoExtra().flex}`;
+      : emptyCard('No places yet', 'Save spots you want to see. Check them off once you go.')}${jpSpotMap()}${jpInfoExtra().flex}`;
 }
 const PHRASES = [
   ['Hello','こんにちは','konnichiwa'],['Good morning','おはようございます','ohayō gozaimasu'],['Thank you','ありがとうございます','arigatō gozaimasu'],
