@@ -1,10 +1,11 @@
 // Hibi: Constants, helpers, saving and loading, and the mode list.
 'use strict';
 // Bump this with every release, together with CHANGELOG.md and the cache name in sw.js.
-const APP_VERSION = '4.8';
+const APP_VERSION = '4.9';
 // Solo apps: a Home Screen icon that opens just one part of Hibi (its page sets window.HIBI_APP). They share data through Dropbox areas (js/areas.js).
 const SOLO_APPS = {budget:{label:'Budget', modes:['budget'], areas:['budget', 'savings', 'subs', 'work', 'look', 'badges']},
-  gym:{label:'Gym', modes:['gym'], areas:['gym', 'look', 'badges']}};
+  gym:{label:'Gym', modes:['gym'], areas:['gym', 'look', 'badges']},
+  japan:{label:'Japan', modes:['japan'], areas:['japan', 'savings', 'look', 'badges']}};
 const SOLO = SOLO_APPS[window.HIBI_APP] || null;
 const ROOT = SOLO ? '../' : '';   // solo apps live in a subfolder, so shared files sit one level up
 

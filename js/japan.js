@@ -27,14 +27,18 @@ Other|Empty space for souvenirs`;
 function jpDefaults() {
   return {start:'2027-01-12', end:'2027-02-02', budget:0, useSaved:false, rate:{v:158.13, d:'2026-10-20', src:'ecb'},
     items:[], exp:[], flights:[], stays:[], places:[], notes:'', sel:null, gifts:[], journal:{}, jsel:null, prep:prepSeed(),
+    days:{}, taxi:[], tips:[], flex:[], phr:[], taxiLine:'', tname:'', plan:null, emerg:null,
     pack:JP_PACK.split('\n').map((l, i) => { const [cat, t] = l.split('|'); return {id:'k' + i, cat, t, done:false}; })};
 }
 function normalizeJp(s) {
   const d = jpDefaults();
   if (!s.jp || typeof s.jp !== 'object') s.jp = d;
   for (const k in d) if (s.jp[k] == null) s.jp[k] = d[k];
-  for (const k of ['items', 'exp', 'flights', 'stays', 'places', 'pack', 'prep', 'gifts']) if (!Array.isArray(s.jp[k])) s.jp[k] = d[k];
+  for (const k of ['items', 'exp', 'flights', 'stays', 'places', 'pack', 'prep', 'gifts', 'taxi', 'tips', 'flex', 'phr']) if (!Array.isArray(s.jp[k])) s.jp[k] = d[k];
   if (typeof s.jp.journal !== 'object' || Array.isArray(s.jp.journal)) s.jp.journal = {};
+  if (!s.jp.days || typeof s.jp.days !== 'object' || Array.isArray(s.jp.days)) s.jp.days = {};
+  if (s.jp.plan && !Array.isArray(s.jp.plan.cats)) s.jp.plan = null;
+  if (s.jp.emerg && !Array.isArray(s.jp.emerg.numbers)) s.jp.emerg = null;
   if (!s.jp.rate || !(s.jp.rate.v > 0)) s.jp.rate = d.rate;
   if (!MODES[s.mode]) s.mode = 'gym';
   if (!s.lastMode || typeof s.lastMode !== 'object') s.lastMode = {};
@@ -182,12 +186,12 @@ function viewJPlan() {
   const days = tripDays(), t = today();
   if (!S.jp.sel) S.jp.sel = days.includes(t) ? t : (days[0] || t);
   const k = S.jp.sel, idx = days.indexOf(k), ev = dayEvents(k), ed = editing('item');
-  const evRow = e => `<div class="ev${e.auto ? ' auto' : ''}"><span class="ev-t">${e.time ? fmtTime(e.time) : 'Any time'}${e.zone && e.time ? `<small>${esc(e.zone)}</small>` : ''}</span>
-    <div class="ev-b"><b>${e.auto ? '' : catEm(e.cat) + ' '}${esc(e.title)}</b>${e.place ? `<a href="${mapsLink(e.place)}" target="_blank" rel="noopener">📍 ${esc(e.place)}</a>` : ''}
-    ${e.note ? `<span class="small muted">${esc(e.note)}</span>` : ''}${e.cost ? `<span class="small">${both(e.cost, e.cur)}</span>` : ''}</div>
+  const evRow = e => `<div class="ev${e.auto ? ' auto' : ''}"><span class="ev-t">${e.time ? fmtTime(e.time) : 'Any time'}${e.end ? `<small>to ${fmtTime(e.end)}</small>` : ''}${e.zone && e.time ? `<small>${esc(e.zone)}</small>` : ''}</span>
+    <div class="ev-b"><b>${e.auto ? '' : catEm(e.cat) + ' '}${esc(e.title)}</b>${e.st ? ` <button class="pill" data-act="jBook" data-id="${esc(e.id)}" aria-label="${e.st === 'booked' ? 'Booked. Tap to mark as still to book' : 'Still to book. Tap to mark booked'}">${e.st === 'booked' ? '✓ Booked' : 'To book'}</button>` : ''}${e.place ? `<a href="${mapsLink(e.place)}" target="_blank" rel="noopener">📍 ${esc(e.place)}</a>` : ''}
+    ${e.note ? `<span class="small muted" style="white-space:pre-line">${esc(e.note)}</span>` : ''}${e.cost ? `<span class="small">${both(e.cost, e.cur)}</span>` : ''}${e.vf ? jpVf(e) : ''}${jpTipLinks(e)}${jpTransit(e)}</div>
     ${e.auto ? '' : `<div class="ev-a"><button class="link" data-act="jEdit" data-kind="item" data-id="${esc(e.id)}">Edit</button><button class="link danger" data-act="jDel" data-kind="item" data-id="${esc(e.id)}" data-confirm>Delete</button></div>`}</div>`;
   return `${countdownCard()}${todayCard()}${calendar()}
-    <section class="card"><h2>${esc(fmtDay(k))}</h2><span class="small muted">${idx >= 0 ? `Day ${idx + 1} of ${days.length}` : 'Outside your trip dates'}${ev.some(e => e.zone) ? ' · Times are Japan time unless marked' : ''}</span>
+    <section class="card"><h2>${esc(fmtDay(k))}</h2><span class="small muted">${idx >= 0 ? `Day ${idx + 1} of ${days.length}` : 'Outside your trip dates'}${ev.some(e => e.zone) ? ' · Times are Japan time unless marked' : ''}</span>${jpDayHead(k)}
       ${ev.length ? ev.map(evRow).join('') : '<p class="note">Nothing planned yet. Flights and check-ins show up here on their own.</p>'}
       <details class="mt" ${det('jAdd', !!ed)}><summary class="link">${ed ? 'Edit plan' : '+ Add a plan to this day'}</summary>
         <form data-form="item" class="stack"><input type="hidden" name="d" value="${esc(ed ? ed.d : k)}">
@@ -242,6 +246,7 @@ function viewJMoney() {
       ${fundOn ? '<p class="note">Your budget is what\'s saved in your trip fund below. It updates when your savings change.</p>' : `<details class="mt" ${det('jBudget', !B)}><summary class="link">${B ? 'Change budget' : 'Set budget'}</summary>
         <form data-form="budget" class="field mt"><input class="input" name="budget" inputmode="decimal" placeholder="Total budget in US dollars" value="${B || ''}" aria-label="Total budget in US dollars"><button class="btn" type="submit">Save</button></form></details>`}</section>
     ${jpFundCard()}
+    ${jpBudgetPlan()}
     ${catList.length ? `<section class="card"><h2>Where it's going</h2>${catList.map(([c, v]) => `<div class="crow"><div class="row"><b>${catEm(c)} ${catLabel(c)}</b><span>${money(v, 'USD')}</span></div><div class="cbar"><i style="width:${v / maxC * 100}%"></i></div></div>`).join('')}</section>` : ''}
     <details class="card" ${det('jExpForm', !!ed || !J.exp.length)}><summary class="sum"><h2>${ed ? 'Edit spending' : 'Log spending'}</h2><span class="small muted">Booked flights and stays are counted for you</span></summary>
       <form data-form="exp" class="stack">
@@ -344,7 +349,7 @@ function viewJPack() {
   const P = S.jp.pack, done = P.filter(p => p.done).length, cats = [...new Set(P.map(p => p.cat))];
   return `<section class="card"><div class="row"><h2>Packed</h2><b>${done} / ${P.length}</b></div><div class="meter"><i style="width:${P.length ? done / P.length * 100 : 0}%"></i></div></section>
     ${cats.map(c => `<section class="card"><h3>${esc(c)}</h3>${P.filter(p => p.cat === c).map(p => swipeWrap(`<div class="pk${p.done ? ' done' : ''}">
-      <button class="check sm" aria-pressed="${!!p.done}" aria-label="Packed: ${esc(p.t)}" data-act="jToggle" data-kind="pack" data-id="${esc(p.id)}">${ICON_CHECK}</button><span>${esc(p.t)}</span>
+      <button class="check sm" aria-pressed="${!!p.done}" aria-label="Packed: ${esc(p.t)}" data-act="jToggle" data-kind="pack" data-id="${esc(p.id)}">${ICON_CHECK}</button><span>${esc(p.t)}${p.why ? `<small class="muted" style="display:block">${esc(p.why)}</small>` : ''}</span>
       <button class="link quiet" data-act="jDel" data-kind="pack" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`, {r:['jToggle', p.done ? 'Undo' : 'Packed'], l:['jDel', 'Delete'], data:{kind:'pack', id:p.id}})).join('')}</section>`).join('')}
     <section class="card"><h2>Add an item</h2><form data-form="pack" class="stack"><input class="input" name="t" placeholder="Item" aria-label="Item">
       <div class="field"><select class="input" name="cat" aria-label="Category">${[...new Set([...cats, 'Other'])].map(c => opt(c, c, 'Other')).join('')}</select><button class="btn" type="submit">Add</button></div></form></section>
@@ -359,10 +364,10 @@ function viewJPlaces() {
       <button class="btn block" type="submit">Add to list</button></form></section>
     ${L.length ? `<section class="card"><h2>Want to go</h2>${L.map(p => `<div class="pk${p.done ? ' done' : ''}">
       <button class="check sm" aria-pressed="${!!p.done}" aria-label="Been there: ${esc(p.name)}" data-act="jToggle" data-kind="place" data-id="${esc(p.id)}">${ICON_CHECK}</button>
-      <span><b>${esc(p.name)}</b>${p.area ? `<span class="small muted">, ${esc(p.area)}</span>` : ''}${p.note ? `<span class="small muted" style="display:block">${esc(p.note)}</span>` : ''}
-        <a class="maplink" href="${mapsLink([p.name, p.area, 'Japan'].filter(Boolean).join(' '))}" target="_blank" rel="noopener">Map</a></span>
+      <span><b>${p.em ? esc(p.em) + ' ' : ''}${esc(p.name)}</b>${p.area ? `<span class="small muted">, ${esc(p.area)}</span>` : ''}${p.note ? `<span class="small muted" style="display:block;white-space:pre-line">${esc(p.note)}</span>` : ''}
+        <a class="maplink" href="${mapsLink(p.address || [p.name, p.area, 'Japan'].filter(Boolean).join(' '))}" target="_blank" rel="noopener">Map</a></span>
       <button class="link quiet" data-act="jDel" data-kind="place" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.name)}">✕</button></div>`).join('')}</section>`
-      : emptyCard('No places yet', 'Save spots you want to see. Check them off once you go.')}`;
+      : emptyCard('No places yet', 'Save spots you want to see. Check them off once you go.')}${jpInfoExtra().flex}`;
 }
 const PHRASES = [
   ['Hello','こんにちは','konnichiwa'],['Good morning','おはようございます','ohayō gozaimasu'],['Thank you','ありがとうございます','arigatō gozaimasu'],
@@ -372,7 +377,7 @@ const PHRASES = [
   ['Do you speak English?','英語を話せますか？','eigo o hanasemasu ka?'],["I don't understand",'わかりません','wakarimasen'],['Delicious!','おいしい！','oishii!'],
   ['I have an allergy to ___','___アレルギーがあります','___ arerugī ga arimasu'],['Help!','助けて！','tasukete!']];
 function viewJPhrases() {
-  return `<section class="card">${PHRASES.map(([en, ja, ro]) => `<div class="phr"><div><span class="small muted">${esc(en)}</span><span class="jp" lang="ja">${ja}</span><span class="small muted">${esc(ro)}</span></div>
+  return `<section class="card">${PHRASES.concat((S.jp.phr || []).filter(p => !PHRASES.some(q => q[0].toLowerCase() === String(p.en).toLowerCase())).map(p => [p.en, p.ja, p.ro])).map(([en, ja, ro]) => `<div class="phr"><div><span class="small muted">${esc(en)}</span><span class="jp" lang="ja">${ja}</span><span class="small muted">${esc(ro)}</span></div>
     <button class="btn sm ghost" data-act="copy" data-v="${esc(ja)}" aria-label="Copy ${esc(en)} in Japanese">Copy</button></div>`).join('')}</section>
     <p class="note">Tap Copy to paste a phrase into a translator app, or just show your screen.</p>`;
 }
@@ -382,16 +387,18 @@ function viewJInfo() {
       <div class="ff"><label>First day<input class="input" type="date" name="start" value="${esc(J.start)}"></label><label>Last day<input class="input" type="date" name="end" value="${esc(J.end)}"></label></div>
       <button class="btn" type="submit">Save dates</button></form></section>
     <section class="card"><div class="row"><h2>Tokyo time</h2><b style="font-size:20px" id="jpClock">${tokyoNow()}</b></div><p class="note">Japan is 14 hours ahead of Florida in winter.</p></section>
-    <section class="card"><h2>Emergency</h2>
+    ${(x => x.emerg || `<section class="card"><h2>Emergency</h2>
       <div class="lrow"><b>Police</b><a class="maplink" href="tel:110">110</a></div>
       <div class="lrow"><b>Ambulance or fire</b><a class="maplink" href="tel:119">119</a></div>
       <div class="lrow"><b>US Embassy Tokyo</b><a class="maplink" href="tel:+81332245000">+81 3-3224-5000</a></div>
-      <p class="note">The embassy number works around the clock for US citizens in an emergency.</p></section>
+      <p class="note">The embassy number works around the clock for US citizens in an emergency.</p></section>`)(jpInfoExtra())}
+    ${jpInfoExtra().taxi}${jpInfoExtra().tips}
     <section class="card"><h2>Good to know</h2>
       <div class="lrow"><span>Japan uses the same plug shape as the US, so your chargers work without an adapter.</span></div>
       <div class="lrow"><span>Add a Suica or PASMO card to Apple Wallet to tap through trains and pay at convenience stores.</span></div>
       <div class="lrow"><span>Public trash cans are rare. Carry a small bag for trash.</span></div>
       <div class="lrow"><span>If you bring medication, check Japan's rules first. Some common US cold medicines aren't allowed.</span></div></section>
+    ${jpFileCard()}
     <section class="card"><h2>Notes</h2><textarea class="input mt" data-bind="jnotes" placeholder="Anything else, like JR pass info or gift ideas" aria-label="Trip notes">${esc(J.notes)}</textarea></section>`;
 }
 /* ----- Japan: today, to-do, gifts, journal, calendar export ----- */
@@ -413,7 +420,7 @@ const prepSorted = () => S.jp.prep.slice().sort((a, b) => (a.done ? 1 : 0) - (b.
 function prepRow(p) {
   const due = prepDate(p), late = !p.done && due < today();
   return swipeWrap(`<div class="pk${p.done ? ' done' : ''}"><button class="check sm" aria-pressed="${!!p.done}" aria-label="Done: ${esc(p.t)}" data-act="jToggle" data-kind="prep" data-id="${esc(p.id)}">${ICON_CHECK}</button>
-    <span>${esc(p.t)}<span class="small${late ? '' : ' muted'}" style="display:block${late ? ';color:var(--danger);font-weight:700' : ''}">${late ? 'Overdue, was ' : 'By '}${esc(fmtDay(due))}</span></span>
+    <span>${esc(p.t)}<span class="small${late ? '' : ' muted'}" style="display:block${late ? ';color:var(--danger);font-weight:700' : ''}">${late ? 'Overdue, was ' : 'By '}${esc(fmtDay(due))}</span>${p.note ? `<span class="small muted" style="display:block">${esc(p.note)}</span>` : ''}</span>
     <button class="link quiet" data-act="jDel" data-kind="prep" data-id="${esc(p.id)}" data-confirm aria-label="Remove ${esc(p.t)}">✕</button></div>`,
     {r:['jToggle', p.done ? 'Undo' : 'Done'], l:['jDel', 'Delete'], data:{kind:'prep', id:p.id}});
 }

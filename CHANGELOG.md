@@ -9,6 +9,15 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.9 — "Welcome Home, Japan" (Nov 12)
+- **Hibi Japan is now its own app, and it replaces the old Japan trip app.** Open https://cynnity.github.io/Hibi/japan/ in Safari, then Add to Home Screen.
+- **Import your trip file.** In Lists › Info, tap Import trip file and pick japan-trip-data.json. Everything comes in: all 23 days with their stops and how to get there, flights, stays, bookings, to-dos with due dates, packing lists, spots, shopping list, budget plan, emergency numbers, taxi cards and tips.
+- **Day headers.** Each day shows its title, city, walking, where you sleep, and a "If something goes wrong" plan B.
+- **Bookings show on the plan.** Sumo, teamLab, Ghibli and the rest show a Booked or To book pill on their stop. Tap the pill to flip it.
+- **Taxi cards, emergency numbers and tips** live in Lists › Info. Tap a taxi card to show the driver your screen.
+- **Importing again is safe.** Your spending, journal, anything you added yourself and what you've ticked off are kept.
+- Shares through Dropbox with your other Hibi apps, the same way Budget and Gym do, including the Trip fund goals from Savings.
+
 ## 4.8 — "Leg Day Gets Its Own Door" (Nov 12)
 - **Hibi Gym is now its own app.** Open https://cynnity.github.io/Hibi/gym/ in Safari, then Add to Home Screen. It shows only Gym (Workout, Library, Progress, Daily, Settings).
 - **It shares your workouts through Dropbox**, the same way Budget does. Connect Dropbox once in the Gym app (Settings › Backup) and your workouts, lifts, body weight, cardio, Look and Gym badges come across, then stay in step with your other Hibi apps.
