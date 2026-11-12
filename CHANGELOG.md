@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.7 — "Many Doors, One Room" (Nov 12)
+- **Hibi Budget is now its own app.** Open https://cynnity.github.io/Hibi/budget/ in Safari, then Add to Home Screen. It shows only Budget (Overview, Spending, Bills, Plan, Settings), with no other modes in the way.
+- **Apps share one set of data through Dropbox.** Connect Dropbox once in the new app (Settings › Backup) and it pulls in your Budget, Savings, Subscriptions and Work info. After that every app keeps in step automatically when you open it and a few seconds after each change.
+- **Newest change wins, and nothing is lost.** If two apps change the same thing, the newer one wins and the older version is saved in Dropbox › conflicts.
+- **Your main Hibi keeps working as before.** It now also shares each part of your data with Dropbox, so more separate apps can be added later. Receipt photos, notebooks and progress photos are not shared between apps yet.
+
 ## 4.6.2 — "Exactly This Much" (Oct 28)
 - **Setting what you owe on a card is exact now.** When you type "What you owe now" (like 151.11) and save, that becomes the balance, no matter what purchases or payments were already in the app. Before, some already-logged purchases could get added on top, so it jumped back up (268.76 instead of 151.11).
 - Only purchases and payments you log after saving change the balance from there.

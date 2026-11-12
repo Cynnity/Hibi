@@ -182,7 +182,7 @@ function widgetTick() {
 }
 Object.assign(XVIEWS, {hhome:viewHomeW});
 Object.assign(XACT, {
-  wGo: d => { if (S.mode !== d.k) { S.lastMode[S.mode] = S.tab; S.mode = d.k; } go(d.to); scrollTo(0, 0); },
+  wGo: d => { if (SOLO && !SOLO.modes.includes(d.k)) { toast('That part lives in the full Hibi app.'); return false; } if (S.mode !== d.k) { S.lastMode[S.mode] = S.tab; S.mode = d.k; } go(d.to); scrollTo(0, 0); },
   wPomo: () => { XACT.pomoStart(); S.lastMode[S.mode] = S.tab; S.mode = 'school'; go('kfocus'); },
   wStudy: () => { S.lastMode[S.mode] = S.tab; S.mode = 'school'; go('kstudy'); UI.fcDeck = null; fcBegin('review', ''); },
   wNotebook: () => { const b = [...S.nb.books].sort((a, c) => (c.updated || 0) - (a.updated || 0))[0]; if (b) { nbOpen(b.id); return false; } S.lastMode[S.mode] = S.tab; S.mode = 'school'; go('knb'); },

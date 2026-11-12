@@ -3,7 +3,7 @@
    The text reader (Tesseract) runs in js/ocr-worker.js and its files live in vendor/ocr/.
    Nothing is uploaded anywhere.
    ========================================================= */
-const RC_BASE = 'vendor/ocr/';
+const RC_BASE = ROOT + 'vendor/ocr/';
 let RCW = null, RCREADY = null, RCIDLE = 0, RCJOB = null;
 const rcSimd = () => { try { return WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11])); } catch (e) { return false; } };
 
@@ -13,7 +13,7 @@ function rcEngine(on) {
   clearTimeout(RCIDLE);
   if (RCREADY) return RCREADY;
   RCREADY = new Promise((ok, no) => {
-    let w; try { w = new Worker('js/ocr-worker.js'); } catch (e) { RCREADY = null; return no(new Error('This browser cannot run the receipt reader.')); }
+    let w; try { w = new Worker(ROOT + 'js/ocr-worker.js'); } catch (e) { RCREADY = null; return no(new Error('This browser cannot run the receipt reader.')); }
     RCW = w;
     w.onmessage = e => {
       const m = e.data;

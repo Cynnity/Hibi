@@ -25,7 +25,7 @@ Object.assign(ICON, {home:'<path d="M3.5 11L12 4l8.5 7M6 9.5V20h12V9.5"/><path d
 Object.assign(TAB_INFO, {hhome:{g:'hhome',t:'Home'}, kdue:{g:'kdue',t:'Due'}, kclass:{g:'kclass',t:'Classes'}, knotes:{g:'knotes',t:'Notes'}});
 Object.assign(GROUPS, {hhome:['hhome'], kdue:['kdue'], kclass:['kclass'], knotes:['knotes']});
 const orderedModes = () => ['home', ...((S && S.order) || Object.keys(MODES).filter(k => k !== 'home'))].filter(k => MODES[k]);
-const modeVisible = k => k === 'home' || !(S.hidden || []).includes(k);
+const modeVisible = k => SOLO ? SOLO.modes.includes(k) : (k === 'home' || !(S.hidden || []).includes(k));
 
 /* ----- School data ----- */
 const K_KINDS = [['hw','📝','Assignment'],['exam','🧪','Exam'],['quiz','❓','Quiz'],['lab','🔬','Lab'],['project','🛠️','Project'],['other','📌','Other']];
@@ -327,7 +327,7 @@ function mdLite(md) {
   close(); return out.join('');
 }
 function loadNotes() {
-  fetch('CHANGELOG.md', {cache:'no-cache'}).then(r => { if (!r.ok) throw 0; return r.text(); })
+  fetch(ROOT + 'CHANGELOG.md', {cache:'no-cache'}).then(r => { if (!r.ok) throw 0; return r.text(); })
     .then(t => { NOTES = mdLite(t); const b = $('#notesBody'); if (b) b.innerHTML = NOTES; })
     .catch(() => { const b = $('#notesBody'); if (b && !NOTES) b.innerHTML = '<p class="note">Patch notes load in the Hibi app on your Home Screen. Open it from cynnity.github.io/Hibi to read them.</p>'; });
 }

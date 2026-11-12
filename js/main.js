@@ -5,7 +5,7 @@
    ========================================================= */
 applyTheme();
 // Open to Home (can be turned off in Home Settings)
-function goHomeOnOpen() { if (!S.home || !S.home.startHome) return; if (S.mode !== 'home') S.lastMode[S.mode] = S.tab; S.mode = 'home'; go('hhome'); UI.homeEdit = false; UI.edit = null; }
+function goHomeOnOpen() { if (SOLO || !S.home || !S.home.startHome) return; if (S.mode !== 'home') S.lastMode[S.mode] = S.tab; S.mode = 'home'; go('hhome'); UI.homeEdit = false; UI.edit = null; }
 // Links straight to a mode or screen: ?mode=gym, ?tab=jflights, #savings, #water
 const LINK_ALIAS = {savings:'save', money:'save', goals:'save', shows:'media', books:'media', anime:'media', manga:'media', trip:'japan', tokyo:'japan', job:'work', habits:'hlhab', water:'hltoday',
   sleep:'hlsleep', shopping:'lshop', groceries:'lshop', wishlist:'lwish', wish:'lwish', subs:'vsubs', subscriptions:'vsubs', focus:'kfocus', homework:'kdue', flights:'jflights', budget:'bgo', spending:'btx', bills:'bbills', japanbudget:'jmoney', badges:'hbadges', weight:'body'};
@@ -21,6 +21,8 @@ function openLink() {
   go(tab || (S.lastMode[mode] && TAB_INFO[S.lastMode[mode]] ? S.lastMode[mode] : firstTab(mode))); UI.homeEdit = false; return true;
 }
 HOME_READY = true; normalizeHome(S);
+if (SOLO && !SOLO.modes.includes(S.mode)) { S.mode = SOLO.modes[0]; go(firstTab(S.mode)); }
+else if (SOLO && !MODES[S.mode].nav.some(n => (GROUPS[n[0]] || [n[0]]).includes(S.tab))) go(firstTab(S.mode));
 if (!openLink()) goHomeOnOpen();
 window.addEventListener('hashchange', () => { if (openLink()) { save(); render(); scrollTo(0, 0); } });
 render();
@@ -63,4 +65,4 @@ document.addEventListener('visibilitychange', () => {
   if (awayAt && Date.now() - awayAt > 5 * 6e4 && S.home.startHome && !UI.wrap && !document.querySelector('#sheet')) { goHomeOnOpen(); save(); render(); scrollTo(0, 0); }
   setTimeout(wrapCheck, 600);
 });
-try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(reg => { document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); }); }).catch(() => {}); } catch (e) {}
+try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register(window.HIBI_SW || 'sw.js').then(reg => { document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); }); }).catch(() => {}); } catch (e) {}

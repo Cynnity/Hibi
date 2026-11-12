@@ -47,7 +47,7 @@ function dbxStatusHtml() {
   if (dbxBusy) return 'Backing up…';
   if (dbxMsg) return esc(dbxMsg);
   if (DBX.err) return `<span style="color:var(--danger)">${esc(DBX.err)}</span>`;
-  return DBX.last ? `Last backup: <b>${esc(ago(DBX.last))}</b>${DBX.nph ? `, with ${plural(DBX.nph, 'photo')}` : ''}.` : 'Not backed up yet.';
+  return DBX.last ? `${SOLO ? 'Last sync' : 'Last backup'}: <b>${esc(ago(DBX.last))}</b>${DBX.nph ? `, with ${plural(DBX.nph, 'photo')}` : ''}.` : 'Not backed up yet.';
 }
 function dbxSchedule(ms) {
   if (!DBX.rt || DBX.ask) return;
@@ -57,6 +57,12 @@ async function dbxSync(manual) {
   if (!DBX.rt || DBX.ask) return;
   if (dbxBusy) { dbxAgain = true; return; }
   clearTimeout(dbxTimer);
+  // First, share this app's areas with Dropbox (pull what other apps changed, push what changed here)
+  dbxBusy = true; dbxShow();
+  try { await areaSync(); }
+  catch (e) { DBX.err = dbxErr(e); if (manual) toast(DBX.err); dbxBusy = false; dbxSave(); dbxShow(); return; }
+  dbxBusy = false;
+  if (SOLO) { DBX.last = Date.now(); DBX.err = ''; dbxSave(); dbxShow(); if (manual) toast('Synced with Dropbox.'); if (dbxAgain) { dbxAgain = false; dbxSchedule(1500); } return; }
   const json = JSON.stringify(backup()), hash = hashStr(json);
   let ph = []; try { ph = await pAll(); } catch (e) {}
   DBX.photos = DBX.photos || {};
@@ -102,6 +108,13 @@ async function dbxRestore() {
 function dbxCard() {
   if (!DBX.rt) {
     if (!DBX.url) dbxPrep();
+    if (SOLO) return `<section class="card"><h2>Dropbox sync</h2>
+      <p class="note">This app keeps its data in Dropbox so it matches your other Hibi apps. Connect it once here and it pulls in your ${esc(SOLO.label)} data, then keeps everything in step: when you open the app and a few seconds after each change. Hibi only sees its own folder in Dropbox › Apps.</p>
+      <p class="mt"><b>1.</b> Tap below, sign in and tap Allow. Dropbox shows you a code. Copy it.</p>
+      ${DBX.url ? `<a class="btn block mt" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="${esc(DBX.url)}" target="_blank" rel="noopener">Open Dropbox</a>` : '<p class="note">Getting ready…</p>'}
+      <p class="mt"><b>2.</b> Come back here and paste the code.</p>
+      <div class="field mt"><input class="input" id="dbxCode" placeholder="Paste the code" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" data-enter="dbxConnect" aria-label="Dropbox code"><button class="btn" data-act="dbxConnect">Connect</button></div>
+      <p class="note" id="dbxStatus" role="status">${esc(dbxMsg)}</p></section>`;
     return `<section class="card"><h2>Dropbox auto backup</h2>
       <p class="note">Back up everything, including progress photos, notebooks and lecture recordings, to your Dropbox on its own: a few seconds after each change and when you open Hibi. Hibi only sees its own folder in Dropbox › Apps.</p>
       <p class="mt"><b>1.</b> Tap below, sign in and tap Allow. Dropbox shows you a code. Copy it.</p>
@@ -116,6 +129,11 @@ function dbxCard() {
       <p class="note">Brings it onto this phone. Workouts on both are kept.</p>
       <button class="btn ghost block mt" data-act="dbxUseLocal" data-confirm>Replace it with this phone's data</button>
       <p class="note" id="dbxStatus" role="status">${esc(dbxMsg)}</p></section>`;
+  if (SOLO) return `<section class="card"><div class="row"><h2>Dropbox sync</h2><span class="small" style="color:var(--good);font-weight:800">On</span></div>
+      <p class="note" id="dbxStatus" role="status">${dbxStatusHtml()}</p>
+      <p class="note">Shares ${esc(appAreas().map(a => AREA_LABEL[a] || a).join(', '))} with your other Hibi apps. If two apps change the same thing, the newer change wins and the other version is kept in Dropbox › conflicts.</p>
+      <button class="btn block mt" data-act="dbxNow">Sync now</button>
+      <button class="link danger mt" data-act="dbxOff" data-confirm>Disconnect Dropbox</button></section>`;
   return `<section class="card"><div class="row"><h2>Dropbox auto backup</h2><span class="small" style="color:var(--good);font-weight:800">On</span></div>
       <p class="note" id="dbxStatus" role="status">${dbxStatusHtml()}</p>
       <p class="note">Backs up a few seconds after each change and when you open Hibi. A copy for each day goes in the daily folder too, in case you ever need to go back.</p>
@@ -142,14 +160,16 @@ Object.assign(XACT, {
     dbxShow('Connecting…');
     dbxToken({grant_type:'authorization_code', code, code_verifier:DBX.pkce}).then(async j => {
       DBX = {rt:j.refresh_token, at:j.access_token, exp:Date.now() + (j.expires_in - 300) * 1000, photos:{}};
-      try { const m = await (await dbxCall('api', 'files/get_metadata', {path:'/hibi-backup.json'})).json(); DBX.ask = {d:Date.parse(m.server_modified) || 0}; }
-      catch (e) { if (e.status !== 409) throw e; }
+      if (!SOLO) {
+        try { const m = await (await dbxCall('api', 'files/get_metadata', {path:'/hibi-backup.json'})).json(); DBX.ask = {d:Date.parse(m.server_modified) || 0}; }
+        catch (e) { if (e.status !== 409) throw e; }
+      }
       dbxSave(); dbxMsg = ''; render(); toast('Dropbox connected.');
       if (!DBX.ask) dbxSync(true);
     }).catch(e => { dbxShow(e.auth ? "That code didn't work. Codes only work once, so tap Open Dropbox again for a new one." : dbxErr(e)); if (e.auth) { delete DBX.url; delete DBX.pkce; dbxSave(); dbxPrep(); } });
     return false;
   },
-  dbxUseRemote: () => { dbxRestore().then(n => { delete DBX.ask; dbxSave(); render(); toast(`Restored from Dropbox${n ? ` with ${plural(n, 'photo')}` : ''}.`); dbxSync(true); }).catch(e => dbxShow(dbxErr(e))); return false; },
+  dbxUseRemote: () => { dbxRestore().then(async n => { delete DBX.ask; dbxSave(); try { await areaSync({first:'remote'}); } catch (e) {} render(); toast(`Restored from Dropbox${n ? ` with ${plural(n, 'photo')}` : ''}.`); dbxSync(true); }).catch(e => dbxShow(dbxErr(e))); return false; },
   dbxUseLocal: () => { delete DBX.ask; dbxSave(); render(); dbxSync(true); return false; },
   dbxNow: () => { dbxSync(true); return false; },
   dbxRestoreBtn: () => { dbxRestore().then(n => { render(); toast(`Restored from Dropbox${n ? ` with ${plural(n, 'photo')}` : ''}.`); }).catch(e => { dbxShow(dbxErr(e)); toast(dbxErr(e)); }); return false; },

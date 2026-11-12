@@ -44,6 +44,8 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/events.js` | Tap, input and keyboard handling |
 | `js/touch.js` | `haptic()`, swipe rows (`swipeWrap()`), drag to reorder (`data-sort` lists with a `.grip`, saved by `SORT`), Undo after a swipe delete |
 | `js/dropbox.js` | Dropbox auto backup of data, photos and crash reports |
+| `js/areas.js` | Area sync for separate apps: `AREAS` (every saved key in exactly one area), per-area Dropbox files `/areas/<area>.json`, `areaSync()` (newest wins, loser kept in `/conflicts/`), per-phone notes in `liftlog:areas`. Solo apps are listed in `SOLO_APPS` in `core.js` (`SOLO`, `ROOT`). Loads after dropbox.js. |
+| `budget/` | The separate Budget app: its own `index.html`, `manifest.webmanifest` and icons, installed from `/Hibi/budget/`. Its script list must be kept in sync with the root `index.html` (paths start with `../`). Each Home Screen app has its own storage, so data is shared through Dropbox. |
 | `js/main.js` | Starts the app, and opens links like `?mode=gym`, `?tab=lshop` or `#water` |
 | `sw.js` | Offline cache. Its `CORE` list must include every file above. |
 
@@ -59,7 +61,7 @@ The app shows `CHANGELOG.md` in Settings, then About, then "What's new". It also
 
 ## Don't break his data
 
-- Never rename the storage keys: `liftlog:v1` (localStorage), `liftlog` (IndexedDB, version 3: stores `p` photos, `nb` notebook pages, `rec` recordings, `rc` receipt photos; only ever add stores), the `liftlog:` passcode salt, `liftlog:dbx` (Dropbox sign-in) or `liftlog:crash` (crash reports).
+- Never rename the storage keys: `liftlog:v1` (localStorage), `liftlog` (IndexedDB, version 3: stores `p` photos, `nb` notebook pages, `rec` recordings, `rc` receipt photos; only ever add stores), the `liftlog:` passcode salt, `liftlog:dbx` (Dropbox sign-in) or `liftlog:crash` (crash reports), `liftlog:areas` (area sync notes; not in backups).
 - Never rename or remove badge ids in `BADGES`; unlocked badges are stored by id in `S.bd`. Secret badges use kind `'secret'` and stay hidden as ??? until unlocked; their counters live in `S.sx`.
 - Never rename widget ids in `WIDGETS`; his Home layout stores them in `S.home.w`. Changing them wipes his data.
 - Never rename the repository or change the Pages path. A new address is a new app on iPhone, with empty storage.

@@ -58,7 +58,7 @@ Object.assign(XACT, {
   fxAnim: () => { S.fx.anim = !S.fx.anim; applyFx(); toast(S.fx.anim ? 'Animations on.' : 'Animations off.'); if (S.fx.anim) setTimeout(() => confetti(24), 150); },
   fxPreview: () => { const s = document.createElement('div'); s.innerHTML = SPLASH_HTML; document.body.appendChild(s.firstElementChild); const was = S.fx.intro; S.fx.intro = true; splashRun(); S.fx.intro = was; return false; },
 });
-const SPLASH_HTML = '<div id="splash" role="presentation"><div class="sp-in"><div class="sp-logo"><img src="hibi-icon-512.png" alt=""><i></i><i></i><i></i><i></i><i></i><i></i></div><b class="sp-name">Hibi</b><span class="sp-hi" id="splashHi"></span></div></div>';
+const SPLASH_HTML = '<div id="splash" role="presentation"><div class="sp-in"><div class="sp-logo"><img src="' + (SOLO ? 'icon-512.png' : 'hibi-icon-512.png') + '" alt=""><i></i><i></i><i></i><i></i><i></i><i></i></div><b class="sp-name">' + (SOLO ? SOLO.label : 'Hibi') + '</b><span class="sp-hi" id="splashHi"></span></div></div>';
 const fxSwitch = (act, on, label, note) => `<div class="setrow"><span>${label}<small class="muted" style="display:block;font-weight:600">${note}</small></span><button class="switch${on ? ' on' : ''}" role="switch" aria-checked="${on}" aria-label="${label}" data-act="${act}"><i></i></button></div>`;
 function fxSettings() {
   return `    <section class="card"><h2>Opening and animations</h2>

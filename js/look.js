@@ -64,12 +64,12 @@ const iconLink = id => location.origin + location.pathname.replace(/index\.html$
 {
   let pick = ''; try { pick = new URLSearchParams(location.search).get('icon') || ''; } catch (e) {}
   const set = ICON_SETS.find(x => x[0] === pick);
-  if (set && set[0] !== 'sakura') iconPng(set[0], 180).then(u => { $$('link[rel="apple-touch-icon"],link[rel="icon"]').forEach(l => { l.href = u; }); }).catch(() => {});
+  if (!SOLO && set && set[0] !== 'sakura') iconPng(set[0], 180).then(u => { $$('link[rel="apple-touch-icon"],link[rel="icon"]').forEach(l => { l.href = u; }); }).catch(() => {});
   if (set && !standalone()) setTimeout(() => {
     const b = document.createElement('div'); b.className = 'icon-banner'; b.innerHTML = `<span>${iconSvg(set[0], 44)}</span><div><b>Ready for the ${esc(set[1])} icon</b><span>Tap Share, then Add to Home Screen.</span></div><button aria-label="Close" onclick="this.parentNode.remove()">✕</button>`;
     document.body.appendChild(b);
   }, 1200);
-  if (!standalone()) setTimeout(() => startupImage(set ? set[0] : (S.look && S.look.icon) || 'sakura'), 1500);
+  if (!SOLO && !standalone()) setTimeout(() => startupImage(set ? set[0] : (S.look && S.look.icon) || 'sakura'), 1500);
 }
 // The picture iPhone shows while a Home Screen app starts. Made to fit this screen.
 function startupImage(id) {
@@ -94,7 +94,7 @@ const modeSettings = () => ({
   work: () => wkSettings(), health: () => hlSettings(), budget: () => bgSettings()})[S.mode];
 function setSecs() {
   const m = modeSettings();
-  return [...(m ? [['mode', `${MODES[S.mode].em} ${MODES[S.mode].label}`]] : []), ['look', '🎨 Look'], ['modes', '🧭 Modes'], ['privacy', '🔒 Passcode'], ['data', '💾 Backup'], ['about', '🌸 About']];
+  return [...(m ? [['mode', `${MODES[S.mode].em} ${MODES[S.mode].label}`]] : []), ['look', '🎨 Look'], ...(SOLO ? [] : [['modes', '🧭 Modes']]), ['privacy', '🔒 Passcode'], ['data', '💾 Backup'], ['about', '🌸 About']];
 }
 function homeSettings() {
   return `    <section class="card"><h2>Home</h2>
@@ -172,18 +172,18 @@ function jumpList() {
 }
 /* ----- Top bar and side menu (4.0): menu button, centered title, search; every mode lives in the menu ----- */
 const SVG_MENU = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>', SVG_FIND = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>', SVG_GEAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>';
-const appBar = () => `<div class="appbar"><button class="ab-btn" data-act="menuOpen" aria-label="Open menu">${SVG_MENU}</button><h1 class="ab-title">${esc(TAB_INFO[S.tab].t)}</h1><button class="ab-btn" data-act="jumpOpen" aria-label="Find a screen">${SVG_FIND}</button></div>`;
+const appBar = () => `<div class="appbar"><button class="ab-btn" data-act="menuOpen" aria-label="Open menu">${SVG_MENU}</button><h1 class="ab-title">${esc(TAB_INFO[S.tab].t)}</h1>${SOLO ? '<span class="ab-btn" aria-hidden="true"></span>' : `<button class="ab-btn" data-act="jumpOpen" aria-label="Find a screen">${SVG_FIND}</button>`}</div>`;
 const menuSheet = () => {
   const modes = orderedModes().filter(modeVisible), nm = ((S.home && S.home.name) || '').trim();
   return `<div id="drawer" data-act="menuClose"><aside class="drawer" data-act="noop" role="dialog" aria-modal="true" aria-label="Menu">
-    <div class="dr-top"><b class="dr-brand">Hibi</b><button class="ab-btn" data-act="menuGo" data-m="${S.mode}" data-t="settings" aria-label="Settings">${SVG_GEAR}</button></div>
-    <div class="dr-h">Modes</div>
-    ${modes.map(k => `<button class="dr-i${S.mode === k ? ' on' : ''}" data-act="menuMode" data-k="${k}"><span class="dr-em" aria-hidden="true">${MODES[k].em}</span>${esc(MODES[k].label)}</button>`).join('')}
-    <div class="dr-h">More</div>
-    <button class="dr-i" data-act="menuGo" data-m="home" data-t="badges"><span class="dr-em" aria-hidden="true">🏆</span>Badges</button>
+    <div class="dr-top"><b class="dr-brand">${esc(SOLO ? SOLO.label : 'Hibi')}</b><button class="ab-btn" data-act="menuGo" data-m="${S.mode}" data-t="settings" aria-label="Settings">${SVG_GEAR}</button></div>
+    ${SOLO && modes.length < 2 ? '' : '<div class="dr-h">Modes</div>'}
+    ${SOLO && modes.length < 2 ? '' : modes.map(k => `<button class="dr-i${S.mode === k ? ' on' : ''}" data-act="menuMode" data-k="${k}"><span class="dr-em" aria-hidden="true">${MODES[k].em}</span>${esc(MODES[k].label)}</button>`).join('')}
+    ${SOLO ? '' : `<div class="dr-h">More</div>
+    <button class="dr-i" data-act="menuGo" data-m="home" data-t="badges"><span class="dr-em" aria-hidden="true">🏆</span>Badges</button>`}
     <button class="dr-i" data-act="menuGo" data-m="${S.mode}" data-t="settings"><span class="dr-em" aria-hidden="true">⚙️</span>Settings</button>
-    <button class="dr-i" data-act="menuFind"><span class="dr-em" aria-hidden="true">🔎</span>Find a screen</button>
-    <div class="dr-foot"><span class="dr-av" aria-hidden="true">${esc((nm[0] || 'H').toUpperCase())}</span>${esc(nm || 'Hibi')}<small>v${APP_VERSION}</small></div></aside></div>`;
+    ${SOLO ? '' : '<button class="dr-i" data-act="menuFind"><span class="dr-em" aria-hidden="true">🔎</span>Find a screen</button>'}
+    <div class="dr-foot"><span class="dr-av" aria-hidden="true">${esc((nm[0] || 'H').toUpperCase())}</span>${esc(SOLO ? 'Hibi ' + SOLO.label : nm || 'Hibi')}<small>v${APP_VERSION}</small></div></aside></div>`;
 };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.menu) { UI.menu = false; render(); } });
 const jumpSheet = () => `<div id="sheet" data-act="closeSheet"><div class="panel" data-act="noop" role="dialog" aria-modal="true" aria-label="Find a screen">
