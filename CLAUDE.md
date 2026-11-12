@@ -45,7 +45,7 @@ Plain HTML, CSS and JavaScript with no build step. The scripts are classic scrip
 | `js/touch.js` | `haptic()`, swipe rows (`swipeWrap()`), drag to reorder (`data-sort` lists with a `.grip`, saved by `SORT`), Undo after a swipe delete |
 | `js/dropbox.js` | Dropbox auto backup of data, photos and crash reports |
 | `js/areas.js` | Area sync for separate apps: `AREAS` (every saved key in exactly one area), per-area Dropbox files `/areas/<area>.json`, `areaSync()` (newest wins, loser kept in `/conflicts/`), per-phone notes in `liftlog:areas`. Solo apps are listed in `SOLO_APPS` in `core.js` (`SOLO`, `ROOT`). Loads after dropbox.js. |
-| `budget/` | The separate Budget app: its own `index.html`, `manifest.webmanifest` and icons, installed from `/Hibi/budget/`. Its script list must be kept in sync with the root `index.html` (paths start with `../`). Each Home Screen app has its own storage, so data is shared through Dropbox. |
+| `budget/`, `gym/` | The separate apps (Budget, Gym): its own `index.html`, `manifest.webmanifest` and icons, installed from `/Hibi/budget/`. Its script list must be kept in sync with the root `index.html` (paths start with `../`). Each Home Screen app has its own storage, so data is shared through Dropbox. |
 | `js/main.js` | Starts the app, and opens links like `?mode=gym`, `?tab=lshop` or `#water` |
 | `sw.js` | Offline cache. Its `CORE` list must include every file above. |
 

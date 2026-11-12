@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.8 — "Leg Day Gets Its Own Door" (Nov 12)
+- **Hibi Gym is now its own app.** Open https://cynnity.github.io/Hibi/gym/ in Safari, then Add to Home Screen. It shows only Gym (Workout, Library, Progress, Daily, Settings).
+- **It shares your workouts through Dropbox**, the same way Budget does. Connect Dropbox once in the Gym app (Settings › Backup) and your workouts, lifts, body weight, cardio, Look and Gym badges come across, then stay in step with your other Hibi apps.
+- **Newest change wins** if two apps change the same thing, and the older copy is kept in Dropbox › conflicts.
+- Receipt photos, notebooks and progress photos are still not shared between apps.
+
 ## 4.7 — "Many Doors, One Room" (Nov 12)
 - **Hibi Budget is now its own app.** Open https://cynnity.github.io/Hibi/budget/ in Safari, then Add to Home Screen. It shows only Budget (Overview, Spending, Bills, Plan, Settings), with no other modes in the way.
 - **Apps share one set of data through Dropbox.** Connect Dropbox once in the new app (Settings › Backup) and it pulls in your Budget, Savings, Subscriptions and Work info. After that every app keeps in step automatically when you open it and a few seconds after each change.
