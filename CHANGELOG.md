@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.13 — "Clocked In" (Nov 12)
+- **Hibi Work is now its own app.** Open https://cynnity.github.io/Hibi/work/ in Safari, then Add to Home Screen. It shows only Work: Today (clock in and out), Shifts, Pay and Settings.
+- **Shares through Dropbox** with your other Hibi apps. Connect Dropbox once in the Work app (Settings › Backup). Clock in on one app and the others see it. Budget keeps using your pay from here.
+- Newest change wins if two apps change the same thing, and the older copy is kept in Dropbox › conflicts.
+
 ## 4.12 — "Class Dismissed" (Nov 12)
 - **Hibi School is now its own app.** Open https://cynnity.github.io/Hibi/school/ in Safari, then Add to Home Screen. It shows only School: Due, Classes, Study (flashcards and notebooks), Focus and Settings.
 - **Shares everything through Dropbox**, the same way Budget, Gym and Japan do. Connect Dropbox once in the School app (Settings › Backup) and your classes, tasks, flashcards, Focus timer and notebooks come across, including notebook pages and lecture recordings.
