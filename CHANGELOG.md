@@ -9,6 +9,13 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.16 — "Last Two Doors" (Nov 12)
+- **Hibi Shows & Books and Hibi Games are now their own apps.** Open https://cynnity.github.io/Hibi/media/ or https://cynnity.github.io/Hibi/games/ in Safari, then Add to Home Screen.
+- **Shows & Books** shows Now, Library, Add, Stats and Settings. **Games** shows Playing, Library, Add, Stats and Settings.
+- Both share through Dropbox with your other Hibi apps. Connect Dropbox once in each app (Settings › Backup). Your episode and game activity stays in step too, so your recaps in the full Hibi stay right.
+- That makes every mode its own app: Budget, Gym, Japan, School, Work, Health, Lists, Savings, Shows & Books and Games.
+- Newest change wins if two apps change the same thing, and the older copy is kept in Dropbox › conflicts.
+
 ## 4.15 — "Two More Doors" (Nov 12)
 - **Hibi Lists and Hibi Savings are now their own apps.** Open https://cynnity.github.io/Hibi/lists/ or https://cynnity.github.io/Hibi/savings/ in Safari, then Add to Home Screen.
 - **Lists** shows only the shopping list and wish list. **Savings** shows Goals, New goal, Subs, History and Settings.
