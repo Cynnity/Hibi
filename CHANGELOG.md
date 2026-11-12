@@ -9,6 +9,11 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.17 — "Double Feature" (Nov 12)
+- **Shows & Books and Games are now together in one app: Hibi Entertainment.** Open https://cynnity.github.io/Hibi/entertainment/ in Safari, then Add to Home Screen. Open the menu (top left) to switch between Shows & Books and Games.
+- It shares through Dropbox the same way as the others, so connect Dropbox once in it (Settings › Backup).
+- The separate Shows & Books and Games apps still work. Once Entertainment looks right, you can remove their icons from your Home Screen.
+
 ## 4.16 — "Last Two Doors" (Nov 12)
 - **Hibi Shows & Books and Hibi Games are now their own apps.** Open https://cynnity.github.io/Hibi/media/ or https://cynnity.github.io/Hibi/games/ in Safari, then Add to Home Screen.
 - **Shows & Books** shows Now, Library, Add, Stats and Settings. **Games** shows Playing, Library, Add, Stats and Settings.
