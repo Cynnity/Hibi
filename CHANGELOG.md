@@ -9,6 +9,12 @@ Everything that's changed in Hibi, newest first. Versions 0.1 to 1.0 all happene
 
 ---
 
+## 4.15 — "Two More Doors" (Nov 12)
+- **Hibi Lists and Hibi Savings are now their own apps.** Open https://cynnity.github.io/Hibi/lists/ or https://cynnity.github.io/Hibi/savings/ in Safari, then Add to Home Screen.
+- **Lists** shows only the shopping list and wish list. **Savings** shows Goals, New goal, Subs, History and Settings.
+- Both share through Dropbox with your other Hibi apps. Connect Dropbox once in each app (Settings › Backup). Savings also keeps your Budget accounts in step, so "Held in account" and the Japan Trip fund links keep working.
+- Newest change wins if two apps change the same thing, and the older copy is kept in Dropbox › conflicts.
+
 ## 4.14 — "Drink Up" (Nov 12)
 - **Hibi Health is now its own app.** Open https://cynnity.github.io/Hibi/health/ in Safari, then Add to Home Screen. It shows only Health: Today (water), Habits, Sleep and Settings.
 - **Shares through Dropbox** with your other Hibi apps. Connect Dropbox once in the Health app (Settings › Backup) and your water, habits and sleep come across and stay in step.
